@@ -125,7 +125,7 @@ function Contact() {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-3">
-                {errorMsg && <div className="p-2 text-xs text-red-400 bg-red-950/60 rounded border border-red-800">{errorMsg}</div>}
+                {errorMsg && <div className="p-2 text-xs text-red-700 bg-red-100/80 rounded border border-red-300">{errorMsg}</div>}
                 <div>
                   <input
                     type="text"
@@ -134,7 +134,7 @@ function Contact() {
                     required
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full bg-black/60 border border-gold/30 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-gold"
+                    className="w-full bg-[#FAF7EF] border border-[#B89A4A]/30 rounded px-3 py-2 text-sm text-[#3F3528] placeholder-[#9A8D78] focus:outline-none focus:border-[#8F7430]"
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -145,7 +145,7 @@ function Contact() {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full bg-black/60 border border-gold/30 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-gold"
+                    className="w-full bg-[#FAF7EF] border border-[#B89A4A]/30 rounded px-3 py-2 text-sm text-[#3F3528] placeholder-[#9A8D78] focus:outline-none focus:border-[#8F7430]"
                   />
                   <input
                     type="tel"
@@ -153,7 +153,7 @@ function Contact() {
                     placeholder="Phone Number"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full bg-black/60 border border-gold/30 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-gold"
+                    className="w-full bg-[#FAF7EF] border border-[#B89A4A]/30 rounded px-3 py-2 text-sm text-[#3F3528] placeholder-[#9A8D78] focus:outline-none focus:border-[#8F7430]"
                   />
                 </div>
                 <div>
@@ -163,7 +163,7 @@ function Contact() {
                     placeholder="Subject (e.g. Pass Inquiry, Sewa)"
                     value={formData.subject}
                     onChange={handleChange}
-                    className="w-full bg-black/60 border border-gold/30 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-gold"
+                    className="w-full bg-[#FAF7EF] border border-[#B89A4A]/30 rounded px-3 py-2 text-sm text-[#3F3528] placeholder-[#9A8D78] focus:outline-none focus:border-[#8F7430]"
                   />
                 </div>
                 <div>
@@ -174,7 +174,7 @@ function Contact() {
                     required
                     value={formData.message}
                     onChange={handleChange}
-                    className="w-full bg-black/60 border border-gold/30 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-gold"
+                    className="w-full bg-[#FAF7EF] border border-[#B89A4A]/30 rounded px-3 py-2 text-sm text-[#3F3528] placeholder-[#9A8D78] focus:outline-none focus:border-[#8F7430]"
                   ></textarea>
                 </div>
                 <button type="submit" disabled={loading} className="w-full btn-primary shimmer-btn py-2 text-sm">
@@ -185,7 +185,7 @@ function Contact() {
           </div>
 
           {/* Real Google Maps Embed */}
-          <div className="map-container gold-pulse-border h-full min-h-[300px] relative rounded-xl overflow-hidden flex items-center justify-center bg-black/40">
+          <div className="map-container gold-pulse-border h-full min-h-[300px] relative rounded-xl overflow-hidden flex items-center justify-center bg-[#EEE7D8]">
             {showMap ? (
               <iframe
                 src="https://maps.google.com/maps?q=Nandanvan%202,%20Vesu,%20Surat,%20Gujarat%20395007&t=&z=16&ie=UTF8&iwloc=&output=embed"
@@ -197,7 +197,7 @@ function Contact() {
             ) : (
               <div className="text-center p-6 cursor-pointer" onClick={() => setShowMap(true)}>
                 <span className="text-4xl mb-2 block">📍</span>
-                <h4 className="font-heading text-gold text-lg mb-1">Nandanvan 2, Vesu, Surat</h4>
+                <h4 className="font-heading text-[#8F7430] text-lg mb-1">Nandanvan 2, Vesu, Surat</h4>
                 <p className="text-xs text-gray-400 mb-4">Click to load interactive sanctuary map</p>
                 <button className="btn-primary shimmer-btn text-xs px-4 py-2">
                   <span>Load Interactive Map</span>

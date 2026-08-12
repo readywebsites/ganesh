@@ -184,24 +184,24 @@ function Footer() {
   return (
     <footer
       ref={footerRef}
-      className="relative w-full pt-[100px] pb-[60px] px-6 sm:px-10 lg:px-[60px] bg-gradient-to-b from-neutral-950 via-black to-neutral-950 text-white overflow-hidden border-t border-goldBase/30 backdrop-blur-2xl"
+      className="relative w-full pt-[100px] pb-[60px] px-6 sm:px-10 lg:px-[60px] bg-[#F7F3EA] text-[#3F3528] overflow-hidden border-t border-[#B89A4A]/25 backdrop-blur-2xl"
     >
       {/* 1. Animated Particle Canvas */}
       <ParticleCanvas />
 
       {/* 2. Top Luxury Shimmering Golden Border Accent */}
-      <div className="pointer-events-none absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-goldBase to-transparent opacity-90 shadow-[0_0_15px_rgba(212,175,55,0.8)]" />
+      <div className="pointer-events-none absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#B89A4A] to-transparent opacity-90 shadow-[0_0_15px_rgba(184,154,74,0.2)]" />
       
       {/* 3. Golden Ambient Glow Orbs */}
-      <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[350px] bg-gradient-to-b from-goldBase/15 via-amber-500/10 to-transparent blur-3xl opacity-70" />
-      <div className="pointer-events-none absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-goldDark/20 to-goldBase/10 blur-[140px]" />
-      <div className="pointer-events-none absolute -bottom-40 -right-40 w-[500px] h-[500px] rounded-full bg-gradient-to-tl from-amber-600/20 to-goldLight/10 blur-[140px]" />
+      <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[350px] bg-gradient-to-b from-[#B89A4A]/08 via-[#D8BD72]/05 to-transparent blur-3xl opacity-70" />
+      <div className="pointer-events-none absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-[#8F7430]/05 to-[#B89A4A]/05 blur-[140px]" />
+      <div className="pointer-events-none absolute -bottom-40 -right-40 w-[500px] h-[500px] rounded-full bg-gradient-to-tl from-[#C99B45]/05 to-[#D8BD72]/05 blur-[140px]" />
 
       {/* 4. Subtle Temple Mandala Geometry Motif Overlay */}
       <div 
         className="pointer-events-none absolute inset-0 opacity-[0.03] bg-center bg-no-repeat bg-contain"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='400' height='400' viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='200' cy='200' r='180' fill='none' stroke='%23d4af37' stroke-width='1.5'/%3E%3Ccircle cx='200' cy='200' r='140' fill='none' stroke='%23d4af37' stroke-width='1' stroke-dasharray='4,4'/%3E%3Cpath d='M200,20 L200,380 M20,200 L380,200 M72.7,72.7 L327.3,327.3 M72.7,327.3 L327.3,72.7' stroke='%23d4af37' stroke-width='0.75' opacity='0.6'/%3E%3Cpolygon points='200,60 235,160 340,160 255,220 285,320 200,260 115,320 145,220 60,160 165,160' fill='none' stroke='%23d4af37' stroke-width='1'/%3E%3C/svg%3E")`
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='400' height='400' viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='200' cy='200' r='180' fill='none' stroke='%23b89a4a' stroke-width='1.5'/%3E%3Ccircle cx='200' cy='200' r='140' fill='none' stroke='%23b89a4a' stroke-width='1' stroke-dasharray='4,4'/%3E%3Cpath d='M200,20 L200,380 M20,200 L380,200 M72.7,72.7 L327.3,327.3 M72.7,327.3 L327.3,72.7' stroke='%23b89a4a' stroke-width='0.75' opacity='0.6'/%3E%3Cpolygon points='200,60 235,160 340,160 255,220 285,320 200,260 115,320 145,220 60,160 165,160' fill='none' stroke='%23b89a4a' stroke-width='1'/%3E%3C/svg%3E")`
         }}
       />
 
@@ -219,16 +219,16 @@ function Footer() {
               onClick={() => scrollTo('home')}
             >
               {/* Soft Golden Glow Backdrop */}
-              <div className="pointer-events-none absolute -inset-4 rounded-full bg-gradient-to-r from-goldBase/30 via-amber-400/20 to-goldLight/30 blur-2xl opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" />
+              <div className="pointer-events-none absolute -inset-4 rounded-full bg-gradient-to-r from-[#B89A4A]/20 via-[#D8BD72]/20 to-[#B89A4A]/20 blur-2xl opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" />
               
               {/* Logo Image: 220px desktop, 160px mobile */}
-              <div className="relative z-10 p-2 rounded-2xl bg-neutral-950/40 border border-goldBase/20 backdrop-blur-md transition-all duration-500 group-hover:border-goldBase/50 group-hover:shadow-[0_0_30px_rgba(212,175,55,0.35)]">
+              <div className="relative z-10 p-2 rounded-2xl bg-[#FFFDF7] border border-[#B89A4A]/25 backdrop-blur-md transition-all duration-500 group-hover:border-[#B89A4A]/50 group-hover:shadow-[0_4px_20px_rgba(184,154,74,0.15)]">
                 <Image
                   src="/logo/official_logo.webp"
                   alt="Surat Cha Gaurinandan Official Temple Logo"
                   width={220}
                   height={70}
-                  className="w-[160px] sm:w-[180px] lg:w-[220px] h-auto object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-[0_0_20px_rgba(212,175,55,0.45)]"
+                  className="w-[160px] sm:w-[180px] lg:w-[220px] h-auto object-contain transition-transform duration-500 group-hover:scale-105"
                   priority
                 />
               </div>
@@ -236,16 +236,16 @@ function Footer() {
 
             {/* Brand Titles */}
             <div className="space-y-1">
-              <h3 className="text-2xl sm:text-3xl font-heading font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-goldBase to-amber-300 tracking-wide drop-shadow-[0_2px_12px_rgba(212,175,55,0.4)]">
+              <h3 className="text-2xl sm:text-3xl font-heading font-bold text-[#3F3528] tracking-wide">
                 🙏 Surat Cha Gaurinandan
               </h3>
-              <p className="text-xs uppercase tracking-[0.3em] text-amber-300/80 font-subheading font-medium">
+              <p className="text-xs uppercase tracking-[0.3em] text-[#8F7430] font-subheading font-semibold">
                 Ganesh Mahotsav 2026
               </p>
             </div>
 
             {/* Brand Description */}
-            <p className="text-xs sm:text-sm text-neutral-300 font-light leading-relaxed max-w-sm">
+            <p className="text-xs sm:text-sm text-[#776B5B] font-light leading-relaxed max-w-sm">
               Connecting devotees worldwide through faith, seva, devotion, and divine blessings of Lord Ganesha.
             </p>
           </div>
@@ -253,10 +253,10 @@ function Footer() {
           {/* COLUMN 2: QUICK LINKS */}
           <div ref={linksRef} className="flex flex-col items-center md:items-start space-y-6">
             <div className="relative">
-              <h4 className="text-xs sm:text-sm font-heading tracking-[0.25em] uppercase text-goldBase border-b border-goldBase/30 pb-2.5 px-1 inline-block">
+              <h4 className="text-xs sm:text-sm font-heading tracking-[0.25em] uppercase text-[#3F3528] font-bold border-b border-[#B89A4A]/25 pb-2.5 px-1 inline-block">
                 Quick Links
               </h4>
-              <span className="absolute bottom-0 left-0 md:left-0 w-8 h-[2px] bg-goldLight" />
+              <span className="absolute bottom-0 left-0 md:left-0 w-8 h-[2px] bg-[#B89A4A]" />
             </div>
 
             <div className="grid grid-cols-2 gap-x-8 gap-y-3.5 pt-1 w-full max-w-xs md:max-w-none">
@@ -268,17 +268,17 @@ function Footer() {
                     e.preventDefault();
                     scrollTo(link.id);
                   }}
-                  className="group relative flex items-center justify-center md:justify-start gap-2 text-xs sm:text-sm text-neutral-300 font-light hover:text-goldLight transition-colors duration-300 py-1"
+                  className="group relative flex items-center justify-center md:justify-start gap-2 text-xs sm:text-sm text-[#776B5B] font-medium hover:text-[#B89A4A] transition-colors duration-300 py-1"
                 >
                   {/* Subtle golden diamond dot on hover */}
-                  <span className="text-[10px] text-goldBase opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 hidden md:inline-block">
+                  <span className="text-[10px] text-[#B89A4A] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 hidden md:inline-block">
                     ◆
                   </span>
 
                   <span className="relative">
                     {link.label}
                     {/* Golden Underline Animation */}
-                    <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-gradient-to-r from-goldBase via-yellow-300 to-goldLight group-hover:w-full transition-all duration-300 ease-out" />
+                    <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-gradient-to-r from-[#B89A4A] via-[#D8BD72] to-[#B89A4A] group-hover:w-full transition-all duration-300 ease-out" />
                   </span>
                 </a>
               ))}
@@ -288,48 +288,48 @@ function Footer() {
           {/* COLUMN 3: CONTACT & SOCIAL MEDIA */}
           <div ref={contactRef} className="flex flex-col items-center md:items-start space-y-6 md:col-span-2 lg:col-span-1">
             <div className="relative">
-              <h4 className="text-xs sm:text-sm font-heading tracking-[0.25em] uppercase text-goldBase border-b border-goldBase/30 pb-2.5 px-1 inline-block">
+              <h4 className="text-xs sm:text-sm font-heading tracking-[0.25em] uppercase text-[#3F3528] font-bold border-b border-[#B89A4A]/25 pb-2.5 px-1 inline-block">
                 Contact &amp; Connect
               </h4>
-              <span className="absolute bottom-0 left-0 md:left-0 w-8 h-[2px] bg-goldLight" />
+              <span className="absolute bottom-0 left-0 md:left-0 w-8 h-[2px] bg-[#B89A4A]" />
             </div>
 
             {/* Contact Details List */}
-            <ul className="space-y-3 text-xs sm:text-sm text-neutral-300 font-light w-full">
+            <ul className="space-y-3 text-xs sm:text-sm text-[#776B5B] font-light w-full">
               <li className="flex items-center justify-center md:justify-start gap-3 group">
-                <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-goldBase/30 flex items-center justify-center text-goldBase group-hover:border-goldBase group-hover:bg-goldBase/20 transition-all duration-300 shrink-0 shadow-sm shadow-goldBase/20">
+                <div className="w-8 h-8 rounded-full bg-[#FAF7EF] border border-[#B89A4A]/25 flex items-center justify-center text-[#8F7430] group-hover:border-[#B89A4A]/50 group-hover:bg-[#EEE7D8] transition-all duration-300 shrink-0 shadow-sm">
                   <span className="text-sm">📍</span>
                 </div>
-                <span className="group-hover:text-white transition-colors">Surat, Gujarat, India</span>
+                <span className="group-hover:text-[#3F3528] transition-colors">Surat, Gujarat, India</span>
               </li>
 
               <li className="flex items-center justify-center md:justify-start gap-3 group">
-                <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-goldBase/30 flex items-center justify-center text-goldBase group-hover:border-goldBase group-hover:bg-goldBase/20 transition-all duration-300 shrink-0 shadow-sm shadow-goldBase/20">
+                <div className="w-8 h-8 rounded-full bg-[#FAF7EF] border border-[#B89A4A]/25 flex items-center justify-center text-[#8F7430] group-hover:border-[#B89A4A]/50 group-hover:bg-[#EEE7D8] transition-all duration-300 shrink-0 shadow-sm">
                   <span className="text-sm">📞</span>
                 </div>
-                <a href="tel:+919876543210" className="group-hover:text-goldLight transition-colors">
+                <a href="tel:+919876543210" className="group-hover:text-[#B89A4A] transition-colors">
                   +91 98765 43210
                 </a>
               </li>
 
               <li className="flex items-center justify-center md:justify-start gap-3 group">
-                <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-goldBase/30 flex items-center justify-center text-goldBase group-hover:border-goldBase group-hover:bg-goldBase/20 transition-all duration-300 shrink-0 shadow-sm shadow-goldBase/20">
+                <div className="w-8 h-8 rounded-full bg-[#FAF7EF] border border-[#B89A4A]/25 flex items-center justify-center text-[#8F7430] group-hover:border-[#B89A4A]/50 group-hover:bg-[#EEE7D8] transition-all duration-300 shrink-0 shadow-sm">
                   <span className="text-sm">📧</span>
                 </div>
-                <a href="mailto:info@suratchagaurinandan.com" className="group-hover:text-goldLight transition-colors">
+                <a href="mailto:info@suratchagaurinandan.com" className="group-hover:text-[#B89A4A] transition-colors">
                   info@suratchagaurinandan.com
                 </a>
               </li>
 
               <li className="flex items-center justify-center md:justify-start gap-3 group">
-                <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-goldBase/30 flex items-center justify-center text-goldBase group-hover:border-goldBase group-hover:bg-goldBase/20 transition-all duration-300 shrink-0 shadow-sm shadow-goldBase/20">
+                <div className="w-8 h-8 rounded-full bg-[#FAF7EF] border border-[#B89A4A]/25 flex items-center justify-center text-[#8F7430] group-hover:border-[#B89A4A]/50 group-hover:bg-[#EEE7D8] transition-all duration-300 shrink-0 shadow-sm">
                   <span className="text-sm">🌐</span>
                 </div>
                 <a 
                   href="https://www.suratchagaurinandan.com" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="group-hover:text-goldLight transition-colors font-mono text-xs tracking-tight"
+                  className="group-hover:text-[#B89A4A] transition-colors font-mono text-xs tracking-tight"
                 >
                   www.suratchagaurinandan.com
                 </a>
@@ -338,7 +338,7 @@ function Footer() {
 
             {/* Social Media Section with Large Glass Circular Icons */}
             <div className="pt-2 w-full flex flex-col items-center md:items-start">
-              <p className="text-[11px] uppercase tracking-[0.25em] text-amber-200/80 font-medium mb-3.5">
+              <p className="text-[11px] uppercase tracking-[0.25em] text-[#3F3528] font-bold mb-3.5">
                 Follow Us On Social Media
               </p>
               <div className="flex items-center justify-center md:justify-start gap-4">
@@ -349,7 +349,7 @@ function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`Follow us on ${social.name}`}
-                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-neutral-900/90 via-neutral-950/80 to-black/90 border border-goldBase/35 backdrop-blur-xl flex items-center justify-center text-amber-300 shadow-[0_6px_20px_rgba(0,0,0,0.6)] hover:text-black hover:bg-gradient-to-tr hover:from-amber-500 hover:via-yellow-400 hover:to-amber-200 hover:border-goldBase hover:shadow-[0_0_35px_rgba(212,175,55,0.7)] hover:scale-110 hover:-translate-y-1.5 transition-all duration-300 ease-out"
+                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#FFFDF7] border border-[#B89A4A]/30 backdrop-blur-xl flex items-center justify-center text-[#8F7430] shadow-[0_4px_15px_rgba(63,53,40,0.05)] hover:text-[#3F3528] hover:bg-gradient-to-tr hover:from-[#D8BD72] hover:to-[#B89A4A] hover:border-[#B89A4A] hover:shadow-[0_4px_20px_rgba(184,154,74,0.25)] hover:scale-110 hover:-translate-y-1.5 transition-all duration-300 ease-out"
                   >
                     {social.icon}
                   </a>
@@ -364,26 +364,26 @@ function Footer() {
         {/* BOTTOM SECTION: FULL WIDTH DIVIDER & COPYRIGHT */}
         <div ref={bottomRef} className="mt-16 pt-8 relative">
           {/* Full Width Thin Luxury Golden Line Divider */}
-          <div className="relative w-full h-[1px] bg-gradient-to-r from-transparent via-goldBase/50 to-transparent mb-8">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black border border-goldBase/40 flex items-center justify-center text-[10px] text-goldBase shadow-[0_0_12px_rgba(212,175,55,0.4)]">
+          <div className="relative w-full h-[1px] bg-gradient-to-r from-transparent via-[#B89A4A]/25 to-transparent mb-8">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#FFFDF7] border border-[#B89A4A]/30 flex items-center justify-center text-[10px] text-[#8F7430] shadow-[0_2px_8px_rgba(63,53,40,0.05)]">
               🕉️
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-center text-xs text-neutral-400 font-light tracking-wide">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-center text-xs text-[#776B5B] font-light tracking-wide">
             <div>
               &copy; 2026 Surat Cha Gaurinandan Ganesh Mahotsav. All Rights Reserved.
             </div>
 
-            <div className="text-amber-200/80">
+            <div className="text-[#776B5B]">
               Designed &amp; Developed by{' '}
               <a
-                href="https://biz499.com"
+                href="https://suratchagaurinandan.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-semibold text-goldBase hover:text-goldLight hover:underline transition-colors drop-shadow-[0_0_8px_rgba(212,175,55,0.3)]"
+                className="font-medium text-[#B89A4A] hover:text-[#3F3528] underline underline-offset-4 decoration-[#B89A4A]/30 hover:decoration-[#3F3528] transition-colors"
               >
-                Biz499 Marketing Website &App
+                Surat Cha Gaurinandan Mahotsav Trust
               </a>
             </div>
           </div>

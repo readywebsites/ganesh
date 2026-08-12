@@ -43,11 +43,11 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-amber-500/10 via-zinc-900 to-zinc-900 border border-amber-500/20 rounded-2xl p-6 relative overflow-hidden">
-        <h1 className="text-2xl font-bold text-amber-400 font-heading tracking-wide">
+      <div className="bg-[#FFFDF7] border border-[#B89A4A]/30 rounded-2xl p-6 relative overflow-hidden shadow-sm">
+        <h1 className="text-2xl font-bold text-[#8F7430] font-heading tracking-wide">
           Jay Ganesha! Welcome to Mahotsav Control Panel
         </h1>
-        <p className="text-xs text-zinc-400 mt-1 max-w-2xl">
+        <p className="text-xs text-[#776B5B] mt-1 max-w-2xl">
           Real-time oversight of Surat Cha Gaurinandan Ganesh Mahotsav membership passes, pilgrim queries, devotions, and media streams.
         </p>
       </div>
@@ -57,13 +57,13 @@ export default function AdminDashboard() {
         {statCards.map((card, idx) => (
           <div
             key={idx}
-            className={`bg-gradient-to-br ${card.color} bg-zinc-900 border ${card.border} p-5 rounded-2xl flex items-center justify-between shadow-lg`}
+            className={`bg-[#FFFDF7] border border-[#B89A4A]/30 p-5 rounded-2xl flex items-center justify-between shadow-sm`}
           >
             <div>
-              <p className="text-xs text-zinc-400 uppercase tracking-wider font-semibold">{card.title}</p>
-              <h3 className="text-2xl font-bold text-zinc-100 mt-1">{card.count}</h3>
+              <p className="text-xs text-[#776B5B] uppercase tracking-wider font-semibold">{card.title}</p>
+              <h3 className="text-2xl font-bold text-[#3F3528] mt-1">{card.count}</h3>
             </div>
-            <span className="text-3xl p-3 bg-zinc-950/60 rounded-xl border border-zinc-800">{card.icon}</span>
+            <span className="text-3xl p-3 bg-[#FAF7EF] rounded-xl border border-[#B89A4A]/25">{card.icon}</span>
           </div>
         ))}
       </div>
@@ -71,47 +71,47 @@ export default function AdminDashboard() {
       {/* Chart & Activity Feed */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Donation Trends Chart */}
-        <div className="lg:col-span-2 bg-zinc-900 border border-zinc-800 p-6 rounded-2xl">
+        <div className="lg:col-span-2 bg-[#FFFDF7] border border-[#B89A4A]/30 p-6 rounded-2xl">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-bold text-amber-400">Monthly Donation Contributions (₹)</h3>
-            <span className="text-xs text-zinc-500 font-mono">Live Analytics</span>
+            <h3 className="text-base font-bold text-[#8F7430]">Monthly Donation Contributions (₹)</h3>
+            <span className="text-xs text-[#9A8D78] font-mono">Live Analytics</span>
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#B89A4A" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="#B89A4A" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                <XAxis dataKey="month" stroke="#71717a" fontSize={12} />
-                <YAxis stroke="#71717a" fontSize={12} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(184,154,74,0.2)" />
+                <XAxis dataKey="month" stroke="#776B5B" fontSize={12} />
+                <YAxis stroke="#776B5B" fontSize={12} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#18181b', borderColor: '#3f3f46', borderRadius: '8px', color: '#fff' }}
+                  contentStyle={{ backgroundColor: '#FFFDF7', borderColor: '#B89A4A', borderRadius: '8px', color: '#3F3528' }}
                 />
-                <Area type="monotone" dataKey="amount" stroke="#f59e0b" strokeWidth={2} fillOpacity={1} fill="url(#colorAmount)" />
+                <Area type="monotone" dataKey="amount" stroke="#B89A4A" strokeWidth={2} fillOpacity={1} fill="url(#colorAmount)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Latest Activity Feed */}
-        <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl flex flex-col">
-          <h3 className="text-base font-bold text-amber-400 mb-4">Latest Activity Feed</h3>
+        <div className="bg-[#FFFDF7] border border-[#B89A4A]/30 p-6 rounded-2xl flex flex-col">
+          <h3 className="text-base font-bold text-[#8F7430] mb-4">Latest Activity Feed</h3>
           <div className="flex-1 space-y-4 overflow-y-auto max-h-72 text-xs">
             {activities.length === 0 ? (
-              <p className="text-zinc-500 text-center py-6">No recent activity recorded.</p>
+              <p className="text-[#9A8D78] text-center py-6">No recent activity recorded.</p>
             ) : (
               activities.map((act) => (
-                <div key={act.id} className="p-3 bg-zinc-950/70 border border-zinc-800/80 rounded-xl flex items-start space-x-3">
+                <div key={act.id} className="p-3 bg-[#FAF7EF] border border-[#B89A4A]/20 rounded-xl flex items-start space-x-3">
                   <span className="text-base mt-0.5">
                     {act.type === 'Member' ? '👤' : act.type === 'Donation' ? '💰' : '📩'}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-zinc-200 leading-snug">{act.text}</p>
-                    <span className="text-[10px] text-zinc-500 mt-1 block">
+                    <p className="text-[#3F3528] leading-snug">{act.text}</p>
+                    <span className="text-[10px] text-[#776B5B] mt-1 block">
                       {new Date(act.time).toLocaleString()}
                     </span>
                   </div>

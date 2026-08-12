@@ -314,25 +314,25 @@ Ganpati Bappa Morya 🙏`;
   }
 
   return (
-    <section id="aarti" ref={sectionRef} className="relative py-28 bg-black text-white overflow-hidden border-t border-amber-500/10">
+    <section id="aarti" ref={sectionRef} className="relative py-28 bg-[#F7F3EA] text-[#3F3528] overflow-hidden border-t border-[#B89A4A]/15">
       {/* Background Luxury Ambient Glows */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-amber-500/10 rounded-full blur-[160px] pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-[500px] h-[500px] bg-yellow-600/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-[#B89A4A]/10 rounded-full blur-[160px] pointer-events-none" />
+      <div className="absolute bottom-10 right-10 w-[500px] h-[500px] bg-[#C99B45]/10 rounded-full blur-[140px] pointer-events-none" />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs uppercase tracking-widest font-semibold backdrop-blur-md shadow-[0_0_20px_rgba(212,175,55,0.2)]">
+          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#B89A4A]/10 border border-[#B89A4A]/30 text-[#8F7430] text-xs uppercase tracking-widest font-semibold backdrop-blur-md shadow-[0_4px_15px_rgba(184,154,74,0.15)]">
             <span>🏵️</span> Ganesh Mahotsav 2026 • VIP Aarti Portal
           </div>
           
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-500 font-heading">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#3F3528] via-[#8F7430] to-[#B89A4A] font-heading">
             Exclusive Aarti Pass Booking
           </h2>
           
-          <p className="text-zinc-400 text-sm md:text-base leading-relaxed max-w-2xl mx-auto">
-            Experience the divine blessings of <strong className="text-amber-300">Surat Cha Gaurinandan</strong>. Select your sacred date from the luxury September calendar below.
+          <p className="text-[#776B5B] text-sm md:text-base leading-relaxed max-w-2xl mx-auto">
+            Experience the divine blessings of <strong className="text-[#8F7430]">Surat Cha Gaurinandan</strong>. Select your sacred date from the luxury September calendar below.
           </p>
         </div>
 
@@ -342,39 +342,39 @@ Ganpati Bappa Morya 🙏`;
         <div className="mb-16">
           
           {/* Calendar Header Card */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8 bg-zinc-950/80 border border-amber-500/30 backdrop-blur-xl p-6 rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8 bg-[#FFFDF7]/85 border border-[#B89A4A]/30 backdrop-blur-xl p-6 rounded-3xl shadow-[0_10px_30px_rgba(63,53,40,0.08)]">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-400 text-2xl shadow-[0_0_15px_rgba(212,175,55,0.3)]">
+              <div className="w-12 h-12 rounded-2xl bg-[#B89A4A]/15 border border-[#B89A4A]/40 flex items-center justify-center text-[#8F7430] text-2xl shadow-[0_0_15px_rgba(184,154,74,0.2)]">
                 📅
               </div>
               <div>
-                <h3 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-500 font-heading tracking-wide">
+                <h3 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#3F3528] via-[#8F7430] to-[#B89A4A] font-heading tracking-wide">
                   September 2026
                 </h3>
-                <p className="text-xs text-amber-400/80 font-medium tracking-wider uppercase">
+                <p className="text-xs text-[#8F7430]/90 font-medium tracking-wider uppercase">
                   Selectable Range: 14 Sept – 25 Sept 2026
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-4 text-xs font-semibold">
-              <div className="flex items-center gap-2 text-zinc-300">
-                <span className="w-3 h-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 shadow-[0_0_10px_rgba(212,175,55,0.6)]" />
+              <div className="flex items-center gap-2 text-[#3F3528]">
+                <span className="w-3 h-3 rounded-full bg-gradient-to-r from-[#B89A4A] to-[#8F7430] shadow-[0_0_10px_rgba(184,154,74,0.4)]" />
                 <span>Selected</span>
               </div>
-              <div className="flex items-center gap-2 text-amber-300">
-                <span className="w-3 h-3 rounded-full bg-amber-950 border border-amber-500/50" />
+              <div className="flex items-center gap-2 text-[#8F7430]">
+                <span className="w-3 h-3 rounded-full bg-[#EEE7D8] border border-[#B89A4A]/50" />
                 <span>Bookable</span>
               </div>
-              <div className="flex items-center gap-2 text-zinc-600">
-                <span className="w-3 h-3 rounded-full bg-zinc-900 border border-zinc-800 opacity-40" />
+              <div className="flex items-center gap-2 text-[#9A8D78]">
+                <span className="w-3 h-3 rounded-full bg-[#EEE7D8]/50 border border-[#B89A4A]/20 opacity-40" />
                 <span>Unavailable</span>
               </div>
             </div>
           </div>
 
           {/* Calendar Container */}
-          <div className="bg-zinc-950/90 border border-amber-500/20 backdrop-blur-2xl rounded-3xl p-4 sm:p-6 md:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.9)] max-w-4xl mx-auto overflow-x-auto">
+          <div className="bg-[#FFFDF7]/90 border border-[#B89A4A]/25 backdrop-blur-2xl rounded-3xl p-4 sm:p-6 md:p-8 shadow-[0_20px_60px_rgba(63,53,40,0.08)] max-w-4xl mx-auto overflow-x-auto">
             
             {/* Days of Week Header */}
             <div className="grid grid-cols-7 gap-2 sm:gap-3 md:gap-4 mb-4 text-center justify-items-center">
@@ -406,24 +406,24 @@ Ganpati Bappa Morya 🙏`;
                     onClick={() => item.isSelectable && setSelectedDate(item.dateStr)}
                     className={`w-[60px] h-[60px] sm:w-[80px] sm:h-[80px] md:w-[100px] md:h-[100px] rounded-2xl flex flex-col items-center justify-center relative transition-all duration-300 group overflow-hidden ${
                       !item.isSelectable
-                        ? 'bg-zinc-950/40 border border-zinc-900/60 text-zinc-700 opacity-25 cursor-not-allowed pointer-events-none'
+                        ? 'bg-[#EEE7D8]/40 border border-[#B89A4A]/15 text-[#9A8D78] opacity-30 cursor-not-allowed pointer-events-none'
                         : isSelected
-                        ? 'bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 text-black border-2 border-amber-300 shadow-[0_0_35px_rgba(212,175,55,0.7)] scale-105 sm:scale-110 font-bold z-10'
+                        ? 'bg-gradient-to-br from-[#B89A4A] via-[#D8BD72] to-[#C99B45] text-[#3F3528] border-2 border-[#8F7430] shadow-[0_4px_20px_rgba(184,154,74,0.35)] scale-105 sm:scale-110 font-bold z-10'
                         : item.isFestival
-                        ? 'bg-gradient-to-b from-amber-950/40 to-black border-2 border-amber-500/60 text-amber-200 shadow-[0_8px_30px_rgba(0,0,0,0.8)] hover:border-amber-400 hover:scale-105 hover:shadow-[0_0_25px_rgba(212,175,55,0.5)] cursor-pointer'
-                        : 'bg-black/70 backdrop-blur-xl border border-amber-500/30 text-amber-100/90 shadow-[0_8px_25px_rgba(0,0,0,0.7)] hover:border-amber-400 hover:scale-105 hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] cursor-pointer'
+                        ? 'bg-gradient-to-b from-[#FAF7EF] to-[#EEE7D8] border-2 border-[#B89A4A]/60 text-[#8F7430] shadow-[0_4px_15px_rgba(63,53,40,0.06)] hover:border-[#8F7430] hover:scale-105 hover:shadow-[0_4px_20px_rgba(184,154,74,0.25)] cursor-pointer'
+                        : 'bg-[#FFFDF7]/90 backdrop-blur-xl border border-[#B89A4A]/30 text-[#3F3528] shadow-[0_4px_15px_rgba(63,53,40,0.06)] hover:border-[#8F7430] hover:scale-105 hover:shadow-[0_4px_20px_rgba(184,154,74,0.25)] cursor-pointer'
                     }`}
                   >
                     {/* Top Day Name */}
                     <span className={`text-[9px] sm:text-[10px] uppercase font-bold tracking-wider mb-0.5 ${
-                      isSelected ? 'text-black/80' : !item.isSelectable ? 'text-zinc-800' : 'text-amber-400/80'
+                      isSelected ? 'text-[#3F3528]' : !item.isSelectable ? 'text-[#9A8D78]' : 'text-[#8F7430]'
                     }`}>
                       {item.dayName}
                     </span>
 
                     {/* Central Large Day Number */}
                     <span className={`text-lg sm:text-2xl md:text-3xl font-black font-heading leading-none ${
-                      isSelected ? 'text-black' : !item.isSelectable ? 'text-zinc-700' : 'text-white'
+                      isSelected ? 'text-[#3F3528]' : !item.isSelectable ? 'text-[#9A8D78]' : 'text-[#3F3528]'
                     }`}>
                       {item.dayNum}
                     </span>
@@ -432,8 +432,8 @@ Ganpati Bappa Morya 🙏`;
                     {item.isFestival && (
                       <div className={`mt-1 text-[8px] sm:text-[9px] font-extrabold px-1.5 py-0.5 rounded-full tracking-tighter truncate max-w-[90%] ${
                         isSelected
-                          ? 'bg-black text-amber-300 border border-amber-400/50'
-                          : 'bg-amber-500/25 text-amber-300 border border-amber-500/40 shadow-[0_0_10px_rgba(212,175,55,0.3)]'
+                          ? 'bg-[#FAF7EF] text-[#8F7430] border border-[#B89A4A]/50'
+                          : 'bg-[#B89A4A]/20 text-[#8F7430] border border-[#B89A4A]/40 shadow-[0_0_10px_rgba(184,154,74,0.2)]'
                       }`}>
                         ✨ {item.festivalName}
                       </div>
@@ -447,59 +447,59 @@ Ganpati Bappa Morya 🙏`;
           {/* ========================================================================= */}
           {/* BOOKING INFO CARD (Apple Luxury Card) */}
           {/* ========================================================================= */}
-          <div className="mt-12 bg-zinc-950/80 border border-amber-500/30 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 shadow-[0_15px_50px_rgba(0,0,0,0.8)] relative overflow-hidden group hover:border-amber-500/50 transition-all duration-500">
-            <div className="absolute -top-24 -right-24 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="mt-12 bg-[#FFFDF7]/85 border border-[#B89A4A]/30 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 shadow-[0_15px_50px_rgba(63,53,40,0.08)] relative overflow-hidden group hover:border-[#B89A4A]/50 transition-all duration-500">
+            <div className="absolute -top-24 -right-24 w-72 h-72 bg-[#B89A4A]/10 rounded-full blur-3xl pointer-events-none" />
             
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 border-b border-amber-500/20 pb-6 mb-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 border-b border-[#B89A4A]/20 pb-6 mb-6">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-3xl shadow-[0_0_20px_rgba(212,175,55,0.2)] text-amber-300">
+                <div className="w-14 h-14 rounded-2xl bg-[#B89A4A]/15 border border-[#B89A4A]/40 flex items-center justify-center text-3xl shadow-[0_0_20px_rgba(184,154,74,0.15)] text-[#8F7430]">
                   🙏
                 </div>
                 <div>
-                  <h3 className="text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-500 font-heading">
+                  <h3 className="text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#3F3528] via-[#8F7430] to-[#B89A4A] font-heading">
                     Aarti Booking Information
                   </h3>
-                  <p className="text-xs text-amber-400/80 font-semibold tracking-widest uppercase mt-0.5">
+                  <p className="text-xs text-[#8F7430]/80 font-semibold tracking-widest uppercase mt-0.5">
                     Surat Cha Gaurinandan Mahotsav 2026
                   </p>
                 </div>
               </div>
               
-              <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-amber-500/20 border border-amber-500/40 text-amber-300 font-extrabold text-sm shadow-[0_0_20px_rgba(212,175,55,0.2)]">
+              <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-[#B89A4A]/15 via-[#D8BD72]/20 to-[#B89A4A]/15 border border-[#B89A4A]/40 text-[#8F7430] font-extrabold text-sm shadow-[0_0_20px_rgba(184,154,74,0.15)]">
                 <span>✨</span> Ganpati Bappa Morya <span>✨</span>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="p-4 rounded-2xl bg-black/60 border border-zinc-800/80 flex items-center gap-3.5">
+              <div className="p-4 rounded-2xl bg-[#FAF7EF]/90 border border-[#B89A4A]/25 flex items-center gap-3.5">
                 <span className="text-3xl">📅</span>
                 <div>
-                  <div className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Booking Dates</div>
-                  <div className="text-xs sm:text-sm font-bold text-amber-200">14 Sept – 25 Sept 2026</div>
+                  <div className="text-[10px] uppercase font-bold text-[#776B5B] tracking-wider">Booking Dates</div>
+                  <div className="text-xs sm:text-sm font-bold text-[#8F7430]">14 Sept – 25 Sept 2026</div>
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-black/60 border border-zinc-800/80 flex items-center gap-3.5">
+              <div className="p-4 rounded-2xl bg-[#FAF7EF]/90 border border-[#B89A4A]/25 flex items-center gap-3.5">
                 <span className="text-3xl">🌅</span>
                 <div>
-                  <div className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Morning Aarti</div>
-                  <div className="text-sm font-black text-amber-400">09:00 AM</div>
+                  <div className="text-[10px] uppercase font-bold text-[#776B5B] tracking-wider">Morning Aarti</div>
+                  <div className="text-sm font-black text-[#8F7430]">09:00 AM</div>
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-black/60 border border-zinc-800/80 flex items-center gap-3.5">
+              <div className="p-4 rounded-2xl bg-[#FAF7EF]/90 border border-[#B89A4A]/25 flex items-center gap-3.5">
                 <span className="text-3xl">🌙</span>
                 <div>
-                  <div className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Night Aarti</div>
-                  <div className="text-sm font-black text-amber-400">08:00 PM</div>
+                  <div className="text-[10px] uppercase font-bold text-[#776B5B] tracking-wider">Night Aarti</div>
+                  <div className="text-sm font-black text-[#8F7430]">08:00 PM</div>
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-black/60 border border-zinc-800/80 flex items-center gap-3.5">
+              <div className="p-4 rounded-2xl bg-[#FAF7EF]/90 border border-[#B89A4A]/25 flex items-center gap-3.5">
                 <span className="text-3xl">👥</span>
                 <div>
-                  <div className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Max Capacity</div>
-                  <div className="text-sm font-black text-amber-300">15 Bookings / Slot</div>
+                  <div className="text-[10px] uppercase font-bold text-[#776B5B] tracking-wider">Max Capacity</div>
+                  <div className="text-sm font-black text-[#8F7430]">15 Bookings / Slot</div>
                 </div>
               </div>
             </div>
@@ -613,18 +613,18 @@ Ganpati Bappa Morya 🙏`;
                     </div>
 
                     {/* Seat Stats Grid */}
-                    <div className="grid grid-cols-3 gap-4 my-6 p-5 rounded-2xl bg-black/80 border border-zinc-800/90 text-center">
+                    <div className="grid grid-cols-3 gap-4 my-6 p-5 rounded-2xl bg-[#FAF7EF]/90 border border-[#B89A4A]/25 text-center">
                       <div>
-                        <div className="text-[11px] text-zinc-500 uppercase font-bold tracking-wider">Booked</div>
-                        <div className="text-xl sm:text-2xl font-bold text-zinc-200 mt-1">{morning.booked}</div>
+                        <div className="text-[11px] text-[#776B5B] uppercase font-bold tracking-wider">Booked</div>
+                        <div className="text-xl sm:text-2xl font-bold text-[#3F3528] mt-1">{morning.booked}</div>
                       </div>
-                      <div className="border-x border-zinc-800">
-                        <div className="text-[11px] text-amber-400 uppercase font-extrabold tracking-wider">Seats Left</div>
-                        <div className="text-2xl sm:text-3xl font-black text-amber-400 mt-0.5">{morning.remaining}</div>
+                      <div className="border-x border-[#B89A4A]/20">
+                        <div className="text-[11px] text-[#8F7430] uppercase font-extrabold tracking-wider">Seats Left</div>
+                        <div className="text-2xl sm:text-3xl font-black text-[#8F7430] mt-0.5">{morning.remaining}</div>
                       </div>
                       <div>
-                        <div className="text-[11px] text-zinc-500 uppercase font-bold tracking-wider">Maximum</div>
-                        <div className="text-xl sm:text-2xl font-bold text-zinc-400 mt-1">{morning.capacity}</div>
+                        <div className="text-[11px] text-[#776B5B] uppercase font-bold tracking-wider">Maximum</div>
+                        <div className="text-xl sm:text-2xl font-bold text-[#776B5B] mt-1">{morning.capacity}</div>
                       </div>
                     </div>
                   </div>
@@ -635,8 +635,8 @@ Ganpati Bappa Morya 🙏`;
                     onClick={() => handleOpenBooking('Morning Aarti')}
                     className={`w-full py-5 rounded-2xl font-extrabold text-base sm:text-lg transition-all duration-300 flex items-center justify-center gap-3 mt-6 ${
                       isFull || isClosed
-                        ? 'bg-zinc-900 text-zinc-600 cursor-not-allowed border border-zinc-800'
-                        : 'bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-black hover:brightness-110 shadow-[0_0_35px_rgba(212,175,55,0.4)] hover:shadow-[0_0_45px_rgba(212,175,55,0.6)] active:scale-[0.98]'
+                        ? 'bg-[#EEE7D8] text-[#9A8D78] cursor-not-allowed border border-[#B89A4A]/20'
+                        : 'bg-gradient-to-r from-[#B89A4A] via-[#D8BD72] to-[#C99B45] text-[#3F3528] hover:brightness-105 shadow-[0_4px_20px_rgba(184,154,74,0.25)] hover:shadow-[0_6px_30px_rgba(184,154,74,0.4)] active:scale-[0.98]'
                     }`}
                   >
                     {isFull ? (
@@ -670,39 +670,39 @@ Ganpati Bappa Morya 🙏`;
               const pctBooked = Math.min(100, Math.round((night.booked / night.capacity) * 100));
 
               return (
-                <div className="relative group rounded-3xl p-8 sm:p-10 md:p-12 bg-zinc-950/90 border border-amber-500/30 backdrop-blur-2xl transition-all duration-500 hover:border-amber-500/60 hover:shadow-[0_15px_60px_rgba(212,175,55,0.2)] flex flex-col justify-between overflow-hidden hover:scale-[1.02]">
-                  <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-amber-500/20 transition-all duration-500" />
+                <div className="relative group rounded-3xl p-8 sm:p-10 md:p-12 bg-[#FFFDF7]/90 border border-[#B89A4A]/30 backdrop-blur-2xl transition-all duration-500 hover:border-[#B89A4A]/60 hover:shadow-[0_15px_60px_rgba(184,154,74,0.15)] flex flex-col justify-between overflow-hidden hover:scale-[1.02]">
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-[#B89A4A]/10 rounded-full blur-3xl pointer-events-none group-hover:bg-[#B89A4A]/20 transition-all duration-500" />
 
                   <div>
                     {/* Header Row */}
                     <div className="flex items-start justify-between mb-8">
                       <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-2xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-4xl shadow-[0_0_25px_rgba(212,175,55,0.3)]">
+                        <div className="w-16 h-16 rounded-2xl bg-[#B89A4A]/15 border border-[#B89A4A]/40 flex items-center justify-center text-4xl shadow-[0_0_25px_rgba(184,154,74,0.2)]">
                           🌙
                         </div>
                         <div>
-                          <div className="text-xs font-extrabold uppercase tracking-widest text-amber-400 mb-1">
+                          <div className="text-xs font-extrabold uppercase tracking-widest text-[#8F7430] mb-1">
                             Evening Celebration
                           </div>
-                          <h4 className="text-3xl sm:text-4xl font-black text-white font-heading">Night Aarti</h4>
+                          <h4 className="text-3xl sm:text-4xl font-black text-[#3F3528] font-heading">Night Aarti</h4>
                         </div>
                       </div>
 
                       {/* Status Badge */}
                       <div>
                         {isFull ? (
-                          <span className="px-4 py-2 rounded-full text-xs font-black bg-red-500/20 text-red-400 border border-red-500/50 flex items-center gap-2 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
+                          <span className="px-4 py-2 rounded-full text-xs font-black bg-red-500/10 text-red-600 border border-red-500/30 flex items-center gap-2 shadow-sm">
                             <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
                             🔴 FULLY BOOKED
                           </span>
                         ) : isAlmostFull ? (
-                          <span className="px-4 py-2 rounded-full text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-500/50 flex items-center gap-2 shadow-[0_0_15px_rgba(245,158,11,0.3)]">
-                            <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
+                          <span className="px-4 py-2 rounded-full text-xs font-black bg-[#C99B45]/15 text-[#B88635] border border-[#C99B45]/40 flex items-center gap-2 shadow-sm">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#C99B45] animate-pulse" />
                             ⚠️ Few Seats Left
                           </span>
                         ) : (
-                          <span className="px-4 py-2 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 flex items-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                          <span className="px-4 py-2 rounded-full text-xs font-black bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 flex items-center gap-2 shadow-sm">
+                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                             🟢 AVAILABLE
                           </span>
                         )}
@@ -711,8 +711,8 @@ Ganpati Bappa Morya 🙏`;
 
                     {/* Time Display */}
                     <div className="mb-8">
-                      <div className="text-xs uppercase font-bold text-zinc-500 tracking-wider mb-1">Aarti Time</div>
-                      <div className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-400 font-heading">
+                      <div className="text-xs uppercase font-bold text-[#776B5B] tracking-wider mb-1">Aarti Time</div>
+                      <div className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#3F3528] via-[#8F7430] to-[#B89A4A] font-heading">
                         08:00 PM
                       </div>
                     </div>
@@ -720,30 +720,30 @@ Ganpati Bappa Morya 🙏`;
                     {/* Capacity Progress Bar */}
                     <div className="space-y-2 mb-8">
                       <div className="flex justify-between text-xs font-bold">
-                        <span className="text-zinc-400">Capacity Occupancy</span>
-                        <span className="text-amber-400">{pctBooked}% Booked</span>
+                        <span className="text-[#776B5B]">Capacity Occupancy</span>
+                        <span className="text-[#8F7430]">{pctBooked}% Booked</span>
                       </div>
-                      <div className="w-full h-3 rounded-full bg-zinc-900 border border-zinc-800 overflow-hidden p-0.5">
+                      <div className="w-full h-3 rounded-full bg-[#EEE7D8] border border-[#B89A4A]/20 overflow-hidden p-0.5">
                         <div
-                          className="h-full rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all duration-500 shadow-[0_0_12px_rgba(212,175,55,0.6)]"
+                          className="h-full rounded-full bg-gradient-to-r from-[#B89A4A] to-[#D8BD72] transition-all duration-500 shadow-[0_0_12px_rgba(184,154,74,0.4)]"
                           style={{ width: `${pctBooked}%` }}
                         />
                       </div>
                     </div>
 
                     {/* Seat Stats Grid */}
-                    <div className="grid grid-cols-3 gap-4 my-6 p-5 rounded-2xl bg-black/80 border border-zinc-800/90 text-center">
+                    <div className="grid grid-cols-3 gap-4 my-6 p-5 rounded-2xl bg-[#FAF7EF]/90 border border-[#B89A4A]/25 text-center">
                       <div>
-                        <div className="text-[11px] text-zinc-500 uppercase font-bold tracking-wider">Booked</div>
-                        <div className="text-xl sm:text-2xl font-bold text-zinc-200 mt-1">{night.booked}</div>
+                        <div className="text-[11px] text-[#776B5B] uppercase font-bold tracking-wider">Booked</div>
+                        <div className="text-xl sm:text-2xl font-bold text-[#3F3528] mt-1">{night.booked}</div>
                       </div>
-                      <div className="border-x border-zinc-800">
-                        <div className="text-[11px] text-amber-400 uppercase font-extrabold tracking-wider">Seats Left</div>
-                        <div className="text-2xl sm:text-3xl font-black text-amber-400 mt-0.5">{night.remaining}</div>
+                      <div className="border-x border-[#B89A4A]/20">
+                        <div className="text-[11px] text-[#8F7430] uppercase font-extrabold tracking-wider">Seats Left</div>
+                        <div className="text-2xl sm:text-3xl font-black text-[#8F7430] mt-0.5">{night.remaining}</div>
                       </div>
                       <div>
-                        <div className="text-[11px] text-zinc-500 uppercase font-bold tracking-wider">Maximum</div>
-                        <div className="text-xl sm:text-2xl font-bold text-zinc-400 mt-1">{night.capacity}</div>
+                        <div className="text-[11px] text-[#776B5B] uppercase font-bold tracking-wider">Maximum</div>
+                        <div className="text-xl sm:text-2xl font-bold text-[#776B5B] mt-1">{night.capacity}</div>
                       </div>
                     </div>
                   </div>
@@ -754,8 +754,8 @@ Ganpati Bappa Morya 🙏`;
                     onClick={() => handleOpenBooking('Night Aarti')}
                     className={`w-full py-5 rounded-2xl font-extrabold text-base sm:text-lg transition-all duration-300 flex items-center justify-center gap-3 mt-6 ${
                       isFull || isClosed
-                        ? 'bg-zinc-900 text-zinc-600 cursor-not-allowed border border-zinc-800'
-                        : 'bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-black hover:brightness-110 shadow-[0_0_35px_rgba(212,175,55,0.4)] hover:shadow-[0_0_45px_rgba(212,175,55,0.6)] active:scale-[0.98]'
+                        ? 'bg-[#EEE7D8] text-[#9A8D78] cursor-not-allowed border border-[#B89A4A]/20'
+                        : 'bg-gradient-to-r from-[#B89A4A] via-[#D8BD72] to-[#C99B45] text-[#3F3528] hover:brightness-105 shadow-[0_4px_20px_rgba(184,154,74,0.25)] hover:shadow-[0_6px_30px_rgba(184,154,74,0.4)] active:scale-[0.98]'
                     }`}
                   >
                     {isFull ? (
@@ -779,13 +779,13 @@ Ganpati Bappa Morya 🙏`;
 
       {/* APPLE-STYLE GLASS BOOKING MODAL */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-in fade-in duration-300 overflow-y-auto">
-          <div className="relative w-full max-w-xl bg-zinc-950/90 border border-amber-500/30 rounded-3xl p-6 sm:p-8 shadow-[0_25px_60px_rgba(0,0,0,0.9)] my-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#F7F3EA]/90 backdrop-blur-xl animate-in fade-in duration-300 overflow-y-auto">
+          <div className="relative w-full max-w-xl bg-[#FFFDF7] border border-[#B89A4A]/30 rounded-3xl p-6 sm:p-8 shadow-[0_25px_60px_rgba(63,53,40,0.15)] my-8">
             
             {/* Close Button */}
             <button
               onClick={() => setModalOpen(false)}
-              className="absolute top-5 right-5 text-zinc-400 hover:text-white bg-zinc-900 border border-zinc-800 w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+              className="absolute top-5 right-5 text-[#776B5B] hover:text-[#3F3528] bg-[#FAF7EF] border border-[#B89A4A]/25 w-9 h-9 rounded-full flex items-center justify-center transition-colors"
             >
               ✕
             </button>
@@ -793,26 +793,26 @@ Ganpati Bappa Morya 🙏`;
             {!successBooking ? (
               <>
                 <div className="mb-6">
-                  <span className="text-xs font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#8F7430] bg-[#B89A4A]/10 px-3 py-1 rounded-full border border-[#B89A4A]/20">
                     {selectedSlotName} Pass
                   </span>
-                  <h3 className="text-2xl font-extrabold text-white mt-2 font-heading">
+                  <h3 className="text-2xl font-extrabold text-[#3F3528] mt-2 font-heading">
                     Complete Your Aarti Booking
                   </h3>
-                  <p className="text-xs text-zinc-400 mt-1">
-                    Date: <strong className="text-amber-300">{selectedDate}</strong> • Slot: <strong className="text-amber-300">{selectedSlotName} ({selectedSlotName.includes('Morning') ? '09:00 AM' : '08:00 PM'})</strong>
+                  <p className="text-xs text-[#776B5B] mt-1">
+                    Date: <strong className="text-[#8F7430]">{selectedDate}</strong> • Slot: <strong className="text-[#8F7430]">{selectedSlotName} ({selectedSlotName.includes('Morning') ? '09:00 AM' : '08:00 PM'})</strong>
                   </p>
                 </div>
 
                 {errorMsg && (
-                  <div className="mb-4 p-3.5 rounded-xl bg-red-950/60 border border-red-500/40 text-red-300 text-xs font-medium">
+                  <div className="mb-4 p-3.5 rounded-xl bg-red-100/80 border border-red-400 text-red-800 text-xs font-medium">
                     ⚠️ {errorMsg}
                   </div>
                 )}
 
                 <form onSubmit={handleSubmitBooking} className="space-y-4">
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-300 mb-1">Full Name *</label>
+                    <label className="block text-xs font-semibold text-[#3F3528] mb-1">Full Name *</label>
                     <input
                       type="text"
                       name="name"
@@ -820,13 +820,13 @@ Ganpati Bappa Morya 🙏`;
                       value={formData.name}
                       onChange={handleInputChange}
                       placeholder="Enter your full name"
-                      className="w-full px-4 py-3 rounded-xl bg-zinc-900/90 border border-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors text-sm"
+                      className="w-full px-4 py-3 rounded-xl bg-[#FAF7EF] border border-[#B89A4A]/30 text-[#3F3528] placeholder-[#9A8D78] focus:outline-none focus:border-[#8F7430] transition-colors text-sm"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-zinc-300 mb-1">Mobile Number *</label>
+                      <label className="block text-xs font-semibold text-[#3F3528] mb-1">Mobile Number *</label>
                       <input
                         type="tel"
                         name="mobile"
@@ -835,12 +835,12 @@ Ganpati Bappa Morya 🙏`;
                         value={formData.mobile}
                         onChange={handleInputChange}
                         placeholder="10-digit mobile"
-                        className="w-full px-4 py-3 rounded-xl bg-zinc-900/90 border border-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors text-sm"
+                        className="w-full px-4 py-3 rounded-xl bg-[#FAF7EF] border border-[#B89A4A]/30 text-[#3F3528] placeholder-[#9A8D78] focus:outline-none focus:border-[#8F7430] transition-colors text-sm"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-zinc-300 mb-1">Email Address *</label>
+                      <label className="block text-xs font-semibold text-[#3F3528] mb-1">Email Address *</label>
                       <input
                         type="email"
                         name="email"
@@ -848,14 +848,14 @@ Ganpati Bappa Morya 🙏`;
                         value={formData.email}
                         onChange={handleInputChange}
                         placeholder="name@example.com"
-                        className="w-full px-4 py-3 rounded-xl bg-zinc-900/90 border border-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors text-sm"
+                        className="w-full px-4 py-3 rounded-xl bg-[#FAF7EF] border border-[#B89A4A]/30 text-[#3F3528] placeholder-[#9A8D78] focus:outline-none focus:border-[#8F7430] transition-colors text-sm"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-zinc-300 mb-1">City *</label>
+                      <label className="block text-xs font-semibold text-[#3F3528] mb-1">City *</label>
                       <input
                         type="text"
                         name="city"
@@ -863,17 +863,17 @@ Ganpati Bappa Morya 🙏`;
                         value={formData.city}
                         onChange={handleInputChange}
                         placeholder="Your city (e.g. Surat)"
-                        className="w-full px-4 py-3 rounded-xl bg-zinc-900/90 border border-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors text-sm"
+                        className="w-full px-4 py-3 rounded-xl bg-[#FAF7EF] border border-[#B89A4A]/30 text-[#3F3528] placeholder-[#9A8D78] focus:outline-none focus:border-[#8F7430] transition-colors text-sm"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-zinc-300 mb-1">Number of Members * (1–5)</label>
+                      <label className="block text-xs font-semibold text-[#3F3528] mb-1">Number of Members * (1–5)</label>
                       <select
                         name="members"
                         value={formData.members}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl bg-zinc-900/90 border border-zinc-800 text-white focus:outline-none focus:border-amber-500 transition-colors text-sm"
+                        className="w-full px-4 py-3 rounded-xl bg-[#FAF7EF] border border-[#B89A4A]/30 text-[#3F3528] focus:outline-none focus:border-[#8F7430] transition-colors text-sm"
                       >
                         <option value="1">1 Member</option>
                         <option value="2">2 Members</option>
@@ -885,14 +885,14 @@ Ganpati Bappa Morya 🙏`;
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-300 mb-1">Special Note (Optional)</label>
+                    <label className="block text-xs font-semibold text-[#3F3528] mb-1">Special Note (Optional)</label>
                     <textarea
                       name="specialNote"
                       rows={2}
                       value={formData.specialNote}
                       onChange={handleInputChange}
                       placeholder="Any special assistance or notes..."
-                      className="w-full px-4 py-3 rounded-xl bg-zinc-900/90 border border-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors text-sm resize-none"
+                      className="w-full px-4 py-3 rounded-xl bg-[#FAF7EF] border border-[#B89A4A]/30 text-[#3F3528] placeholder-[#9A8D78] focus:outline-none focus:border-[#8F7430] transition-colors text-sm resize-none"
                     />
                   </div>
 
@@ -903,9 +903,9 @@ Ganpati Bappa Morya 🙏`;
                       name="agreeRules"
                       checked={formData.agreeRules}
                       onChange={handleInputChange}
-                      className="mt-1 accent-amber-500"
+                      className="mt-1 accent-[#B89A4A]"
                     />
-                    <label htmlFor="agreeRules" className="text-xs text-zinc-400 leading-normal cursor-pointer">
+                    <label htmlFor="agreeRules" className="text-xs text-[#776B5B] leading-normal cursor-pointer">
                       I agree to temple guidelines & rules. I will arrive 20 minutes prior to Aarti.
                     </label>
                   </div>
@@ -913,10 +913,10 @@ Ganpati Bappa Morya 🙏`;
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full py-4 rounded-2xl font-bold text-base bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-black hover:brightness-110 shadow-[0_0_25px_rgba(212,175,55,0.3)] transition-all duration-300 mt-4 flex items-center justify-center gap-2"
+                    className="w-full py-4 rounded-2xl font-bold text-base bg-gradient-to-r from-[#B89A4A] via-[#D8BD72] to-[#C99B45] text-[#3F3528] hover:brightness-105 shadow-[0_4px_20px_rgba(184,154,74,0.2)] transition-all duration-300 mt-4 flex items-center justify-center gap-2"
                   >
                     {submitting ? (
-                      <span className="inline-block w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                      <span className="inline-block w-5 h-5 border-2 border-[#3F3528] border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <>
                         <span>Confirm Aarti Booking Pass</span>
@@ -929,31 +929,31 @@ Ganpati Bappa Morya 🙏`;
             ) : (
               /* SUCCESS SCREEN */
               <div className="text-center space-y-6">
-                <div className="w-16 h-16 bg-gradient-to-tr from-amber-500 to-yellow-300 rounded-full flex items-center justify-center mx-auto text-black text-3xl font-extrabold shadow-[0_0_30px_rgba(212,175,55,0.5)] animate-bounce">
+                <div className="w-16 h-16 bg-gradient-to-tr from-[#B89A4A] to-[#D8BD72] rounded-full flex items-center justify-center mx-auto text-[#3F3528] text-3xl font-extrabold shadow-[0_4px_20px_rgba(184,154,74,0.3)] animate-bounce">
                   ✓
                 </div>
 
                 <div>
-                  <span className="px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  <span className="px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-800 border border-emerald-500/30">
                     Booking Confirmed
                   </span>
-                  <h3 className="text-2xl font-extrabold text-white mt-2 font-heading">
+                  <h3 className="text-2xl font-extrabold text-[#3F3528] mt-2 font-heading">
                     Aarti Pass Generated!
                   </h3>
-                  <p className="text-xs text-zinc-400">
+                  <p className="text-xs text-[#776B5B]">
                     Confirmation sent via WhatsApp & Email
                   </p>
                 </div>
 
                 {/* Ticket Pass Preview Card */}
-                <div className="bg-zinc-900 border border-amber-500/40 rounded-2xl p-6 text-left relative overflow-hidden">
-                  <div className="absolute top-0 right-0 px-4 py-1 bg-amber-500 text-black font-extrabold text-[10px] tracking-widest rounded-bl-xl uppercase">
+                <div className="bg-[#FAF7EF] border border-[#B89A4A]/40 rounded-2xl p-6 text-left relative overflow-hidden">
+                  <div className="absolute top-0 right-0 px-4 py-1 bg-[#B89A4A] text-[#FFFDF7] font-extrabold text-[10px] tracking-widest rounded-bl-xl uppercase">
                     VIP ACCESS PASS
                   </div>
 
                   <div className="text-center mb-4">
-                    <span className="text-[11px] text-zinc-500 uppercase tracking-widest">Booking ID</span>
-                    <div className="text-2xl font-black text-amber-400 tracking-wider font-mono">
+                    <span className="text-[11px] text-[#776B5B] uppercase tracking-widest">Booking ID</span>
+                    <div className="text-2xl font-black text-[#8F7430] tracking-wider font-mono">
                       {successBooking.bookingId}
                     </div>
                   </div>
@@ -963,33 +963,33 @@ Ganpati Bappa Morya 🙏`;
                       <img
                         src={qrCodeUrl}
                         alt="Aarti Pass QR Code"
-                        className="w-36 h-36 rounded-xl border-2 border-amber-500 p-1.5 bg-white shadow-md"
+                        className="w-36 h-36 rounded-xl border-2 border-[#B89A4A] p-1.5 bg-[#FFFDF7] shadow-md"
                       />
                     </div>
                   )}
 
-                  <div className="space-y-2 text-xs border-t border-zinc-800 pt-3">
+                  <div className="space-y-2 text-xs border-t border-[#B89A4A]/20 pt-3">
                     <div className="flex justify-between">
-                      <span className="text-zinc-500">Name:</span>
-                      <span className="font-semibold text-white">{successBooking.name}</span>
+                      <span className="text-[#776B5B]">Name:</span>
+                      <span className="font-semibold text-[#3F3528]">{successBooking.name}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-zinc-500">Date:</span>
-                      <span className="font-semibold text-amber-300">{successBooking.date}</span>
+                      <span className="text-[#776B5B]">Date:</span>
+                      <span className="font-semibold text-[#8F7430]">{successBooking.date}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-zinc-500">Slot:</span>
-                      <span className="font-semibold text-amber-300">
+                      <span className="text-[#776B5B]">Slot:</span>
+                      <span className="font-semibold text-[#8F7430]">
                         {successBooking.slot} ({successBooking.slot.includes('Morning') ? '09:00 AM' : '08:00 PM'})
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-zinc-500">Members:</span>
-                      <span className="font-semibold text-white">{successBooking.members} Person(s)</span>
+                      <span className="text-[#776B5B]">Members:</span>
+                      <span className="font-semibold text-[#3F3528]">{successBooking.members} Person(s)</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-zinc-500">Status:</span>
-                      <span className="font-bold text-emerald-400">Confirmed</span>
+                      <span className="text-[#776B5B]">Status:</span>
+                      <span className="font-bold text-emerald-700">Confirmed</span>
                     </div>
                   </div>
                 </div>
@@ -998,21 +998,21 @@ Ganpati Bappa Morya 🙏`;
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
                   <button
                     onClick={handleDownloadPDF}
-                    className="py-3 px-3 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300 hover:bg-amber-500/25 transition-all text-xs font-bold flex items-center justify-center gap-1.5"
+                    className="py-3 px-3 rounded-xl bg-[#B89A4A]/15 border border-[#B89A4A]/40 text-[#8F7430] hover:bg-[#B89A4A]/25 transition-all text-xs font-bold flex items-center justify-center gap-1.5"
                   >
                     <span>📄</span> Download PDF Pass
                   </button>
 
                   <button
                     onClick={handleDownloadQR}
-                    className="py-3 px-3 rounded-xl bg-zinc-900 border border-zinc-700 text-zinc-200 hover:bg-zinc-800 transition-all text-xs font-bold flex items-center justify-center gap-1.5"
+                    className="py-3 px-3 rounded-xl bg-[#FAF7EF] border border-[#B89A4A]/30 text-[#3F3528] hover:bg-[#EEE7D8] transition-all text-xs font-bold flex items-center justify-center gap-1.5"
                   >
                     <span>📷</span> Download QR
                   </button>
 
                   <button
                     onClick={handleOpenWhatsApp}
-                    className="py-3 px-3 rounded-xl bg-emerald-600/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-600/30 transition-all text-xs font-bold flex items-center justify-center gap-1.5"
+                    className="py-3 px-3 rounded-xl bg-emerald-600/15 border border-emerald-500/40 text-emerald-800 hover:bg-emerald-600/25 transition-all text-xs font-bold flex items-center justify-center gap-1.5"
                   >
                     <span>💬</span> WhatsApp
                   </button>
@@ -1023,7 +1023,7 @@ Ganpati Bappa Morya 🙏`;
                     setModalOpen(false);
                     setSuccessBooking(null);
                   }}
-                  className="text-xs text-zinc-500 hover:text-white underline pt-2 block mx-auto"
+                  className="text-xs text-[#776B5B] hover:text-[#3F3528] underline pt-2 block mx-auto"
                 >
                   Close Window
                 </button>

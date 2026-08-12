@@ -286,7 +286,7 @@ function Membership() {
                 </div>
 
                 {errorMsg && (
-                  <div className="p-3 mb-4 text-sm text-red-400 bg-red-950/50 border border-red-800/60 rounded-md">
+                  <div className="p-3 mb-4 text-sm text-red-800 bg-red-100/80 border border-red-300 rounded-md">
                     {errorMsg}
                   </div>
                 )}

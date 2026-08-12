@@ -169,7 +169,7 @@ export default function TempleWorldCanvas() {
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-black transition-opacity duration-700 ease-out opacity-0"
+      className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-[#F7F3EA] transition-opacity duration-700 ease-out opacity-0"
       style={{ willChange: 'opacity' }}
       aria-hidden="true"
     >
@@ -180,12 +180,12 @@ export default function TempleWorldCanvas() {
         style={{ willChange: 'transform', transform: 'translate3d(0,0,0)' }}
       />
 
-      {/* Apple Keynote Style Vignette & Atmospheric Overlays */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/20 to-black/90 pointer-events-none z-1" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,transparent_20%,rgba(5,5,5,0.82)_100%)] pointer-events-none z-1" />
+      {/* Warm Cream Vignette & Atmospheric Overlays */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#FAF7EF]/60 via-[#FAF7EF]/10 to-[#F7F3EA]/80 pointer-events-none z-1" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,transparent_20%,rgba(247,243,234,0.65)_100%)] pointer-events-none z-1" />
 
       {/* Dynamic Golden Bloom Overlay */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.12)_0%,transparent_70%)] pointer-events-none z-1 mix-blend-screen blur-3xl animate-pulse" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-[radial-gradient(ellipse_at_center,rgba(184,154,74,0.18)_0%,transparent_70%)] pointer-events-none z-1 mix-blend-multiply blur-3xl animate-pulse" />
     </div>
   );
 }

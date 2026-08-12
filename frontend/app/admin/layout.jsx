@@ -83,24 +83,24 @@ export default function AdminLayout({ children }) {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex selection:bg-amber-500 selection:text-black">
+    <div className="min-h-screen bg-[#F7F3EA] text-[#3F3528] flex selection:bg-[#D8BD72] selection:text-[#3F3528]">
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-40 w-64 bg-zinc-900 border-r border-amber-500/20 transition-transform duration-300 flex flex-col ${
+        className={`fixed top-0 bottom-0 left-0 z-40 w-64 bg-[#FFFDF7] border-r border-[#B89A4A]/25 transition-transform duration-300 flex flex-col ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
         {/* Brand header */}
-        <div className="h-16 px-6 flex items-center justify-between border-b border-zinc-800">
+        <div className="h-16 px-6 flex items-center justify-between border-b border-[#B89A4A]/20">
           <div className="flex items-center space-x-3">
             <img src="/logo/official_logo.png" alt="Logo" className="w-8 h-8 object-contain" />
-            <span className="font-bold text-sm tracking-wider text-amber-400 font-heading">
+            <span className="font-bold text-sm tracking-wider text-[#8F7430] font-heading">
               GANESH ADMIN
             </span>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="md:hidden text-zinc-400 hover:text-white"
+            className="md:hidden text-[#776B5B] hover:text-[#3F3528]"
           >
             ✕
           </button>
@@ -116,8 +116,8 @@ export default function AdminLayout({ children }) {
                 href={item.path}
                 className={`flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium transition-all ${
                   isActive
-                    ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
-                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
+                    ? 'bg-[#B89A4A]/15 text-[#8F7430] border border-[#B89A4A]/30'
+                    : 'text-[#776B5B] hover:bg-[#EEE7D8] hover:text-[#3F3528]'
                 }`}
               >
                 <span className="text-base">{item.icon}</span>
@@ -128,15 +128,15 @@ export default function AdminLayout({ children }) {
         </nav>
 
         {/* User profile & logout bottom panel */}
-        <div className="p-4 border-t border-zinc-800 bg-zinc-900/50">
+        <div className="p-4 border-t border-[#B89A4A]/20 bg-[#FAF7EF]">
           <div className="flex items-center justify-between">
             <div className="truncate">
-              <p className="text-xs font-semibold text-zinc-200 truncate">{admin?.name || 'Admin'}</p>
-              <p className="text-[10px] text-amber-400 uppercase font-mono">{admin?.role || 'Superadmin'}</p>
+              <p className="text-xs font-semibold text-[#3F3528] truncate">{admin?.name || 'Admin'}</p>
+              <p className="text-[10px] text-[#8F7430] uppercase font-mono">{admin?.role || 'Superadmin'}</p>
             </div>
             <button
               onClick={handleLogout}
-              className="p-2 text-zinc-400 hover:text-red-400 hover:bg-zinc-800 rounded-lg transition-colors"
+              className="p-2 text-[#776B5B] hover:text-red-600 hover:bg-[#EEE7D8] rounded-lg transition-colors"
               title="Sign Out"
             >
               🚪
@@ -148,15 +148,15 @@ export default function AdminLayout({ children }) {
       {/* Main Content Area */}
       <div className="flex-1 md:ml-64 flex flex-col min-w-0">
         {/* Top Navbar */}
-        <header className="h-16 bg-zinc-900/80 border-b border-zinc-800 sticky top-0 z-30 backdrop-blur-md px-6 flex items-center justify-between">
+        <header className="h-16 bg-[#FFFDF7]/90 border-b border-[#B89A4A]/20 sticky top-0 z-30 backdrop-blur-md px-6 flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="md:hidden text-zinc-400 hover:text-white text-xl"
+              className="md:hidden text-[#776B5B] hover:text-[#3F3528] text-xl"
             >
               ☰
             </button>
-            <h2 className="text-sm font-semibold text-zinc-300">
+            <h2 className="text-sm font-semibold text-[#3F3528]">
               {navItems.find((i) => i.path === pathname)?.label || 'Dashboard'}
             </h2>
           </div>
@@ -165,7 +165,7 @@ export default function AdminLayout({ children }) {
             <Link
               href="/"
               target="_blank"
-              className="text-xs text-amber-400 hover:underline flex items-center space-x-1 border border-amber-500/30 px-3 py-1.5 rounded-lg bg-amber-500/10"
+              className="text-xs text-[#8F7430] hover:underline flex items-center space-x-1 border border-[#B89A4A]/30 px-3 py-1.5 rounded-lg bg-[#B89A4A]/10"
             >
               <span>🌐 View Main Website</span>
             </Link>
@@ -173,7 +173,7 @@ export default function AdminLayout({ children }) {
         </header>
 
         {/* Page Content */}
-        <main className="p-6 flex-1 bg-zinc-950 overflow-x-hidden">{children}</main>
+        <main className="p-6 flex-1 bg-[#F7F3EA] overflow-x-hidden">{children}</main>
       </div>
     </div>
   );

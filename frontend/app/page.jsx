@@ -24,7 +24,7 @@ export default function Home() {
   useLenis();
 
   return (
-    <main className="relative min-h-screen bg-black text-white selection:bg-gold selection:text-black">
+    <main className="relative min-h-screen bg-[#F7F3EA] text-[#3F3528] selection:bg-[#D8BD72] selection:text-[#3F3528]">
       {/* 3D WebGL World Layer */}
       <TempleWorldCanvas />
 

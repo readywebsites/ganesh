@@ -134,25 +134,25 @@ function CinematicStoryOverlay() {
       ref={overlayRef}
       className="pointer-events-none fixed bottom-10 left-0 right-0 z-20 flex justify-center px-4 md:px-6 will-change-transform"
     >
-      <div className="relative max-w-2xl w-full text-center p-6 md:p-8 rounded-2xl border border-gold/30 bg-black/70 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden">
+      <div className="relative max-w-2xl w-full text-center p-6 md:p-8 rounded-2xl border border-[#B89A4A]/30 bg-[#FFFDF7]/85 backdrop-blur-2xl shadow-[0_20px_50px_rgba(63,53,40,0.1)] overflow-hidden">
         {/* Top Metallic Sheen Bar */}
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-goldLight/60 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#B89A4A]/60 to-transparent" />
 
         {/* Scene Tagline & Step Counter */}
         <div className="flex items-center justify-between gap-4 mb-3">
-          <span className="text-[10px] md:text-xs uppercase tracking-[0.3em] font-mono text-goldLight/90 font-semibold">
+          <span className="text-[10px] md:text-xs uppercase tracking-[0.3em] font-mono text-[#8F7430] font-semibold">
             {activeScene.tag}
           </span>
-          <span className="text-[10px] font-mono tracking-widest text-gold/70 bg-gold/10 px-2.5 py-0.5 rounded-full border border-gold/20">
+          <span className="text-[10px] font-mono tracking-widest text-[#8F7430] bg-[#B89A4A]/10 px-2.5 py-0.5 rounded-full border border-[#B89A4A]/20">
             0{currentSceneIndex + 1} / 0{SCENES.length}
           </span>
         </div>
 
         {/* Title & Description */}
-        <h2 className="text-2xl md:text-3xl lg:text-4xl font-heading text-transparent bg-clip-text bg-gradient-to-r from-white via-goldLight to-amber-200 tracking-wide mb-2 font-bold">
+        <h2 className="text-2xl md:text-3xl lg:text-4xl font-heading text-transparent bg-clip-text bg-gradient-to-r from-[#3F3528] via-[#8F7430] to-[#B89A4A] tracking-wide mb-2 font-bold">
           {activeScene.title}
         </h2>
-        <p className="text-xs md:text-sm text-gray-300 font-body leading-relaxed opacity-90 max-w-xl mx-auto">
+        <p className="text-xs md:text-sm text-[#776B5B] font-body leading-relaxed opacity-90 max-w-xl mx-auto">
           {activeScene.description}
         </p>
 
@@ -163,8 +163,8 @@ function CinematicStoryOverlay() {
               key={i}
               className={`h-1.5 rounded-full transition-all duration-500 ease-out ${
                 i === currentSceneIndex
-                  ? 'w-8 bg-gradient-to-r from-gold to-goldLight shadow-[0_0_12px_rgba(212,175,55,0.8)]'
-                  : 'w-2 bg-white/20'
+                  ? 'w-8 bg-gradient-to-r from-[#8F7430] to-[#B89A4A] shadow-[0_0_12px_rgba(184,154,74,0.4)]'
+                  : 'w-2 bg-[#B89A4A]/20'
               }`}
             />
           ))}

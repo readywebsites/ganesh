@@ -189,8 +189,8 @@ function Instagram() {
             onClick={() => setActiveTab('posts')}
             className={`px-6 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-300 border ${
               activeTab === 'posts'
-                ? 'bg-gradient-to-r from-goldDark via-gold to-goldLight text-black border-gold shadow-[0_0_20px_rgba(212,175,55,0.4)]'
-                : 'bg-black/60 text-gray-300 border-gold/30 hover:border-gold/60 hover:text-white'
+                ? 'bg-gradient-to-r from-[#8F7430] via-[#B89A4A] to-[#D8BD72] text-[#3F3528] border-[#8F7430] shadow-[0_4px_20px_rgba(184,154,74,0.3)]'
+                : 'bg-[#FFFDF7] text-[#776B5B] border-[#B89A4A]/30 hover:border-[#B89A4A]/60 hover:text-[#3F3528]'
             }`}
           >
             📸 Latest Posts
@@ -200,8 +200,8 @@ function Instagram() {
             onClick={() => setActiveTab('reels')}
             className={`px-6 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-300 border ${
               activeTab === 'reels'
-                ? 'bg-gradient-to-r from-goldDark via-gold to-goldLight text-black border-gold shadow-[0_0_20px_rgba(212,175,55,0.4)]'
-                : 'bg-black/60 text-gray-300 border-gold/30 hover:border-gold/60 hover:text-white'
+                ? 'bg-gradient-to-r from-[#8F7430] via-[#B89A4A] to-[#D8BD72] text-[#3F3528] border-[#8F7430] shadow-[0_4px_20px_rgba(184,154,74,0.3)]'
+                : 'bg-[#FFFDF7] text-[#776B5B] border-[#B89A4A]/30 hover:border-[#B89A4A]/60 hover:text-[#3F3528]'
             }`}
           >
             🎬 Viral Reels
@@ -211,8 +211,8 @@ function Instagram() {
             onClick={() => setActiveTab('embed')}
             className={`px-6 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-300 border ${
               activeTab === 'embed'
-                ? 'bg-gradient-to-r from-goldDark via-gold to-goldLight text-black border-gold shadow-[0_0_20px_rgba(212,175,55,0.4)]'
-                : 'bg-black/60 text-gray-300 border-gold/30 hover:border-gold/60 hover:text-white'
+                ? 'bg-gradient-to-r from-[#8F7430] via-[#B89A4A] to-[#D8BD72] text-[#3F3528] border-[#8F7430] shadow-[0_4px_20px_rgba(184,154,74,0.3)]'
+                : 'bg-[#FFFDF7] text-[#776B5B] border-[#B89A4A]/30 hover:border-[#B89A4A]/60 hover:text-[#3F3528]'
             }`}
           >
             ⚡ Live Profile Embed
