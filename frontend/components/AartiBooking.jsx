@@ -49,8 +49,8 @@ export default function AartiBooking() {
           setSlotData({
             date: selectedDate,
             bookingOpen: true,
-            morning: { slot: 'Morning Aarti', time: '09:00 AM', capacity: 15, booked: 0, remaining: 15, isFull: false },
-            night: { slot: 'Night Aarti', time: '08:00 PM', capacity: 15, booked: 0, remaining: 15, isFull: false },
+            morning: { slot: 'Morning Aarti', time: '09:00 AM', capacity: 5, booked: 0, remaining: 5, isFull: false },
+            night: { slot: 'Night Aarti', time: '08:00 PM', capacity: 5, booked: 0, remaining: 5, isFull: false },
           });
         }
       } catch (err) {
@@ -58,8 +58,8 @@ export default function AartiBooking() {
         setSlotData({
           date: selectedDate,
           bookingOpen: true,
-          morning: { slot: 'Morning Aarti', time: '09:00 AM', capacity: 15, booked: 0, remaining: 15, isFull: false },
-          night: { slot: 'Night Aarti', time: '08:00 PM', capacity: 15, booked: 0, remaining: 15, isFull: false },
+          morning: { slot: 'Morning Aarti', time: '09:00 AM', capacity: 5, booked: 0, remaining: 5, isFull: false },
+          night: { slot: 'Night Aarti', time: '08:00 PM', capacity: 5, booked: 0, remaining: 5, isFull: false },
         });
       } finally {
         setLoadingSlot(false);
@@ -499,7 +499,7 @@ Ganpati Bappa Morya 🙏`;
                 <span className="text-3xl">👥</span>
                 <div>
                   <div className="text-[10px] uppercase font-bold text-[#776B5B] tracking-wider">Max Capacity</div>
-                  <div className="text-sm font-black text-[#8F7430]">15 Bookings / Slot</div>
+                  <div className="text-sm font-black text-[#8F7430]">5 Bookings / Slot</div>
                 </div>
               </div>
             </div>
@@ -540,9 +540,9 @@ Ganpati Bappa Morya 🙏`;
               const morning = slotData?.morning || {
                 slot: 'Morning Aarti',
                 time: '09:00 AM',
-                capacity: 15,
+                capacity: 5,
                 booked: 0,
-                remaining: 15,
+                remaining: 5,
                 isFull: false,
               };
               const isFull = morning.isFull || morning.remaining <= 0;
@@ -659,9 +659,9 @@ Ganpati Bappa Morya 🙏`;
               const night = slotData?.night || {
                 slot: 'Night Aarti',
                 time: '08:00 PM',
-                capacity: 15,
+                capacity: 5,
                 booked: 0,
-                remaining: 15,
+                remaining: 5,
                 isFull: false,
               };
               const isFull = night.isFull || night.remaining <= 0;
