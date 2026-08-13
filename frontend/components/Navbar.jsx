@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef, memo } from 'react';
-import Link from 'next/link';
 
 function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -223,18 +222,7 @@ function Navbar() {
                 <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-amber-500 via-amber-300 to-amber-500 rounded-full animate-pulse" />
               )}
             </a>
-          </li>
-
-          <li className="nav-item">
-            <Link
-              href="/admin"
-              className="px-3.5 py-1.5 rounded-full border border-amber-500/30 text-amber-400 hover:bg-amber-500/10 transition-all duration-300 font-medium text-sm flex items-center gap-1.5"
-              onClick={() => setMobileOpen(false)}
-            >
-              <span>🔑</span>
-              <span>Admin</span>
-            </Link>
-          </li>
+          </li>       
         </ul>
 
         <div className="flex items-center gap-4">
