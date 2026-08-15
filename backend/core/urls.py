@@ -20,5 +20,10 @@ router.register(r'contacts', ContactViewSet, basename='contact')
 
 # Include router URLs in app's urlpatterns
 urlpatterns = [
+    # Legacy alias routes for backwards compatibility
+    path('aarti/slots', AartiBookingViewSet.as_view({'get': 'availability'}), name='legacy-aarti-slots'),
+    path('aarti/slots/', AartiBookingViewSet.as_view({'get': 'availability'}), name='legacy-aarti-slots-slash'),
+    path('aarti/book', AartiBookingViewSet.as_view({'post': 'create'}), name='legacy-aarti-book'),
+    path('aarti/book/', AartiBookingViewSet.as_view({'post': 'create'}), name='legacy-aarti-book-slash'),
     path('', include(router.urls)),
 ]

@@ -40,9 +40,30 @@ export default function AartiBooking() {
     const fetchSlotInfo = async () => {
       setLoadingSlot(true);
       try {
-        const res = await fetch(getApiUrl(`/aarti/slots?date=${selectedDate}`));
+        const res = await fetch(getApiUrl(`/aarti-bookings/availability/?date=${selectedDate}`));
         const data = await res.json();
-        if (data.success && data.slot) {
+        if (data.morning && data.night) {
+          setSlotData({
+            date: data.date || selectedDate,
+            bookingOpen: true,
+            morning: {
+              slot: 'Morning Aarti',
+              time: '09:00 AM',
+              capacity: data.morning.capacity || 5,
+              booked: data.morning.booked || 0,
+              remaining: data.morning.remaining ?? 5,
+              isFull: data.morning.is_full || (data.morning.remaining <= 0),
+            },
+            night: {
+              slot: 'Night Aarti',
+              time: '08:00 PM',
+              capacity: data.night.capacity || 5,
+              booked: data.night.booked || 0,
+              remaining: data.night.remaining ?? 5,
+              isFull: data.night.is_full || (data.night.remaining <= 0),
+            },
+          });
+        } else if (data.success && data.slot) {
           setSlotData(data.slot);
         } else {
           // Fallback defaults
@@ -115,50 +136,103 @@ export default function AartiBooking() {
     setSubmitting(true);
 
     try {
-      const res = await fetch(getApiUrl('/aarti/book'), {
+      const res = await fetch(getApiUrl('/aarti-bookings/'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: formData.name,
-          mobile: formData.mobile,
-          email: formData.email,
-          city: formData.city,
-          members: formData.members,
+          devotee_name: formData.name.trim(),
+          name: formData.name.trim(),
+          phone: formData.mobile.trim(),
+          mobile: formData.mobile.trim(),
+          email: formData.email.trim(),
+          city: formData.city.trim() || 'Surat',
+          booking_date: selectedDate,
           date: selectedDate,
+          aarti_type: selectedSlotName.toLowerCase().includes('morning') ? 'morning' : 'night',
           slot: selectedSlotName,
-          specialNote: formData.specialNote,
+          number_of_devotees: parseInt(formData.members, 10) || 1,
+          members: parseInt(formData.members, 10) || 1,
+          notes: formData.specialNote || '',
+          specialNote: formData.specialNote || '',
         }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
-      if (data.success && data.booking) {
-        setSuccessBooking(data.booking);
+      if (res.ok && data && (data.success || data.booking || data.id)) {
+        const bookingInfo = data.booking || data;
+        setSuccessBooking(bookingInfo);
 
         // Generate client-side QR Code URL
-        const qrUrl = await QRCode.toDataURL(
-          JSON.stringify({
-            bookingId: data.booking.bookingId,
-            name: data.booking.name,
-            date: data.booking.date,
-            slot: data.booking.slot,
-            members: data.booking.members,
-          })
-        );
-        setQrCodeUrl(qrUrl);
+        try {
+          const qrUrl = await QRCode.toDataURL(
+            JSON.stringify({
+              bookingId: bookingInfo.bookingId || bookingInfo.booking_id || bookingInfo.id,
+              name: bookingInfo.name || bookingInfo.devotee_name,
+              date: bookingInfo.date || bookingInfo.booking_date,
+              slot: bookingInfo.slot || bookingInfo.aarti,
+              members: bookingInfo.members || bookingInfo.number_of_devotees,
+            })
+          );
+          setQrCodeUrl(qrUrl);
+        } catch (qrErr) {
+          console.error('QR generation error:', qrErr);
+        }
 
-        // Refresh slot data
-        const refreshRes = await fetch(getApiUrl(`/aarti/slots?date=${selectedDate}`));
-        const refreshData = await refreshRes.json();
-        if (refreshData.success && refreshData.slot) {
-          setSlotData(refreshData.slot);
+        // Refresh slot data from availability endpoint
+        try {
+          const refreshRes = await fetch(getApiUrl(`/aarti-bookings/availability/?date=${selectedDate}`));
+          const refreshData = await refreshRes.json();
+          if (refreshData.morning && refreshData.night) {
+            setSlotData({
+              date: refreshData.date || selectedDate,
+              bookingOpen: true,
+              morning: {
+                slot: 'Morning Aarti',
+                time: '09:00 AM',
+                capacity: refreshData.morning.capacity || 5,
+                booked: refreshData.morning.booked || 0,
+                remaining: refreshData.morning.remaining ?? 5,
+                isFull: refreshData.morning.is_full || (refreshData.morning.remaining <= 0),
+              },
+              night: {
+                slot: 'Night Aarti',
+                time: '08:00 PM',
+                capacity: refreshData.night.capacity || 5,
+                booked: refreshData.night.booked || 0,
+                remaining: refreshData.night.remaining ?? 5,
+                isFull: refreshData.night.is_full || (refreshData.night.remaining <= 0),
+              },
+            });
+          }
+        } catch (refreshErr) {
+          console.error('Slot refresh error:', refreshErr);
         }
       } else {
-        setErrorMsg(data.message || 'Failed to confirm booking. Please try again.');
+        // Extract exact error message from backend response
+        let msg = 'Failed to confirm booking. Please try again.';
+        if (data) {
+          if (data.message) {
+            msg = data.message;
+          } else if (data.detail) {
+            msg = data.detail;
+          } else if (data.non_field_errors && data.non_field_errors.length) {
+            msg = data.non_field_errors.join(' ');
+          } else if (typeof data === 'object') {
+            const firstKey = Object.keys(data)[0];
+            const val = data[firstKey];
+            if (Array.isArray(val) && val.length > 0) {
+              msg = `${val.join(', ')}`;
+            } else if (typeof val === 'string') {
+              msg = val;
+            }
+          }
+        }
+        setErrorMsg(msg);
       }
     } catch (err) {
-      console.error('Booking submission error:', err);
-      setErrorMsg('Network error. Unable to process your Aarti booking.');
+      console.error('Booking submission network error:', err);
+      setErrorMsg('Network error. Unable to connect to Aarti booking server.');
     } finally {
       setSubmitting(false);
     }

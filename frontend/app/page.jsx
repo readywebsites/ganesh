@@ -13,7 +13,6 @@ const Timeline = dynamic(() => import('@/components/Timeline'));
 const Gallery = dynamic(() => import('@/components/Gallery'));
 const Darshan = dynamic(() => import('@/components/Darshan'));
 const AartiBooking = dynamic(() => import('@/components/AartiBooking'));
-const VideoGallery = dynamic(() => import('@/components/VideoGallery'));
 const Donation = dynamic(() => import('@/components/Donation'));
 const Membership = dynamic(() => import('@/components/Membership'));
 const Instagram = dynamic(() => import('@/components/Instagram'));
@@ -40,7 +39,6 @@ export default function Home() {
         <Gallery />
         <Darshan />
         <AartiBooking />
-        <VideoGallery />
         <Donation />
         <Membership />
         <Instagram />

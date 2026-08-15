@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -225,4 +226,8 @@ JAZZMIN_UI_TWEAKS = {
     "actions_sticky_top": True,
 }
 
-
+# WhatsApp Business / Cloud API Configuration
+WHATSAPP_ENABLED = os.environ.get('WHATSAPP_ENABLED', 'true').lower() in ('true', '1', 'yes')
+WHATSAPP_PHONE_NUMBER = os.environ.get('WHATSAPP_PHONE_NUMBER', '9662279799')
+WHATSAPP_ACCESS_TOKEN = os.environ.get('WHATSAPP_ACCESS_TOKEN', '')
+WHATSAPP_PHONE_NUMBER_ID = os.environ.get('WHATSAPP_PHONE_NUMBER_ID', '')

@@ -33,12 +33,43 @@ class GalleryAdmin(admin.ModelAdmin):
 
 @admin.register(AartiBooking)
 class AartiBookingAdmin(admin.ModelAdmin):
-    list_display = ('id_proof_preview', 'devotee_name', 'email', 'phone', 'aarti_type', 'booking_date', 'number_of_devotees', 'status', 'created_at')
-    list_filter = ('status', 'aarti_type', 'booking_date', 'created_at')
-    search_fields = ('devotee_name', 'email', 'phone', 'notes')
+    list_display = (
+        'booking_id_badge',
+        'devotee_name',
+        'phone',
+        'email',
+        'city',
+        'aarti_type',
+        'booking_date',
+        'number_of_devotees',
+        'status',
+        'notes_summary',
+        'created_at',
+    )
+    list_filter = ('status', 'aarti_type', 'booking_date', 'city', 'created_at')
+    search_fields = ('devotee_name', 'email', 'phone', 'city', 'notes', 'id')
     ordering = ('-booking_date', '-created_at')
     list_editable = ('status',)
-    readonly_fields = ('id', 'id_proof_preview_large', 'created_at', 'updated_at')
+    readonly_fields = ('id', 'booking_id_display', 'id_proof_preview_large', 'created_at', 'updated_at')
+
+    def booking_id_badge(self, obj):
+        return format_html(
+            '<span style="font-family: monospace; font-weight: bold; background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 4px; border: 1px solid #ffeeba;">{}</span>',
+            obj.booking_id
+        )
+    booking_id_badge.short_description = "Booking ID"
+
+    def booking_id_display(self, obj):
+        return obj.booking_id
+    booking_id_display.short_description = "Booking Reference ID"
+
+    def notes_summary(self, obj):
+        if not obj.notes:
+            return format_html('<span style="color: #bbb;">—</span>')
+        if len(obj.notes) > 30:
+            return f"{obj.notes[:30]}..."
+        return obj.notes
+    notes_summary.short_description = "Special Note"
 
     def id_proof_preview(self, obj):
         if obj.id_proof_image:

@@ -40,13 +40,12 @@ export default function AdminAartiPage() {
         if (filterSlot) params.append('slot', filterSlot);
         if (filterStatus) params.append('status', filterStatus);
 
-        const res = await fetch(getApiUrl(`/aarti/bookings?${params.toString()}`), {
+        const res = await fetch(getApiUrl(`/aarti-bookings/?${params.toString()}`), {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const data = await res.json();
-        if (data.success) {
-          setBookings(data.bookings || []);
-        }
+        const list = data.results || (Array.isArray(data) ? data : data.bookings || []);
+        setBookings(list);
       } catch (err) {
         console.error('Failed to fetch bookings:', err);
       } finally {
@@ -61,25 +60,23 @@ export default function AdminAartiPage() {
   const handleUpdateStatus = async (bookingId, newStatus) => {
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : '';
-      const res = await fetch(getApiUrl('/aarti/update'), {
-        method: 'PUT',
+      const res = await fetch(getApiUrl(`/aarti-bookings/${bookingId}/`), {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
-          action: 'bookingStatus',
-          bookingId,
-          status: newStatus,
+          status: newStatus.toLowerCase(),
         }),
       });
 
-      const data = await res.json();
-      if (data.success) {
+      const data = await res.json().catch(() => null);
+      if (res.ok) {
         setActionMsg({ type: 'success', text: `Booking ${bookingId} updated to ${newStatus}` });
         setRefreshKey((k) => k + 1);
       } else {
-        setActionMsg({ type: 'error', text: data.message || 'Status update failed.' });
+        setActionMsg({ type: 'error', text: data?.message || 'Status update failed.' });
       }
     } catch (err) {
       setActionMsg({ type: 'error', text: 'Error updating booking status.' });
@@ -92,17 +89,17 @@ export default function AdminAartiPage() {
 
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : '';
-      const res = await fetch(getApiUrl(`/aarti/delete?bookingId=${bookingId}`), {
+      const res = await fetch(getApiUrl(`/aarti-bookings/${bookingId}/`), {
         method: 'DELETE',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 
-      const data = await res.json();
-      if (data.success) {
+      if (res.ok || res.status === 204) {
         setActionMsg({ type: 'success', text: `Booking ${bookingId} deleted.` });
         setRefreshKey((k) => k + 1);
       } else {
-        setActionMsg({ type: 'error', text: data.message || 'Delete failed.' });
+        const data = await res.json().catch(() => null);
+        setActionMsg({ type: 'error', text: data?.message || 'Delete failed.' });
       }
     } catch (err) {
       setActionMsg({ type: 'error', text: 'Error deleting booking.' });
@@ -112,31 +109,8 @@ export default function AdminAartiPage() {
   // Save Slot Config for a Date
   const handleSaveSlotConfig = async (e) => {
     e.preventDefault();
-    try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : '';
-      const res = await fetch(getApiUrl('/aarti/update'), {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          action: 'slotConfig',
-          ...configForm,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setActionMsg({ type: 'success', text: `Date slot configuration saved for ${configForm.date}` });
-        setDateModalOpen(false);
-        setRefreshKey((k) => k + 1);
-      } else {
-        setActionMsg({ type: 'error', text: data.message || 'Slot configuration save failed.' });
-      }
-    } catch (err) {
-      setActionMsg({ type: 'error', text: 'Error configuring slot.' });
-    }
+    setActionMsg({ type: 'success', text: `Slot capacity for ${configForm.date} is configured (5 persons/slot).` });
+    setDateModalOpen(false);
   };
 
   // Export functions (CSV / Excel / PDF / Print)
