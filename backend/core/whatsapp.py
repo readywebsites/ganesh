@@ -121,3 +121,54 @@ def notify_admin_and_customer_on_booking(booking) -> None:
 
     except Exception as e:
         logger.error(f"[WhatsApp] Notification handler failure: {e}", exc_info=True)
+
+
+def notify_admin_and_customer_on_membership(membership) -> None:
+    """
+    Sends WhatsApp notifications on successful Bhakta Membership registration:
+    1. Admin notification to 9662279799 (or configured WHATSAPP_PHONE_NUMBER)
+    2. Member confirmation message to member's mobile number
+    """
+    try:
+        admin_phone = os.environ.get('WHATSAPP_PHONE_NUMBER', '9662279799').strip() or '9662279799'
+        membership_id = getattr(membership, 'membership_id', str(membership.id))
+        city = getattr(membership, 'city', '') or 'Surat'
+        volunteer = getattr(membership, 'volunteer', '') or 'Aarti & Ritual Assistance'
+        occupation = getattr(membership, 'occupation', '') or 'Not Specified'
+        created_at_str = (
+            membership.created_at.strftime('%Y-%m-%d %H:%M')
+            if hasattr(membership, 'created_at') and membership.created_at
+            else 'Recently'
+        )
+
+        # 1. Admin Notification
+        admin_message = (
+            f"🙏 New Ganesh Membership Registration\n\n"
+            f"Name: {membership.full_name}\n"
+            f"Mobile: {membership.phone}\n"
+            f"Email: {membership.email}\n"
+            f"City: {city}\n"
+            f"Occupation: {occupation}\n"
+            f"Volunteer Sewa: {volunteer}\n"
+            f"Membership ID: {membership_id}\n"
+            f"Date: {created_at_str}"
+        )
+        send_whatsapp_message(admin_phone, admin_message)
+
+        # 2. Member Confirmation Notification
+        if membership.phone:
+            member_message = (
+                f"🙏 Pranam {membership.full_name}!\n\n"
+                f"Welcome to Surat Cha Gaurinandan Mahotsav 2026.\n"
+                f"Your Bhakta Membership Registration is Confirmed.\n\n"
+                f"Membership ID: {membership_id}\n"
+                f"Volunteer Sewa: {volunteer}\n"
+                f"City: {city}\n\n"
+                f"Thank you for joining the sacred Mahotsav Sevak family.\n"
+                f"Ganpati Bappa Morya! 🌺"
+            )
+            send_whatsapp_message(membership.phone, member_message)
+
+    except Exception as e:
+        logger.error(f"[WhatsApp] Membership notification handler failure: {e}", exc_info=True)
+

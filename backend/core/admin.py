@@ -128,22 +128,30 @@ class MembershipAdmin(admin.ModelAdmin):
     list_display = (
         'photo_preview',
         'full_name',
-        'email',
         'phone',
+        'email',
+        'city',
+        'volunteer',
         'membership_tier',
         'status',
         'created_at',
     )
-    list_filter = ('status', 'membership_tier', 'created_at')
-    search_fields = ('full_name', 'email', 'phone', 'address')
+    list_filter = ('status', 'membership_tier', 'volunteer', 'city', 'created_at')
+    search_fields = ('full_name', 'email', 'phone', 'city', 'occupation', 'volunteer', 'address')
     ordering = ('-created_at',)
     list_editable = ('status', 'membership_tier')
     readonly_fields = (
         'id',
+        'membership_id_display',
         'photo_preview_large',
         'created_at',
         'updated_at',
     )
+
+    def membership_id_display(self, obj):
+        return obj.membership_id
+
+    membership_id_display.short_description = "Membership ID"
 
     def photo_preview(self, obj):
         if obj.photo:

@@ -15,7 +15,10 @@ from .serializers import (
     MembershipSerializer,
     ContactSerializer,
 )
-from .whatsapp import notify_admin_and_customer_on_booking
+from .whatsapp import (
+    notify_admin_and_customer_on_booking,
+    notify_admin_and_customer_on_membership,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -272,16 +275,163 @@ class DonationViewSet(viewsets.ModelViewSet):
 class MembershipViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Bhakta Membership registration.
-    Allow public POST for registering, admin staff for managing.
+    - Anyone can POST/create a membership
+    - Only authenticated admin/staff can GET, LIST, UPDATE or DELETE memberships
     """
     queryset = Membership.objects.all()
     serializer_class = MembershipSerializer
     pagination_class = StandardResultsSetPagination
     permission_classes = [CreateOnlyOrAdminPermission]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['full_name', 'email', 'phone']
-    ordering_fields = ['created_at', 'full_name']
+    search_fields = ['full_name', 'email', 'phone', 'city', 'occupation', 'volunteer', 'address']
+    ordering_fields = ['created_at', 'full_name', 'city']
     ordering = ['-created_at']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        status_param = self.request.query_params.get('status')
+        volunteer_param = self.request.query_params.get('volunteer')
+        city_param = self.request.query_params.get('city')
+        search_param = self.request.query_params.get('search')
+
+        if status_param and status_param != 'All':
+            queryset = queryset.filter(status__iexact=status_param)
+        if volunteer_param and volunteer_param != 'All':
+            queryset = queryset.filter(volunteer__icontains=volunteer_param)
+        if city_param:
+            queryset = queryset.filter(city__icontains=city_param)
+        if search_param:
+            queryset = queryset.filter(
+                models.Q(full_name__icontains=search_param) |
+                models.Q(email__icontains=search_param) |
+                models.Q(phone__icontains=search_param) |
+                models.Q(city__icontains=search_param) |
+                models.Q(occupation__icontains=search_param) |
+                models.Q(volunteer__icontains=search_param)
+            )
+
+        return queryset
+
+    def get_object(self):
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        lookup_val = self.kwargs.get(lookup_url_kwarg)
+        if not lookup_val:
+            return super().get_object()
+
+        # Try standard UUID lookup
+        try:
+            val_uuid = uuid.UUID(str(lookup_val))
+            return Membership.objects.get(id=val_uuid)
+        except (ValueError, Membership.DoesNotExist):
+            pass
+
+        # Try lookup by membership_id string or partial UUID
+        clean_val = str(lookup_val).strip()
+        member = Membership.objects.filter(id__startswith=clean_val.replace('-', '')).first()
+        if member:
+            return member
+
+        for m in Membership.objects.all():
+            if m.membership_id.lower() == clean_val.lower():
+                return m
+
+        raise Http404(f"Membership '{lookup_val}' not found.")
+
+    def create(self, request, *args, **kwargs):
+        """
+        POST /api/memberships/
+        Public registration of Bhakta membership with WhatsApp notification.
+        """
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            error_message = "Validation failed."
+            if 'non_field_errors' in serializer.errors:
+                error_message = str(serializer.errors['non_field_errors'][0])
+            elif 'phone' in serializer.errors:
+                error_message = str(serializer.errors['phone'][0])
+            elif 'email' in serializer.errors:
+                error_message = str(serializer.errors['email'][0])
+            elif 'full_name' in serializer.errors:
+                error_message = str(serializer.errors['full_name'][0])
+            else:
+                for k, v in serializer.errors.items():
+                    first_v = v[0] if isinstance(v, list) else v
+                    error_message = f"{k}: {first_v}"
+                    break
+
+            return Response({
+                "success": False,
+                "message": error_message,
+                "errors": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                membership = serializer.save()
+        except Exception as e:
+            logger.error(f"Error saving Membership: {e}", exc_info=True)
+            return Response({
+                "success": False,
+                "message": "A database error occurred while creating membership. Please try again."
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # Send WhatsApp notifications safely in background / try-except
+        try:
+            notify_admin_and_customer_on_membership(membership)
+        except Exception as e:
+            logger.error(f"[WhatsApp] Notification error on membership: {e}", exc_info=True)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response({
+            "success": True,
+            "message": "Membership submitted successfully.",
+            "membershipId": membership.membership_id,
+            "membership": serializer.data,
+            "data": serializer.data
+        }, status=status.HTTP_201_CREATED, headers=headers)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            res = self.get_paginated_response(serializer.data)
+            res.data['success'] = True
+            res.data['data'] = serializer.data
+            return res
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({
+            "success": True,
+            "data": serializer.data,
+            "memberships": serializer.data
+        })
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        if not serializer.is_valid():
+            return Response({
+                "success": False,
+                "message": "Validation failed.",
+                "errors": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+        self.perform_update(serializer)
+        return Response({
+            "success": True,
+            "message": "Membership updated successfully.",
+            "data": serializer.data,
+            "membership": serializer.data
+        })
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({
+            "success": True,
+            "message": "Membership deleted successfully."
+        }, status=status.HTTP_200_OK)
 
 
 class ContactViewSet(viewsets.ModelViewSet):

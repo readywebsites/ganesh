@@ -176,21 +176,56 @@ class DonationSerializer(serializers.ModelSerializer):
 
 
 class MembershipSerializer(serializers.ModelSerializer):
+    membership_id = serializers.CharField(read_only=True)
+    membershipId = serializers.CharField(source='membership_id', read_only=True)
+    name = serializers.CharField(source='full_name', required=False)
+    mobile = serializers.CharField(source='phone', required=False)
+
     class Meta:
         model = Membership
         fields = '__all__'
-        read_only_fields = ('id', 'created_at', 'updated_at')
+        read_only_fields = ('id', 'created_at', 'updated_at', 'membership_id', 'membershipId')
+
+    def to_internal_value(self, data):
+        # Work on a mutable copy of data
+        mutable_data = data.copy() if hasattr(data, 'copy') else dict(data)
+
+        # Map frontend field aliases to model field names
+        if 'name' in mutable_data and 'full_name' not in mutable_data:
+            mutable_data['full_name'] = mutable_data['name']
+        if 'mobile' in mutable_data and 'phone' not in mutable_data:
+            mutable_data['phone'] = mutable_data['mobile']
+        if 'city' in mutable_data and not str(mutable_data.get('city', '')).strip():
+            mutable_data['city'] = 'Surat'
+        if 'volunteer' in mutable_data and not str(mutable_data.get('volunteer', '')).strip():
+            mutable_data['volunteer'] = 'Aarti & Ritual Assistance'
+
+        return super().to_internal_value(mutable_data)
 
     def validate_full_name(self, value):
-        if len(value.strip()) < 2:
+        name = value.strip()
+        if len(name) < 2:
             raise serializers.ValidationError("Full name must be at least 2 characters long.")
-        return value.strip()
+        return name
 
     def validate_phone(self, value):
-        clean_phone = re.sub(r'[\s\-\(\)\+]', '', value)
-        if not clean_phone.isdigit() or len(clean_phone) < 10 or len(clean_phone) > 15:
-            raise serializers.ValidationError("Enter a valid phone number (10 to 15 digits).")
-        return value
+        clean_phone = re.sub(r'[\s\-\(\)\+]', '', str(value))
+        if clean_phone.startswith('91') and len(clean_phone) == 12:
+            clean_phone = clean_phone[2:]
+        if not clean_phone.isdigit() or len(clean_phone) != 10:
+            raise serializers.ValidationError("Enter a valid 10-digit mobile number.")
+        return clean_phone
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # Expose helpful aliases for frontend compatibility
+        data['membership_id'] = instance.membership_id
+        data['membershipId'] = instance.membership_id
+        data['_id'] = str(instance.id)
+        data['name'] = instance.full_name
+        data['mobile'] = instance.phone
+        data['createdAt'] = instance.created_at.isoformat() if instance.created_at else None
+        return data
 
 
 class ContactSerializer(serializers.ModelSerializer):

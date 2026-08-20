@@ -169,14 +169,25 @@ class Membership(models.Model):
 
     class StatusChoices(models.TextChoices):
         ACTIVE = 'active', _('Active')
+        APPROVED = 'approved', _('Approved')
         PENDING = 'pending', _('Pending Approval')
         EXPIRED = 'expired', _('Expired')
+        REJECTED = 'rejected', _('Rejected')
         SUSPENDED = 'suspended', _('Suspended')
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_("ID"))
     full_name = models.CharField(max_length=150, verbose_name=_("Full Name"))
-    email = models.EmailField(unique=True, verbose_name=_("Email Address"))
+    email = models.EmailField(verbose_name=_("Email Address"))
     phone = models.CharField(max_length=20, verbose_name=_("Phone Number"))
+    city = models.CharField(max_length=100, blank=True, default='', verbose_name=_("City"))
+    address = models.TextField(blank=True, default='', verbose_name=_("Residential Address"))
+    occupation = models.CharField(max_length=100, blank=True, default='', verbose_name=_("Occupation"))
+    volunteer = models.CharField(
+        max_length=100,
+        blank=True,
+        default='Aarti & Ritual Assistance',
+        verbose_name=_("Volunteer Interest")
+    )
     membership_tier = models.CharField(
         max_length=30,
         choices=MembershipTierChoices.choices,
@@ -189,11 +200,10 @@ class Membership(models.Model):
         null=True,
         verbose_name=_("Member Photo")
     )
-    address = models.TextField(blank=True, verbose_name=_("Residential Address"))
     status = models.CharField(
         max_length=20,
         choices=StatusChoices.choices,
-        default=StatusChoices.PENDING,
+        default=StatusChoices.ACTIVE,
         verbose_name=_("Status")
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Created At"))
@@ -204,8 +214,13 @@ class Membership(models.Model):
         verbose_name_plural = _("Memberships")
         ordering = ['-created_at']
 
+    @property
+    def membership_id(self):
+        short_id = str(self.id).replace('-', '')[:6].upper()
+        return f"GMN-2026-{short_id}"
+
     def __str__(self):
-        return f"{self.full_name} ({self.get_membership_tier_display()})"
+        return f"{self.full_name} ({self.membership_id}) - {self.city or 'Surat'}"
 
 
 class Contact(models.Model):
