@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getApiUrl } from '@/lib/api';
 
 export default function AdminMembers() {
   const [members, setMembers] = useState([]);
@@ -14,15 +15,20 @@ export default function AdminMembers() {
   const fetchMembers = async () => {
     setLoading(true);
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : '';
       const params = new URLSearchParams();
       if (search) params.set('search', search);
       if (statusFilter !== 'All') params.set('status', statusFilter);
       if (volunteerFilter !== 'All') params.set('volunteer', volunteerFilter);
 
-      const res = await fetch(`/api/members?${params.toString()}`);
+      const res = await fetch(getApiUrl(`/memberships/?${params.toString()}`), {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       const data = await res.json();
       if (data.success) {
-        setMembers(data.data || []);
+        setMembers(data.data || data.results || []);
+      } else if (Array.isArray(data)) {
+        setMembers(data);
       }
     } catch (err) {
       console.error('Error loading members:', err);
@@ -37,14 +43,18 @@ export default function AdminMembers() {
 
   const handleStatusChange = async (id, newStatus) => {
     try {
-      const res = await fetch(`/api/members/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
+      const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : '';
+      const res = await fetch(getApiUrl(`/memberships/${id}/`), {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ status: newStatus.toLowerCase() }),
       });
       const data = await res.json();
-      if (data.success) {
-        setMembers(members.map((m) => (m._id === id ? data.data : m)));
+      if (data.success || res.ok) {
+        setMembers(members.map((m) => ((m._id === id || m.id === id) ? { ...m, status: newStatus } : m)));
       }
     } catch (err) {
       alert('Failed to update status');
@@ -54,10 +64,13 @@ export default function AdminMembers() {
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this member registration?')) return;
     try {
-      const res = await fetch(`/api/members/${id}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (data.success) {
-        setMembers(members.filter((m) => m._id !== id));
+      const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : '';
+      const res = await fetch(getApiUrl(`/memberships/${id}/`), {
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        setMembers(members.filter((m) => m._id !== id && m.id !== id));
       }
     } catch (err) {
       alert('Failed to delete member');
@@ -67,14 +80,19 @@ export default function AdminMembers() {
   const handleEditSave = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`/api/members/${editingMember._id}`, {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : '';
+      const id = editingMember._id || editingMember.id;
+      const res = await fetch(getApiUrl(`/memberships/${id}/`), {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(editingMember),
       });
       const data = await res.json();
-      if (data.success) {
-        setMembers(members.map((m) => (m._id === editingMember._id ? data.data : m)));
+      if (data.success || res.ok) {
+        setMembers(members.map((m) => ((m._id === id || m.id === id) ? (data.data || editingMember) : m)));
         setModalOpen(false);
         setEditingMember(null);
       }

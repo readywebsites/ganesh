@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, memo } from 'react';
+import { getApiUrl } from '@/lib/api';
 
 function Contact() {
   const [formData, setFormData] = useState({
@@ -24,21 +25,56 @@ function Contact() {
     e.preventDefault();
     setLoading(true);
     setErrorMsg('');
+
+    const payload = {
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      subject: formData.subject.trim() || 'General Pilgrim Inquiry',
+      message: formData.message.trim(),
+    };
+
     try {
-      const res = await fetch('/api/contacts', {
+      const response = await fetch(getApiUrl('/contacts/'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
       });
-      const data = await res.json();
-      if (data.success) {
-        setSubmitted(true);
-        setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
-      } else {
-        setErrorMsg(data.message || 'Failed to send message.');
+
+      let data;
+
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error(`Server returned an invalid response (HTTP ${response.status}).`);
       }
+
+      if (!response.ok) {
+        const validationMessage =
+          data?.message ||
+          data?.detail ||
+          (data?.errors && Object.values(data.errors).flat().join(', ')) ||
+          (typeof data === 'object' && Object.values(data).filter(v => typeof v === 'string' || Array.isArray(v)).flat().join(', ')) ||
+          'Unable to submit the form.';
+
+        throw new Error(validationMessage);
+      }
+
+      if (!data.success) {
+        throw new Error(data.message || 'Submission failed.');
+      }
+
+      setSubmitted(true);
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
     } catch (err) {
-      setErrorMsg('Network error. Please try again.');
+      console.error('Contact submission error:', err);
+      if (err instanceof TypeError || err.message === 'Failed to fetch' || err.name === 'TypeError') {
+        setErrorMsg('Network error. Please try again.');
+      } else {
+        setErrorMsg(err.message || 'Network error. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

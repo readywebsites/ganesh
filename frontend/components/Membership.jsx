@@ -1,18 +1,21 @@
 'use client';
 
 import { useState, memo } from 'react';
+import { getApiUrl } from '@/lib/api';
+
+const initialFormData = {
+  name: '',
+  mobile: '',
+  email: '',
+  city: '',
+  address: '',
+  occupation: '',
+  volunteer: 'Aarti & Ritual Assistance',
+};
 
 function Membership() {
-  const [formData, setFormData] = useState({
-    name: '',
-    mobile: '',
-    email: '',
-    city: '',
-    address: '',
-    occupation: '',
-    volunteer: 'Aarti & Ritual Assistance',
-  });
-
+  const [formData, setFormData] = useState(initialFormData);
+  const [submittedData, setSubmittedData] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [membershipId, setMembershipId] = useState('');
   const [qrCode, setQrCode] = useState('');
@@ -27,34 +30,102 @@ function Membership() {
     e.preventDefault();
     setLoading(true);
     setErrorMsg('');
+
+    const cleanMobile = (formData.mobile || '').replace(/[\s\-\(\)\+]/g, '');
+    const validMobile =
+      cleanMobile.startsWith('91') && cleanMobile.length === 12
+        ? cleanMobile.slice(2)
+        : cleanMobile;
+
+    if (!/^\d{10}$/.test(validMobile)) {
+      setErrorMsg('Please enter a valid 10-digit mobile number.');
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.name || formData.name.trim().length < 2) {
+      setErrorMsg('Full name must be at least 2 characters long.');
+      setLoading(false);
+      return;
+    }
+
+    const payload = {
+      full_name: formData.name.trim(),
+      name: formData.name.trim(),
+      phone: validMobile,
+      mobile: validMobile,
+      email: formData.email.trim(),
+      city: formData.city.trim() || 'Surat',
+      address: formData.address.trim(),
+      occupation: formData.occupation.trim(),
+      volunteer: formData.volunteer || 'Aarti & Ritual Assistance',
+    };
+
     try {
-      const res = await fetch('/api/members', {
+      const response = await fetch(getApiUrl('/memberships/'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
       });
-      const data = await res.json();
-      if (data.success) {
-        setMembershipId(data.membershipId || data.data.membershipId);
-        if (data.data && data.data.qrCode) {
-          setQrCode(data.data.qrCode);
-        }
-        setSubmitted(true);
-      } else {
-        setErrorMsg(data.message || 'Failed to submit registration. Please try again.');
+
+      let data;
+
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error(`Server returned an invalid response (HTTP ${response.status}).`);
       }
+
+      if (!response.ok) {
+        const validationMessage =
+          data?.message ||
+          data?.detail ||
+          (data?.errors && Object.values(data.errors).flat().join(', ')) ||
+          (typeof data === 'object' && Object.values(data).filter(v => typeof v === 'string' || Array.isArray(v)).flat().join(', ')) ||
+          'Unable to submit the form.';
+
+        throw new Error(validationMessage);
+      }
+
+      if (!data.success) {
+        throw new Error(data.message || 'Submission failed.');
+      }
+
+      // Backend confirmed success
+      const memberInfo = data.membership || data.data || data;
+      const assignedId =
+        data.membershipId ||
+        memberInfo.membership_id ||
+        memberInfo.membershipId ||
+        `GMN-2026-${String(memberInfo.id || '').replace(/-/g, '').slice(0, 6).toUpperCase() || 'SURAT'}`;
+
+      setMembershipId(assignedId);
+      if (data.qrCode || (data.data && data.data.qrCode)) {
+        setQrCode(data.qrCode || data.data.qrCode);
+      }
+      setSubmittedData({ ...formData, mobile: validMobile });
+      setSubmitted(true);
+      setFormData(initialFormData);
     } catch (err) {
-      setErrorMsg('Network error. Please try again.');
+      console.error('Membership submission error:', err);
+      if (err instanceof TypeError || err.message === 'Failed to fetch' || err.name === 'TypeError') {
+        setErrorMsg('Network error. Please try again.');
+      } else {
+        setErrorMsg(err.message || 'Network error. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const downloadPassCard = () => {
-    const name = formData.name || 'Devotee';
+    const dataToUse = submittedData || formData;
+    const name = dataToUse.name || 'Devotee';
     const id = membershipId || 'SURAT-GMN-2026';
-    const role = formData.volunteer || 'Bhakta Member';
-    const city = formData.city || 'Surat';
+    const role = dataToUse.volunteer || 'Bhakta Member';
+    const city = dataToUse.city || 'Surat';
 
     const canvas = document.createElement('canvas');
     canvas.width = 1200;
@@ -162,6 +233,10 @@ function Membership() {
     a.href = canvas.toDataURL('image/png');
     a.click();
   };
+
+  const memberDisplayName = (submittedData || formData).name || 'Devotee';
+  const memberDisplayRole = (submittedData || formData).volunteer || 'Aarti & Ritual Assistance';
+  const memberDisplayCity = (submittedData || formData).city || 'Surat';
 
   return (
     <section id="membership">
@@ -327,7 +402,7 @@ function Membership() {
                     <div className="card-info-col">
                       <div className="card-field">
                         <span className="card-label">MEMBER NAME</span>
-                        <h3 className="card-value">{formData.name}</h3>
+                        <h3 className="card-value">{memberDisplayName}</h3>
                       </div>
                       <div className="card-row">
                         <div className="card-field">
@@ -336,12 +411,12 @@ function Membership() {
                         </div>
                         <div className="card-field">
                           <span className="card-label">VOLUNTEER ROLE</span>
-                          <span className="card-role-highlight">{formData.volunteer}</span>
+                          <span className="card-role-highlight">{memberDisplayRole}</span>
                         </div>
                       </div>
                       <div className="card-field">
                         <span className="card-label">CITY & SECTOR</span>
-                        <span className="card-text-muted">{formData.city}</span>
+                        <span className="card-text-muted">{memberDisplayCity}</span>
                       </div>
                     </div>
                     <div className="card-qr-col">
@@ -383,12 +458,23 @@ function Membership() {
                 </div>
               </div>
 
-              <div className="card-actions-wrapper">
+              <div className="card-actions-wrapper flex flex-col items-center">
                 <button className="btn-primary shimmer-btn" onClick={downloadPassCard}>
                   <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current mr-2">
                     <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
                   </svg>
                   <span>Download Digital Membership Card</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSubmitted(false);
+                    setSubmittedData(null);
+                    setErrorMsg('');
+                  }}
+                  className="mt-3 text-xs text-amber-400 hover:text-amber-300 underline transition-colors cursor-pointer"
+                >
+                  + Register Another Bhakta Member
                 </button>
               </div>
             </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, memo } from 'react';
 import Image from 'next/image';
 import gsap from 'gsap';
+import { getApiUrl } from '@/lib/api';
 
 function Donation() {
   const [showModal, setShowModal] = useState(false);
@@ -89,24 +90,59 @@ function Donation() {
     e.preventDefault();
     setLoading(true);
     setErrorMsg('');
+
+    const payload = {
+      donor_name: formData.name.trim(),
+      name: formData.name.trim(),
+      amount: Number(formData.amount),
+      transaction_id: formData.transactionId.trim(),
+      transactionId: formData.transactionId.trim(),
+      email: formData.email.trim() || 'devotee@suratchagaurinandan.com',
+      phone: formData.phone.trim() || '9876543210',
+      notes: formData.notes.trim(),
+    };
+
     try {
-      const res = await fetch('/api/donations', {
+      const response = await fetch(getApiUrl('/donations/'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          amount: Number(formData.amount),
-        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
       });
-      const data = await res.json();
-      if (data.success) {
-        setSubmitted(true);
-        setFormData({ name: '', email: '', phone: '', amount: '', transactionId: '', notes: '' });
-      } else {
-        setErrorMsg(data.message || 'Failed to record donation.');
+
+      let data;
+
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error(`Server returned an invalid response (HTTP ${response.status}).`);
       }
+
+      if (!response.ok) {
+        const validationMessage =
+          data?.message ||
+          data?.detail ||
+          (data?.errors && Object.values(data.errors).flat().join(', ')) ||
+          (typeof data === 'object' && Object.values(data).filter(v => typeof v === 'string' || Array.isArray(v)).flat().join(', ')) ||
+          'Unable to submit the form.';
+
+        throw new Error(validationMessage);
+      }
+
+      if (!data.success) {
+        throw new Error(data.message || 'Submission failed.');
+      }
+
+      setSubmitted(true);
+      setFormData({ name: '', email: '', phone: '', amount: '', transactionId: '', notes: '' });
     } catch (err) {
-      setErrorMsg('Network error. Please try again.');
+      console.error('Donation submission error:', err);
+      if (err instanceof TypeError || err.message === 'Failed to fetch' || err.name === 'TypeError') {
+        setErrorMsg('Network error. Please try again.');
+      } else {
+        setErrorMsg(err.message || 'Network error. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

@@ -15,9 +15,11 @@ router = DefaultRouter()
 router.register(r'gallery', GalleryViewSet, basename='gallery')
 router.register(r'aarti-bookings', AartiBookingViewSet, basename='aartibooking')
 router.register(r'donations', DonationViewSet, basename='donation')
+router.register(r'donation', DonationViewSet, basename='donation-singular')
 router.register(r'memberships', MembershipViewSet, basename='membership')
 router.register(r'members', MembershipViewSet, basename='member')
 router.register(r'contacts', ContactViewSet, basename='contact')
+router.register(r'contact', ContactViewSet, basename='contact-singular')
 
 # Include router URLs in app's urlpatterns
 urlpatterns = [

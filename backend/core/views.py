@@ -271,6 +271,84 @@ class DonationViewSet(viewsets.ModelViewSet):
     ordering_fields = ['amount', 'created_at']
     ordering = ['-created_at']
 
+    def create(self, request, *args, **kwargs):
+        """
+        POST /api/donations/
+        Public submission of donation / transfer record.
+        """
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            error_message = "Validation failed."
+            if 'non_field_errors' in serializer.errors:
+                error_message = str(serializer.errors['non_field_errors'][0])
+            elif 'transaction_id' in serializer.errors:
+                error_message = str(serializer.errors['transaction_id'][0])
+            elif 'amount' in serializer.errors:
+                error_message = str(serializer.errors['amount'][0])
+            elif 'phone' in serializer.errors:
+                error_message = str(serializer.errors['phone'][0])
+            elif 'email' in serializer.errors:
+                error_message = str(serializer.errors['email'][0])
+            elif 'donor_name' in serializer.errors:
+                error_message = str(serializer.errors['donor_name'][0])
+            else:
+                for k, v in serializer.errors.items():
+                    first_v = v[0] if isinstance(v, list) else v
+                    error_message = f"{k}: {first_v}"
+                    break
+
+            return Response({
+                "success": False,
+                "message": error_message,
+                "errors": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                donation = serializer.save()
+        except Exception as e:
+            logger.error(f"Error saving Donation: {e}", exc_info=True)
+            return Response({
+                "success": False,
+                "message": "A database error occurred while recording donation. Please try again."
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response({
+            "success": True,
+            "message": "Donation recorded successfully.",
+            "data": serializer.data,
+            "donation": serializer.data
+        }, status=status.HTTP_201_CREATED, headers=headers)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        total_amount = Donation.objects.aggregate(total=models.Sum('amount'))['total'] or 0
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            res = self.get_paginated_response(serializer.data)
+            res.data['success'] = True
+            res.data['data'] = serializer.data
+            res.data['totalAmount'] = float(total_amount)
+            return res
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({
+            "success": True,
+            "data": serializer.data,
+            "donations": serializer.data,
+            "totalAmount": float(total_amount)
+        })
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({
+            "success": True,
+            "message": "Donation deleted successfully."
+        }, status=status.HTTP_200_OK)
+
 
 class MembershipViewSet(viewsets.ModelViewSet):
     """
@@ -447,3 +525,94 @@ class ContactViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'email', 'subject', 'message']
     ordering_fields = ['created_at']
     ordering = ['-created_at']
+
+    def create(self, request, *args, **kwargs):
+        """
+        POST /api/contacts/
+        Public submission of contact inquiry message.
+        """
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            error_message = "Validation failed."
+            if 'non_field_errors' in serializer.errors:
+                error_message = str(serializer.errors['non_field_errors'][0])
+            elif 'message' in serializer.errors:
+                error_message = str(serializer.errors['message'][0])
+            elif 'subject' in serializer.errors:
+                error_message = str(serializer.errors['subject'][0])
+            elif 'name' in serializer.errors:
+                error_message = str(serializer.errors['name'][0])
+            elif 'email' in serializer.errors:
+                error_message = str(serializer.errors['email'][0])
+            else:
+                for k, v in serializer.errors.items():
+                    first_v = v[0] if isinstance(v, list) else v
+                    error_message = f"{k}: {first_v}"
+                    break
+
+            return Response({
+                "success": False,
+                "message": error_message,
+                "errors": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                contact = serializer.save()
+        except Exception as e:
+            logger.error(f"Error saving Contact inquiry: {e}", exc_info=True)
+            return Response({
+                "success": False,
+                "message": "A database error occurred while sending your message. Please try again."
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response({
+            "success": True,
+            "message": "Your message has been received successfully.",
+            "data": serializer.data,
+            "contact": serializer.data
+        }, status=status.HTTP_201_CREATED, headers=headers)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            res = self.get_paginated_response(serializer.data)
+            res.data['success'] = True
+            res.data['data'] = serializer.data
+            return res
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({
+            "success": True,
+            "data": serializer.data,
+            "contacts": serializer.data
+        })
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        if not serializer.is_valid():
+            return Response({
+                "success": False,
+                "message": "Validation failed.",
+                "errors": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+        self.perform_update(serializer)
+        return Response({
+            "success": True,
+            "message": "Contact updated successfully.",
+            "data": serializer.data,
+            "contact": serializer.data
+        })
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({
+            "success": True,
+            "message": "Contact message deleted successfully."
+        }, status=status.HTTP_200_OK)
