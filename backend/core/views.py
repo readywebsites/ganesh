@@ -7,6 +7,8 @@ from rest_framework import viewsets, permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.authentication import BasicAuthentication
+from .authentication import CsrfExemptSessionAuthentication
 from .models import Gallery, AartiBooking, Donation, Membership, Contact
 from .serializers import (
     GallerySerializer,
@@ -48,6 +50,7 @@ class GalleryViewSet(viewsets.ModelViewSet):
     queryset = Gallery.objects.all()
     serializer_class = GallerySerializer
     pagination_class = StandardResultsSetPagination
+    authentication_classes = [CsrfExemptSessionAuthentication, BasicAuthentication]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['title', 'caption', 'category']
@@ -72,6 +75,7 @@ class AartiBookingViewSet(viewsets.ModelViewSet):
     queryset = AartiBooking.objects.all()
     serializer_class = AartiBookingSerializer
     pagination_class = StandardResultsSetPagination
+    authentication_classes = [CsrfExemptSessionAuthentication, BasicAuthentication]
     permission_classes = [CreateOnlyOrAdminPermission]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['devotee_name', 'email', 'phone', 'city', 'notes']
@@ -265,6 +269,7 @@ class DonationViewSet(viewsets.ModelViewSet):
     queryset = Donation.objects.all()
     serializer_class = DonationSerializer
     pagination_class = StandardResultsSetPagination
+    authentication_classes = [CsrfExemptSessionAuthentication, BasicAuthentication]
     permission_classes = [CreateOnlyOrAdminPermission]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['donor_name', 'email', 'phone', 'transaction_id']
@@ -359,6 +364,7 @@ class MembershipViewSet(viewsets.ModelViewSet):
     queryset = Membership.objects.all()
     serializer_class = MembershipSerializer
     pagination_class = StandardResultsSetPagination
+    authentication_classes = [CsrfExemptSessionAuthentication, BasicAuthentication]
     permission_classes = [CreateOnlyOrAdminPermission]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['full_name', 'email', 'phone', 'city', 'occupation', 'volunteer', 'address']
@@ -520,6 +526,7 @@ class ContactViewSet(viewsets.ModelViewSet):
     queryset = Contact.objects.all()
     serializer_class = ContactSerializer
     pagination_class = StandardResultsSetPagination
+    authentication_classes = [CsrfExemptSessionAuthentication, BasicAuthentication]
     permission_classes = [CreateOnlyOrAdminPermission]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'email', 'subject', 'message']
@@ -569,7 +576,7 @@ class ContactViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response({
             "success": True,
-            "message": "Your message has been received successfully.",
+            "message": "Contact message submitted successfully.",
             "data": serializer.data,
             "contact": serializer.data
         }, status=status.HTTP_201_CREATED, headers=headers)

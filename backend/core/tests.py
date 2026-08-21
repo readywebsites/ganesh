@@ -482,6 +482,7 @@ class ContactAPITests(TestCase):
         response = self.client.post('/api/contacts/', data=payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(response.data['success'])
+        self.assertEqual(response.data['message'], "Contact message submitted successfully.")
         self.assertIn('contact', response.data)
         self.assertEqual(response.data['contact']['name'], "Ananya Desai")
 
@@ -528,4 +529,65 @@ class ContactAPITests(TestCase):
         response = self.client.post('/api/contacts/', data=payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(response.data['success'])
+
+
+class CSRFExemptionAndPublicFormsAPITests(TestCase):
+    def setUp(self):
+        self.client = APIClient(enforce_csrf_checks=True)
+
+    def test_aarti_booking_post_without_csrf_succeeds(self):
+        """Browser client without CSRF token can submit Aarti Booking successfully"""
+        payload = {
+            "name": "Browser Devotee",
+            "mobile": "9876543210",
+            "email": "browser@example.com",
+            "city": "Surat",
+            "date": "2026-09-22",
+            "slot": "Morning Aarti",
+            "members": 2,
+        }
+        response = self.client.post('/api/aarti-bookings/', data=payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['success'])
+
+    def test_membership_post_without_csrf_succeeds(self):
+        """Browser client without CSRF token can submit Membership successfully"""
+        payload = {
+            "name": "Bhakta Sevak",
+            "mobile": "9876543210",
+            "email": "bhakta.sevak@example.com",
+            "city": "Surat",
+            "address": "Gaurinandan Marg",
+            "occupation": "Trader",
+            "volunteer": "Aarti & Ritual Assistance",
+        }
+        response = self.client.post('/api/memberships/', data=payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['success'])
+
+    def test_donation_post_without_csrf_succeeds(self):
+        """Browser client without CSRF token can submit Donation successfully"""
+        payload = {
+            "name": "Generous Donor",
+            "amount": 2500,
+            "transactionId": "TXN-CSRF-TEST-01",
+            "email": "donor@example.com",
+            "phone": "9876543210",
+        }
+        response = self.client.post('/api/donations/', data=payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['success'])
+
+    def test_contact_post_without_csrf_succeeds(self):
+        """Browser client without CSRF token can submit Contact inquiry successfully"""
+        payload = {
+            "name": "Inquiry Devotee",
+            "email": "inquiry@example.com",
+            "phone": "9876543210",
+            "subject": "Darshan Timings",
+            "message": "Please confirm the special darshan timings for Chaturthi.",
+        }
+        response = self.client.post('/api/contacts/', data=payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['success'])
 
