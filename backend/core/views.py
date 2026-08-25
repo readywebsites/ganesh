@@ -38,9 +38,31 @@ class CreateOnlyOrAdminPermission(permissions.BasePermission):
     - Requires Admin / Staff credentials for list (GET), retrieve, update, and delete actions.
     """
     def has_permission(self, request, view):
-        if view.action in ('create', 'availability'):
+        action = getattr(view, 'action', None)
+        if action in ('create', 'availability') or (action is None and request.method in ('POST', 'OPTIONS')):
             return True
-        return bool(request.user and request.user.is_staff)
+        return bool(request.user and request.user.is_authenticated and request.user.is_staff)
+
+    def has_object_permission(self, request, view, obj):
+        action = getattr(view, 'action', None)
+        if action in ('create', 'availability') or (action is None and request.method in ('POST', 'OPTIONS')):
+            return True
+        return bool(request.user and request.user.is_authenticated and request.user.is_staff)
+
+
+class PublicCreateViewSetMixin:
+    """
+    Mixin for ViewSets that have public create/POST actions (and availability).
+    For create/availability actions:
+    - Returns [] (no authenticators, completely bypassing session auth and CSRF).
+    For staff/admin actions (list, retrieve, update, delete):
+    - Returns [CsrfExemptSessionAuthentication(), BasicAuthentication()].
+    """
+    def get_authenticators(self):
+        action = getattr(self, 'action', None)
+        if action in ('create', 'availability') or (action is None and self.request and self.request.method in ('POST', 'OPTIONS')):
+            return []
+        return [CsrfExemptSessionAuthentication(), BasicAuthentication()]
 
 
 class GalleryViewSet(viewsets.ModelViewSet):
@@ -65,7 +87,7 @@ class GalleryViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class AartiBookingViewSet(viewsets.ModelViewSet):
+class AartiBookingViewSet(PublicCreateViewSetMixin, viewsets.ModelViewSet):
     """
     ViewSet for booking Aarti slots and checking date-specific capacity.
     - Public devotees can check availability (GET /api/aarti-bookings/availability/?date=YYYY-MM-DD)
@@ -261,7 +283,7 @@ class AartiBookingViewSet(viewsets.ModelViewSet):
         }, status=status.HTTP_201_CREATED, headers=headers)
 
 
-class DonationViewSet(viewsets.ModelViewSet):
+class DonationViewSet(PublicCreateViewSetMixin, viewsets.ModelViewSet):
     """
     ViewSet for processing donations.
     Allow public POST for donation, admin staff for managing.
@@ -355,7 +377,7 @@ class DonationViewSet(viewsets.ModelViewSet):
         }, status=status.HTTP_200_OK)
 
 
-class MembershipViewSet(viewsets.ModelViewSet):
+class MembershipViewSet(PublicCreateViewSetMixin, viewsets.ModelViewSet):
     """
     ViewSet for Bhakta Membership registration.
     - Anyone can POST/create a membership
@@ -518,7 +540,7 @@ class MembershipViewSet(viewsets.ModelViewSet):
         }, status=status.HTTP_200_OK)
 
 
-class ContactViewSet(viewsets.ModelViewSet):
+class ContactViewSet(PublicCreateViewSetMixin, viewsets.ModelViewSet):
     """
     ViewSet for submitting contact inquiries.
     Allow public POST for messages, admin staff for managing.

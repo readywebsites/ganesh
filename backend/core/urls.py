@@ -23,14 +23,34 @@ router.register(r'contact', ContactViewSet, basename='contact-singular')
 
 # Include router URLs in app's urlpatterns
 urlpatterns = [
-    # Legacy alias routes for backwards compatibility
+    # Availability aliases
+    path('aarti-bookings/availability', AartiBookingViewSet.as_view({'get': 'availability'}), name='aarti-availability-noslash'),
     path('aarti/slots', AartiBookingViewSet.as_view({'get': 'availability'}), name='legacy-aarti-slots'),
     path('aarti/slots/', AartiBookingViewSet.as_view({'get': 'availability'}), name='legacy-aarti-slots-slash'),
+    
+    # Aarti booking aliases
     path('aarti/book', AartiBookingViewSet.as_view({'post': 'create'}), name='legacy-aarti-book'),
     path('aarti/book/', AartiBookingViewSet.as_view({'post': 'create'}), name='legacy-aarti-book-slash'),
+    path('aarti-booking', AartiBookingViewSet.as_view({'post': 'create'}), name='legacy-aarti-booking-singular'),
+    path('aarti-booking/', AartiBookingViewSet.as_view({'post': 'create'}), name='legacy-aarti-booking-singular-slash'),
+    
+    # Membership aliases
     path('members/register', MembershipViewSet.as_view({'post': 'create'}), name='legacy-member-register'),
     path('members/register/', MembershipViewSet.as_view({'post': 'create'}), name='legacy-member-register-slash'),
     path('membership/register', MembershipViewSet.as_view({'post': 'create'}), name='legacy-membership-register'),
     path('membership/register/', MembershipViewSet.as_view({'post': 'create'}), name='legacy-membership-register-slash'),
+    
+    # Donation aliases
+    path('donations/create', DonationViewSet.as_view({'post': 'create'}), name='legacy-donation-create'),
+    path('donations/create/', DonationViewSet.as_view({'post': 'create'}), name='legacy-donation-create-slash'),
+    path('donation/create', DonationViewSet.as_view({'post': 'create'}), name='legacy-donation-singular-create'),
+    path('donation/create/', DonationViewSet.as_view({'post': 'create'}), name='legacy-donation-singular-create-slash'),
+    
+    # Contact aliases
+    path('contacts/send', ContactViewSet.as_view({'post': 'create'}), name='legacy-contact-send'),
+    path('contacts/send/', ContactViewSet.as_view({'post': 'create'}), name='legacy-contact-send-slash'),
+    path('contact/send', ContactViewSet.as_view({'post': 'create'}), name='legacy-contact-singular-send'),
+    path('contact/send/', ContactViewSet.as_view({'post': 'create'}), name='legacy-contact-singular-send-slash'),
+    
     path('', include(router.urls)),
 ]

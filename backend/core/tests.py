@@ -534,9 +534,14 @@ class ContactAPITests(TestCase):
 class CSRFExemptionAndPublicFormsAPITests(TestCase):
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)
+        self.admin_user = User.objects.create_superuser(
+            username='admin_csrf_test',
+            email='admin_csrf@example.com',
+            password='testpassword123'
+        )
 
     def test_aarti_booking_post_without_csrf_succeeds(self):
-        """Browser client without CSRF token can submit Aarti Booking successfully"""
+        """Anonymous browser client without CSRF token can submit Aarti Booking successfully"""
         payload = {
             "name": "Browser Devotee",
             "mobile": "9876543210",
@@ -549,9 +554,10 @@ class CSRFExemptionAndPublicFormsAPITests(TestCase):
         response = self.client.post('/api/aarti-bookings/', data=payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(response.data['success'])
+        self.assertTrue(AartiBooking.objects.filter(email="browser@example.com").exists())
 
     def test_membership_post_without_csrf_succeeds(self):
-        """Browser client without CSRF token can submit Membership successfully"""
+        """Anonymous browser client without CSRF token can submit Membership successfully"""
         payload = {
             "name": "Bhakta Sevak",
             "mobile": "9876543210",
@@ -564,9 +570,10 @@ class CSRFExemptionAndPublicFormsAPITests(TestCase):
         response = self.client.post('/api/memberships/', data=payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(response.data['success'])
+        self.assertTrue(Membership.objects.filter(email="bhakta.sevak@example.com").exists())
 
     def test_donation_post_without_csrf_succeeds(self):
-        """Browser client without CSRF token can submit Donation successfully"""
+        """Anonymous browser client without CSRF token can submit Donation successfully"""
         payload = {
             "name": "Generous Donor",
             "amount": 2500,
@@ -577,9 +584,10 @@ class CSRFExemptionAndPublicFormsAPITests(TestCase):
         response = self.client.post('/api/donations/', data=payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(response.data['success'])
+        self.assertTrue(Donation.objects.filter(transaction_id="TXN-CSRF-TEST-01").exists())
 
     def test_contact_post_without_csrf_succeeds(self):
-        """Browser client without CSRF token can submit Contact inquiry successfully"""
+        """Anonymous browser client without CSRF token can submit Contact inquiry successfully"""
         payload = {
             "name": "Inquiry Devotee",
             "email": "inquiry@example.com",
@@ -590,4 +598,160 @@ class CSRFExemptionAndPublicFormsAPITests(TestCase):
         response = self.client.post('/api/contacts/', data=payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(response.data['success'])
+        self.assertTrue(Contact.objects.filter(email="inquiry@example.com").exists())
+
+    def test_logged_in_session_aarti_booking_without_csrf_succeeds(self):
+        """When an admin user is logged in (session active), public Aarti Booking POST still succeeds without CSRF error"""
+        self.client.force_login(self.admin_user)
+        payload = {
+            "name": "Admin Submitting Aarti",
+            "mobile": "9876543210",
+            "email": "admin_aarti@example.com",
+            "city": "Surat",
+            "date": "2026-09-23",
+            "slot": "Night Aarti",
+            "members": 1,
+        }
+        response = self.client.post('/api/aarti-bookings/', data=payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['success'])
+        self.assertTrue(AartiBooking.objects.filter(email="admin_aarti@example.com").exists())
+
+    def test_logged_in_session_membership_without_csrf_succeeds(self):
+        """When an admin user is logged in (session active), public Membership POST still succeeds without CSRF error"""
+        self.client.force_login(self.admin_user)
+        payload = {
+            "name": "Admin Submitting Membership",
+            "mobile": "9876543210",
+            "email": "admin_member@example.com",
+            "city": "Surat",
+            "address": "VIP Road",
+            "occupation": "Trustee",
+            "volunteer": "Aarti & Ritual Assistance",
+        }
+        response = self.client.post('/api/memberships/', data=payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['success'])
+        self.assertTrue(Membership.objects.filter(email="admin_member@example.com").exists())
+
+    def test_logged_in_session_donation_without_csrf_succeeds(self):
+        """When an admin user is logged in (session active), public Donation POST still succeeds without CSRF error"""
+        self.client.force_login(self.admin_user)
+        payload = {
+            "name": "Admin Submitting Donation",
+            "amount": 5001,
+            "transactionId": "TXN-SESSION-LOGGEDIN-01",
+            "email": "admin_donor@example.com",
+            "phone": "9876543210",
+        }
+        response = self.client.post('/api/donations/', data=payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['success'])
+        self.assertTrue(Donation.objects.filter(transaction_id="TXN-SESSION-LOGGEDIN-01").exists())
+
+    def test_logged_in_session_contact_without_csrf_succeeds(self):
+        """When an admin user is logged in (session active), public Contact POST still succeeds without CSRF error"""
+        self.client.force_login(self.admin_user)
+        payload = {
+            "name": "Admin Submitting Contact",
+            "email": "admin_contact@example.com",
+            "phone": "9876543210",
+            "subject": "Admin Query",
+            "message": "Testing public contact submission with active session in browser.",
+        }
+        response = self.client.post('/api/contacts/', data=payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['success'])
+        self.assertTrue(Contact.objects.filter(email="admin_contact@example.com").exists())
+
+
+class LegacyAliasesAndPermissionsTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.admin_user = User.objects.create_superuser(
+            username='admin_legacy_test',
+            email='admin_legacy@example.com',
+            password='testpassword123'
+        )
+
+    def test_legacy_aarti_slots_and_book_routes(self):
+        """Test legacy aarti routes /api/aarti/slots/ and /api/aarti/book/"""
+        # GET availability
+        res_avail = self.client.get('/api/aarti/slots/?date=2026-09-14')
+        self.assertEqual(res_avail.status_code, status.HTTP_200_OK)
+        self.assertTrue(res_avail.data['success'])
+
+        # POST book
+        payload = {
+            "name": "Legacy Devotee",
+            "mobile": "9876543210",
+            "email": "legacy_aarti@example.com",
+            "date": "2026-09-14",
+            "slot": "Morning Aarti",
+            "members": 1,
+        }
+        res_book = self.client.post('/api/aarti/book/', data=payload, format='json')
+        self.assertEqual(res_book.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(res_book.data['success'])
+        self.assertTrue(AartiBooking.objects.filter(email="legacy_aarti@example.com").exists())
+
+    def test_legacy_membership_register_routes(self):
+        """Test legacy membership routes /api/members/register/ and /api/membership/register/"""
+        payload = {
+            "name": "Legacy Member",
+            "mobile": "9876543210",
+            "email": "legacy_member@example.com",
+            "city": "Surat",
+        }
+        res1 = self.client.post('/api/members/register/', data=payload, format='json')
+        self.assertEqual(res1.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(res1.data['success'])
+
+        payload2 = {
+            "name": "Legacy Member 2",
+            "mobile": "9876543211",
+            "email": "legacy_member2@example.com",
+            "city": "Surat",
+        }
+        res2 = self.client.post('/api/membership/register/', data=payload2, format='json')
+        self.assertEqual(res2.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(res2.data['success'])
+
+    def test_legacy_donation_and_contact_create_routes(self):
+        """Test legacy donation /api/donations/create/ and contact /api/contacts/send/"""
+        # Donation create
+        payload_don = {
+            "name": "Legacy Donor",
+            "amount": 500,
+            "transactionId": "TXN-LEGACY-01",
+        }
+        res_don = self.client.post('/api/donations/create/', data=payload_don, format='json')
+        self.assertEqual(res_don.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(res_don.data['success'])
+
+        # Contact send
+        payload_cnt = {
+            "name": "Legacy Contact",
+            "email": "legacy_cnt@example.com",
+            "message": "Testing legacy contact endpoint route.",
+        }
+        res_cnt = self.client.post('/api/contacts/send/', data=payload_cnt, format='json')
+        self.assertEqual(res_cnt.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(res_cnt.data['success'])
+
+    def test_anonymous_get_list_denied_for_all_forms(self):
+        """Anonymous users are denied access to GET / list on all private endpoints"""
+        self.assertEqual(self.client.get('/api/aarti-bookings/').status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(self.client.get('/api/memberships/').status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(self.client.get('/api/donations/').status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(self.client.get('/api/contacts/').status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_staff_admin_get_list_allowed_for_all_forms(self):
+        """Staff/admin users can list all public form submission records"""
+        self.client.force_authenticate(user=self.admin_user)
+        self.assertEqual(self.client.get('/api/aarti-bookings/').status_code, status.HTTP_200_OK)
+        self.assertEqual(self.client.get('/api/memberships/').status_code, status.HTTP_200_OK)
+        self.assertEqual(self.client.get('/api/donations/').status_code, status.HTTP_200_OK)
+        self.assertEqual(self.client.get('/api/contacts/').status_code, status.HTTP_200_OK)
+
 

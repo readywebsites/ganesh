@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import QRCode from 'qrcode';
-import { getApiUrl } from '@/lib/api';
+import { getApiUrl, extractErrorMessage, getFriendlyErrorMessage } from '@/lib/api';
 
 export default function AartiBooking() {
   const sectionRef = useRef(null);
@@ -162,29 +162,27 @@ export default function AartiBooking() {
       });
 
       let data;
-
       try {
         data = await response.json();
       } catch {
-        throw new Error(`Server returned an invalid response (HTTP ${response.status}).`);
+        data = null;
       }
 
       if (!response.ok) {
-        const validationMessage =
-          data?.message ||
-          data?.detail ||
-          (data?.errors && Object.values(data.errors).flat().join(', ')) ||
-          (typeof data === 'object' && Object.values(data).filter(v => typeof v === 'string' || Array.isArray(v)).flat().join(', ')) ||
-          'Unable to submit the form.';
-
+        const validationMessage = extractErrorMessage(
+          data,
+          response.status,
+          'Unable to submit the Aarti booking. Please check your inputs.'
+        );
         throw new Error(validationMessage);
       }
 
-      if (!data.success) {
-        throw new Error(data.message || 'Submission failed.');
+      if (data && data.success === false) {
+        const errorMsg = extractErrorMessage(data, response.status, 'Booking submission failed.');
+        throw new Error(errorMsg);
       }
 
-      const bookingInfo = data.booking || data;
+      const bookingInfo = data?.booking || data?.data || data;
       setSuccessBooking(bookingInfo);
 
       // Generate client-side QR Code URL
@@ -234,11 +232,7 @@ export default function AartiBooking() {
       }
     } catch (err) {
       console.error('Booking submission error:', err);
-      if (err instanceof TypeError || err.message === 'Failed to fetch' || err.name === 'TypeError') {
-        setErrorMsg('Network error. Please try again.');
-      } else {
-        setErrorMsg(err.message || 'Network error. Please try again.');
-      }
+      setErrorMsg(getFriendlyErrorMessage(err, 'Unable to submit booking. Please try again.'));
     } finally {
       setSubmitting(false);
     }

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, memo } from 'react';
 import Image from 'next/image';
 import gsap from 'gsap';
-import { getApiUrl } from '@/lib/api';
+import { getApiUrl, extractErrorMessage, getFriendlyErrorMessage } from '@/lib/api';
 
 function Donation() {
   const [showModal, setShowModal] = useState(false);
@@ -112,37 +112,31 @@ function Donation() {
       });
 
       let data;
-
       try {
         data = await response.json();
       } catch {
-        throw new Error(`Server returned an invalid response (HTTP ${response.status}).`);
+        data = null;
       }
 
       if (!response.ok) {
-        const validationMessage =
-          data?.message ||
-          data?.detail ||
-          (data?.errors && Object.values(data.errors).flat().join(', ')) ||
-          (typeof data === 'object' && Object.values(data).filter(v => typeof v === 'string' || Array.isArray(v)).flat().join(', ')) ||
-          'Unable to submit the form.';
-
+        const validationMessage = extractErrorMessage(
+          data,
+          response.status,
+          'Unable to submit donation record. Please check the entered details.'
+        );
         throw new Error(validationMessage);
       }
 
-      if (!data.success) {
-        throw new Error(data.message || 'Submission failed.');
+      if (data && data.success === false) {
+        const errorMsg = extractErrorMessage(data, response.status, 'Donation submission failed.');
+        throw new Error(errorMsg);
       }
 
       setSubmitted(true);
       setFormData({ name: '', email: '', phone: '', amount: '', transactionId: '', notes: '' });
     } catch (err) {
       console.error('Donation submission error:', err);
-      if (err instanceof TypeError || err.message === 'Failed to fetch' || err.name === 'TypeError') {
-        setErrorMsg('Network error. Please try again.');
-      } else {
-        setErrorMsg(err.message || 'Network error. Please try again.');
-      }
+      setErrorMsg(getFriendlyErrorMessage(err, 'Unable to submit donation. Please try again.'));
     } finally {
       setLoading(false);
     }

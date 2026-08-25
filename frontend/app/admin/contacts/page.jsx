@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getApiUrl } from '@/lib/api';
 
 export default function AdminContacts() {
   const [contacts, setContacts] = useState([]);
@@ -17,7 +18,7 @@ export default function AdminContacts() {
       if (search) params.set('search', search);
       if (statusFilter !== 'All') params.set('status', statusFilter);
 
-      const res = await fetch(`/api/contacts?${params.toString()}`);
+      const res = await fetch(getApiUrl(`/contacts/?${params.toString()}`));
       const data = await res.json();
       if (data.success) {
         setContacts(data.data || []);
@@ -36,7 +37,7 @@ export default function AdminContacts() {
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this contact message?')) return;
     try {
-      const res = await fetch(`/api/contacts/${id}`, { method: 'DELETE' });
+      const res = await fetch(getApiUrl(`/contacts/${id}/`), { method: 'DELETE' });
       const data = await res.json();
       if (data.success) {
         setContacts(contacts.filter((c) => c._id !== id));
@@ -50,8 +51,8 @@ export default function AdminContacts() {
     e.preventDefault();
     if (!replyingContact) return;
     try {
-      const res = await fetch(`/api/contacts/${replyingContact._id}`, {
-        method: 'PUT',
+      const res = await fetch(getApiUrl(`/contacts/${replyingContact._id}/`), {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reply: replyText }),
       });

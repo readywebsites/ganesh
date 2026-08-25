@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, memo } from 'react';
-import { getApiUrl } from '@/lib/api';
+import { getApiUrl, extractErrorMessage, getFriendlyErrorMessage } from '@/lib/api';
 
 const initialFormData = {
   name: '',
@@ -71,38 +71,36 @@ function Membership() {
       });
 
       let data;
-
       try {
         data = await response.json();
       } catch {
-        throw new Error(`Server returned an invalid response (HTTP ${response.status}).`);
+        data = null;
       }
 
       if (!response.ok) {
-        const validationMessage =
-          data?.message ||
-          data?.detail ||
-          (data?.errors && Object.values(data.errors).flat().join(', ')) ||
-          (typeof data === 'object' && Object.values(data).filter(v => typeof v === 'string' || Array.isArray(v)).flat().join(', ')) ||
-          'Unable to submit the form.';
-
+        const validationMessage = extractErrorMessage(
+          data,
+          response.status,
+          'Unable to submit membership registration. Please check the entered details.'
+        );
         throw new Error(validationMessage);
       }
 
-      if (!data.success) {
-        throw new Error(data.message || 'Submission failed.');
+      if (data && data.success === false) {
+        const errorMsg = extractErrorMessage(data, response.status, 'Membership registration failed.');
+        throw new Error(errorMsg);
       }
 
       // Backend confirmed success
-      const memberInfo = data.membership || data.data || data;
+      const memberInfo = data?.membership || data?.data || data || {};
       const assignedId =
-        data.membershipId ||
+        data?.membershipId ||
         memberInfo.membership_id ||
         memberInfo.membershipId ||
         `GMN-2026-${String(memberInfo.id || '').replace(/-/g, '').slice(0, 6).toUpperCase() || 'SURAT'}`;
 
       setMembershipId(assignedId);
-      if (data.qrCode || (data.data && data.data.qrCode)) {
+      if (data?.qrCode || (data?.data && data.data.qrCode)) {
         setQrCode(data.qrCode || data.data.qrCode);
       }
       setSubmittedData({ ...formData, mobile: validMobile });
@@ -110,11 +108,7 @@ function Membership() {
       setFormData(initialFormData);
     } catch (err) {
       console.error('Membership submission error:', err);
-      if (err instanceof TypeError || err.message === 'Failed to fetch' || err.name === 'TypeError') {
-        setErrorMsg('Network error. Please try again.');
-      } else {
-        setErrorMsg(err.message || 'Network error. Please try again.');
-      }
+      setErrorMsg(getFriendlyErrorMessage(err, 'Unable to submit membership. Please try again.'));
     } finally {
       setLoading(false);
     }

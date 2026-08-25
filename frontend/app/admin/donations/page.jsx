@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getApiUrl } from '@/lib/api';
 
 export default function AdminDonations() {
   const [donations, setDonations] = useState([]);
@@ -26,7 +27,7 @@ export default function AdminDonations() {
       if (search) params.set('search', search);
       if (statusFilter !== 'All') params.set('status', statusFilter);
 
-      const res = await fetch(`/api/donations?${params.toString()}`);
+      const res = await fetch(getApiUrl(`/donations/?${params.toString()}`));
       const data = await res.json();
       if (data.success) {
         setDonations(data.data || []);
@@ -46,7 +47,7 @@ export default function AdminDonations() {
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this donation record?')) return;
     try {
-      const res = await fetch(`/api/donations/${id}`, { method: 'DELETE' });
+      const res = await fetch(getApiUrl(`/donations/${id}/`), { method: 'DELETE' });
       const data = await res.json();
       if (data.success) {
         setDonations(donations.filter((d) => d._id !== id));
@@ -59,7 +60,7 @@ export default function AdminDonations() {
   const handleCreateDonation = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/donations', {
+      const res = await fetch(getApiUrl('/donations/'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
