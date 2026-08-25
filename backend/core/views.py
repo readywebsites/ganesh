@@ -20,6 +20,8 @@ from .serializers import (
 from .whatsapp import (
     notify_admin_and_customer_on_booking,
     notify_admin_and_customer_on_membership,
+    notify_admin_on_donation,
+    notify_admin_on_contact,
 )
 
 logger = logging.getLogger(__name__)
@@ -340,6 +342,12 @@ class DonationViewSet(PublicCreateViewSetMixin, viewsets.ModelViewSet):
                 "message": "A database error occurred while recording donation. Please try again."
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+        # Send WhatsApp notification safely in try-except
+        try:
+            notify_admin_on_donation(donation)
+        except Exception as e:
+            logger.error(f"[WhatsApp] Notification error on donation: {e}", exc_info=True)
+
         headers = self.get_success_headers(serializer.data)
         return Response({
             "success": True,
@@ -594,6 +602,12 @@ class ContactViewSet(PublicCreateViewSetMixin, viewsets.ModelViewSet):
                 "success": False,
                 "message": "A database error occurred while sending your message. Please try again."
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # Send WhatsApp notification safely in try-except
+        try:
+            notify_admin_on_contact(contact)
+        except Exception as e:
+            logger.error(f"[WhatsApp] Notification error on contact inquiry: {e}", exc_info=True)
 
         headers = self.get_success_headers(serializer.data)
         return Response({

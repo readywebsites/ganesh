@@ -7,6 +7,18 @@ import urllib.error
 logger = logging.getLogger(__name__)
 
 
+def get_admin_phone() -> str:
+    """
+    Returns the target admin WhatsApp phone number.
+    Defaults to '9662279799' (+91 9662279799).
+    """
+    return (
+        os.environ.get('WHATSAPP_PHONE_NUMBER')
+        or os.environ.get('WHATSAPP_ADMIN_PHONE')
+        or '9662279799'
+    ).strip()
+
+
 def send_whatsapp_message(to_phone: str, message_text: str) -> bool:
     """
     Sends a WhatsApp message using WhatsApp Business / Cloud API.
@@ -16,7 +28,7 @@ def send_whatsapp_message(to_phone: str, message_text: str) -> bool:
       - WHATSAPP_ACCESS_TOKEN: Cloud API bearer token
       - WHATSAPP_PHONE_NUMBER_ID: Cloud API Phone Number ID
 
-    Gracefully fails without crashing or raising exceptions so database bookings are never affected.
+    Gracefully fails without crashing or raising exceptions so database records are never affected.
     """
     enabled_str = os.environ.get('WHATSAPP_ENABLED', 'true').strip().lower()
     enabled = enabled_str in ('true', '1', 'yes')
@@ -34,7 +46,7 @@ def send_whatsapp_message(to_phone: str, message_text: str) -> bool:
         )
         return False
 
-    # Normalize phone digits: add 91 if 10-digit Indian number
+    # Normalize phone digits: add 91 country code if 10-digit Indian number
     clean_phone = "".join(filter(str.isdigit, str(to_phone)))
     if len(clean_phone) == 10:
         clean_phone = f"91{clean_phone}"
@@ -74,91 +86,94 @@ def send_whatsapp_message(to_phone: str, message_text: str) -> bool:
 def notify_admin_and_customer_on_booking(booking) -> None:
     """
     Sends WhatsApp notifications on successful Aarti Booking creation:
-    1. Admin notification to 9662279799 (or configured WHATSAPP_PHONE_NUMBER)
+    1. Admin notification to +919662279799 (or configured WHATSAPP_PHONE_NUMBER)
     2. Customer booking confirmation to devotee's mobile number
     """
     try:
-        aarti_display = "Morning Aarti" if booking.aarti_type == "morning" else "Night Aarti"
-        if hasattr(booking, 'get_aarti_type_display'):
-            aarti_display = booking.get_aarti_type_display()
-
-        admin_phone = os.environ.get('WHATSAPP_PHONE_NUMBER', '9662279799').strip() or '9662279799'
-        booking_id = getattr(booking, 'booking_id', str(booking.id))
+        admin_phone = get_admin_phone()
+        name = getattr(booking, 'devotee_name', '')
+        phone = getattr(booking, 'phone', '')
+        email = getattr(booking, 'email', '')
         city = getattr(booking, 'city', '') or 'Surat'
-        special_note = booking.notes or 'None'
-        status_text = booking.status.title() if booking.status else 'Confirmed'
+        booking_date = getattr(booking, 'booking_date', '')
+        number_of_devotees = getattr(booking, 'number_of_devotees', 1)
+
+        aarti_type = getattr(booking, 'aarti_type', 'morning')
+        if hasattr(booking, 'get_aarti_type_display'):
+            aarti_type = booking.get_aarti_type_display()
 
         # 1. Admin Notification
         admin_message = (
-            f"New Aarti Booking\n\n"
-            f"Name: {booking.devotee_name}\n"
-            f"Mobile: {booking.phone}\n"
-            f"Email: {booking.email}\n"
+            f"🙏 New Aarti Booking\n\n"
+            f"Name: {name}\n"
+            f"Mobile: {phone}\n"
+            f"Email: {email}\n"
             f"City: {city}\n"
-            f"Date: {booking.booking_date}\n"
-            f"Aarti: {aarti_display}\n"
-            f"Persons: {booking.number_of_devotees}\n"
-            f"Special Note: {special_note}\n"
-            f"Booking ID: {booking_id}\n"
-            f"Status: {status_text}"
+            f"Aarti Date: {booking_date}\n"
+            f"Aarti Type: {aarti_type}\n"
+            f"Members: {number_of_devotees}"
         )
         send_whatsapp_message(admin_phone, admin_message)
 
-        # 2. Customer Notification
-        if booking.phone:
+        # 2. Customer Notification (if customer phone available)
+        if phone:
+            booking_id = getattr(booking, 'booking_id', str(booking.id))
             customer_message = (
-                f"Aarti Booking Confirmed\n\n"
+                f"🙏 Aarti Booking Confirmed\n\n"
                 f"Booking ID: {booking_id}\n"
-                f"Devotee: {booking.devotee_name}\n"
-                f"Date: {booking.booking_date}\n"
-                f"Aarti: {aarti_display}\n"
-                f"Persons: {booking.number_of_devotees}\n"
+                f"Devotee: {name}\n"
+                f"Date: {booking_date}\n"
+                f"Aarti: {aarti_type}\n"
+                f"Persons: {number_of_devotees}\n"
                 f"City: {city}\n\n"
                 f"Please arrive 20 minutes prior to the Aarti.\n"
                 f"Ganpati Bappa Morya! 🙏"
             )
-            send_whatsapp_message(booking.phone, customer_message)
+            send_whatsapp_message(phone, customer_message)
 
     except Exception as e:
-        logger.error(f"[WhatsApp] Notification handler failure: {e}", exc_info=True)
+        logger.error(f"[WhatsApp] Aarti Booking notification handler failure: {e}", exc_info=True)
+
+
+# Alias
+notify_admin_on_booking = notify_admin_and_customer_on_booking
 
 
 def notify_admin_and_customer_on_membership(membership) -> None:
     """
     Sends WhatsApp notifications on successful Bhakta Membership registration:
-    1. Admin notification to 9662279799 (or configured WHATSAPP_PHONE_NUMBER)
+    1. Admin notification to +919662279799 (or configured WHATSAPP_PHONE_NUMBER)
     2. Member confirmation message to member's mobile number
     """
     try:
-        admin_phone = os.environ.get('WHATSAPP_PHONE_NUMBER', '9662279799').strip() or '9662279799'
-        membership_id = getattr(membership, 'membership_id', str(membership.id))
+        admin_phone = get_admin_phone()
+        full_name = getattr(membership, 'full_name', '')
+        phone = getattr(membership, 'phone', '')
+        email = getattr(membership, 'email', '')
         city = getattr(membership, 'city', '') or 'Surat'
-        volunteer = getattr(membership, 'volunteer', '') or 'Aarti & Ritual Assistance'
-        occupation = getattr(membership, 'occupation', '') or 'Not Specified'
-        created_at_str = (
-            membership.created_at.strftime('%Y-%m-%d %H:%M')
-            if hasattr(membership, 'created_at') and membership.created_at
-            else 'Recently'
-        )
+
+        if hasattr(membership, 'get_membership_tier_display'):
+            membership_type = membership.get_membership_tier_display()
+        else:
+            membership_type = getattr(membership, 'membership_tier', 'Silver Bhakta')
 
         # 1. Admin Notification
         admin_message = (
-            f"🙏 New Ganesh Membership Registration\n\n"
-            f"Name: {membership.full_name}\n"
-            f"Mobile: {membership.phone}\n"
-            f"Email: {membership.email}\n"
+            f"🙏 New Membership Registration\n\n"
+            f"Name: {full_name}\n"
+            f"Mobile: {phone}\n"
+            f"Email: {email}\n"
             f"City: {city}\n"
-            f"Occupation: {occupation}\n"
-            f"Volunteer Sewa: {volunteer}\n"
-            f"Membership ID: {membership_id}\n"
-            f"Date: {created_at_str}"
+            f"Membership Type: {membership_type}"
         )
         send_whatsapp_message(admin_phone, admin_message)
 
         # 2. Member Confirmation Notification
-        if membership.phone:
+        if phone:
+            membership_id = getattr(membership, 'membership_id', str(membership.id))
+            volunteer = getattr(membership, 'volunteer', '') or 'Aarti & Ritual Assistance'
             member_message = (
-                f"🙏 Pranam {membership.full_name}!\n\n"
+                f"🙏 Pranam {full_name}!\n\n"
                 f"Welcome to Surat Cha Gaurinandan Mahotsav 2026.\n"
                 f"Your Bhakta Membership Registration is Confirmed.\n\n"
                 f"Membership ID: {membership_id}\n"
@@ -167,8 +182,82 @@ def notify_admin_and_customer_on_membership(membership) -> None:
                 f"Thank you for joining the sacred Mahotsav Sevak family.\n"
                 f"Ganpati Bappa Morya! 🌺"
             )
-            send_whatsapp_message(membership.phone, member_message)
+            send_whatsapp_message(phone, member_message)
 
     except Exception as e:
         logger.error(f"[WhatsApp] Membership notification handler failure: {e}", exc_info=True)
 
+
+# Alias
+notify_admin_on_membership = notify_admin_and_customer_on_membership
+
+
+def notify_admin_on_donation(donation) -> None:
+    """
+    Sends WhatsApp notifications on successful Donation submission:
+    1. Admin notification to +919662279799 (or configured WHATSAPP_PHONE_NUMBER)
+    2. Donor confirmation message to donor's mobile number
+    """
+    try:
+        admin_phone = get_admin_phone()
+        name = getattr(donation, 'donor_name', '')
+        phone = getattr(donation, 'phone', '')
+        email = getattr(donation, 'email', '')
+        amount = getattr(donation, 'amount', '')
+
+        # 1. Admin Notification
+        admin_message = (
+            f"🙏 New Donation\n\n"
+            f"Name: {name}\n"
+            f"Mobile: {phone}\n"
+            f"Email: {email}\n"
+            f"Amount: {amount}"
+        )
+        send_whatsapp_message(admin_phone, admin_message)
+
+        # 2. Donor Confirmation Notification
+        if phone and phone != '9876543210':
+            transaction_id = getattr(donation, 'transaction_id', '')
+            donor_message = (
+                f"🙏 Dhanyawad {name}!\n\n"
+                f"We have received your divine donation offering of ₹{amount}.\n"
+                f"Transaction ID: {transaction_id}\n\n"
+                f"May Lord Ganesha shower you and your family with boundless blessings.\n"
+                f"Surat Cha Gaurinandan Trust 🙏"
+            )
+            send_whatsapp_message(phone, donor_message)
+
+    except Exception as e:
+        logger.error(f"[WhatsApp] Donation notification handler failure: {e}", exc_info=True)
+
+
+# Alias
+notify_admin_and_customer_on_donation = notify_admin_on_donation
+
+
+def notify_admin_on_contact(contact) -> None:
+    """
+    Sends WhatsApp notification to admin on new contact enquiry:
+    Admin notification to +919662279799 (or configured WHATSAPP_PHONE_NUMBER)
+    """
+    try:
+        admin_phone = get_admin_phone()
+        name = getattr(contact, 'name', '')
+        phone = getattr(contact, 'phone', '') or 'N/A'
+        email = getattr(contact, 'email', '')
+        subject = getattr(contact, 'subject', '')
+        message = getattr(contact, 'message', '')
+
+        # Admin Notification
+        admin_message = (
+            f"📩 New Contact Enquiry\n\n"
+            f"Name: {name}\n"
+            f"Mobile: {phone}\n"
+            f"Email: {email}\n"
+            f"Subject: {subject}\n"
+            f"Message: {message}"
+        )
+        send_whatsapp_message(admin_phone, admin_message)
+
+    except Exception as e:
+        logger.error(f"[WhatsApp] Contact enquiry notification handler failure: {e}", exc_info=True)

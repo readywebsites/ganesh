@@ -9,7 +9,10 @@ from .models import AartiBooking, Membership, Donation, Contact
 from .whatsapp import (
     notify_admin_and_customer_on_booking,
     notify_admin_and_customer_on_membership,
+    notify_admin_on_donation,
+    notify_admin_on_contact,
     send_whatsapp_message,
+    get_admin_phone,
 )
 
 
@@ -384,7 +387,7 @@ class MembershipAPITests(TestCase):
             self.assertEqual(mock_send.call_count, 2)
             admin_args = mock_send.call_args_list[0][0]
             self.assertEqual(admin_args[0], '9662279799')
-            self.assertIn("New Ganesh Membership Registration", admin_args[1])
+            self.assertIn("New Membership Registration", admin_args[1])
             self.assertIn("Vikram Sethi", admin_args[1])
             self.assertIn("9876543212", admin_args[1])
             member_args = mock_send.call_args_list[1][0]
@@ -753,5 +756,198 @@ class LegacyAliasesAndPermissionsTests(TestCase):
         self.assertEqual(self.client.get('/api/memberships/').status_code, status.HTTP_200_OK)
         self.assertEqual(self.client.get('/api/donations/').status_code, status.HTTP_200_OK)
         self.assertEqual(self.client.get('/api/contacts/').status_code, status.HTTP_200_OK)
+
+
+class WhatsAppNotificationSuiteTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_aarti_booking_whatsapp_admin_message_content(self):
+        """Verify Aarti booking WhatsApp admin message structure and recipient"""
+        booking = AartiBooking.objects.create(
+            devotee_name="Rohit Sharma",
+            email="rohit@example.com",
+            phone="9876543210",
+            city="Surat",
+            booking_date="2026-09-14",
+            aarti_type="morning",
+            number_of_devotees=3,
+            status="confirmed",
+        )
+        with patch('core.whatsapp.send_whatsapp_message') as mock_send:
+            notify_admin_and_customer_on_booking(booking)
+            self.assertTrue(mock_send.called)
+            admin_recipient, admin_msg = mock_send.call_args_list[0][0]
+            self.assertEqual(admin_recipient, '9662279799')
+            self.assertIn("🙏 New Aarti Booking", admin_msg)
+            self.assertIn("Name: Rohit Sharma", admin_msg)
+            self.assertIn("Mobile: 9876543210", admin_msg)
+            self.assertIn("Email: rohit@example.com", admin_msg)
+            self.assertIn("City: Surat", admin_msg)
+            self.assertIn("Aarti Date: 2026-09-14", admin_msg)
+            self.assertIn("Members: 3", admin_msg)
+
+    def test_membership_whatsapp_admin_message_content(self):
+        """Verify Membership registration WhatsApp admin message structure and recipient"""
+        membership = Membership.objects.create(
+            full_name="Pooja Patel",
+            email="pooja.patel@example.com",
+            phone="9876543211",
+            city="Surat",
+            membership_tier="silver",
+            status="active",
+        )
+        with patch('core.whatsapp.send_whatsapp_message') as mock_send:
+            notify_admin_and_customer_on_membership(membership)
+            self.assertTrue(mock_send.called)
+            admin_recipient, admin_msg = mock_send.call_args_list[0][0]
+            self.assertEqual(admin_recipient, '9662279799')
+            self.assertIn("🙏 New Membership Registration", admin_msg)
+            self.assertIn("Name: Pooja Patel", admin_msg)
+            self.assertIn("Mobile: 9876543211", admin_msg)
+            self.assertIn("Email: pooja.patel@example.com", admin_msg)
+            self.assertIn("City: Surat", admin_msg)
+            self.assertIn("Membership Type: Silver Bhakta", admin_msg)
+
+    def test_donation_whatsapp_admin_message_content(self):
+        """Verify Donation WhatsApp admin message structure and recipient"""
+        donation = Donation.objects.create(
+            donor_name="Hitesh Mehta",
+            email="hitesh@example.com",
+            phone="9876543212",
+            amount=5100,
+            transaction_id="TXN-WA-TEST-01",
+            status="pending",
+        )
+        with patch('core.whatsapp.send_whatsapp_message') as mock_send:
+            notify_admin_on_donation(donation)
+            self.assertTrue(mock_send.called)
+            admin_recipient, admin_msg = mock_send.call_args_list[0][0]
+            self.assertEqual(admin_recipient, '9662279799')
+            self.assertIn("🙏 New Donation", admin_msg)
+            self.assertIn("Name: Hitesh Mehta", admin_msg)
+            self.assertIn("Mobile: 9876543212", admin_msg)
+            self.assertIn("Email: hitesh@example.com", admin_msg)
+            self.assertIn("Amount: 5100", admin_msg)
+
+    def test_contact_whatsapp_admin_message_content(self):
+        """Verify Contact inquiry WhatsApp admin message structure and recipient"""
+        contact = Contact.objects.create(
+            name="Suresh Verma",
+            email="suresh@example.com",
+            phone="9876543213",
+            subject="Prasad Timings Inquiry",
+            message="Please let us know the Mahaprasad timings for Sunday.",
+            status="new",
+        )
+        with patch('core.whatsapp.send_whatsapp_message') as mock_send:
+            notify_admin_on_contact(contact)
+            self.assertTrue(mock_send.called)
+            admin_recipient, admin_msg = mock_send.call_args_list[0][0]
+            self.assertEqual(admin_recipient, '9662279799')
+            self.assertIn("📩 New Contact Enquiry", admin_msg)
+            self.assertIn("Name: Suresh Verma", admin_msg)
+            self.assertIn("Mobile: 9876543213", admin_msg)
+            self.assertIn("Email: suresh@example.com", admin_msg)
+            self.assertIn("Subject: Prasad Timings Inquiry", admin_msg)
+            self.assertIn("Message: Please let us know the Mahaprasad timings for Sunday.", admin_msg)
+
+    def test_all_form_api_posts_trigger_whatsapp_and_persist_db(self):
+        """API submissions on all 4 public forms trigger WhatsApp notifications and save in DB"""
+        with patch('core.whatsapp.send_whatsapp_message') as mock_send:
+            # 1. Aarti Booking POST
+            res_aarti = self.client.post('/api/aarti-bookings/', data={
+                "name": "WA Aarti User",
+                "mobile": "9876543201",
+                "email": "wa_aarti@example.com",
+                "city": "Surat",
+                "date": "2026-09-16",
+                "slot": "Morning Aarti",
+                "members": 2,
+            }, format='json')
+            self.assertEqual(res_aarti.status_code, status.HTTP_201_CREATED)
+            self.assertTrue(AartiBooking.objects.filter(email="wa_aarti@example.com").exists())
+
+            # 2. Membership POST
+            res_mem = self.client.post('/api/memberships/', data={
+                "name": "WA Member User",
+                "mobile": "9876543202",
+                "email": "wa_mem@example.com",
+                "city": "Surat",
+            }, format='json')
+            self.assertEqual(res_mem.status_code, status.HTTP_201_CREATED)
+            self.assertTrue(Membership.objects.filter(email="wa_mem@example.com").exists())
+
+            # 3. Donation POST
+            res_don = self.client.post('/api/donations/', data={
+                "name": "WA Donor User",
+                "mobile": "9876543203",
+                "email": "wa_don@example.com",
+                "amount": 2100,
+                "transactionId": "TXN-WA-POST-01",
+            }, format='json')
+            self.assertEqual(res_don.status_code, status.HTTP_201_CREATED)
+            self.assertTrue(Donation.objects.filter(transaction_id="TXN-WA-POST-01").exists())
+
+            # 4. Contact POST
+            res_cnt = self.client.post('/api/contacts/', data={
+                "name": "WA Contact User",
+                "mobile": "9876543204",
+                "email": "wa_cnt@example.com",
+                "subject": "Darshan Question",
+                "message": "Testing whatsapp trigger on contact submission.",
+            }, format='json')
+            self.assertEqual(res_cnt.status_code, status.HTTP_201_CREATED)
+            self.assertTrue(Contact.objects.filter(email="wa_cnt@example.com").exists())
+
+            # Verify mock was called for all forms
+            self.assertGreaterEqual(mock_send.call_count, 4)
+
+    def test_whatsapp_failure_does_not_break_api_submissions(self):
+        """Even when WhatsApp sending throws an unexpected exception, all forms still save and return 201"""
+        with patch('core.whatsapp.send_whatsapp_message', side_effect=Exception("Network Timeout")):
+            # 1. Aarti Booking
+            res1 = self.client.post('/api/aarti-bookings/', data={
+                "name": "Err Aarti Devotee",
+                "mobile": "9876543205",
+                "email": "err_aarti@example.com",
+                "date": "2026-09-17",
+                "slot": "Night Aarti",
+                "members": 1,
+            }, format='json')
+            self.assertEqual(res1.status_code, status.HTTP_201_CREATED)
+            self.assertTrue(AartiBooking.objects.filter(email="err_aarti@example.com").exists())
+
+            # 2. Membership
+            res2 = self.client.post('/api/memberships/', data={
+                "name": "Err Member Devotee",
+                "mobile": "9876543206",
+                "email": "err_mem@example.com",
+            }, format='json')
+            self.assertEqual(res2.status_code, status.HTTP_201_CREATED)
+            self.assertTrue(Membership.objects.filter(email="err_mem@example.com").exists())
+
+            # 3. Donation
+            res3 = self.client.post('/api/donations/', data={
+                "name": "Err Donor Devotee",
+                "amount": 1100,
+                "transactionId": "TXN-ERR-WA-01",
+                "phone": "9876543207",
+                "email": "err_don@example.com",
+            }, format='json')
+            self.assertEqual(res3.status_code, status.HTTP_201_CREATED)
+            self.assertTrue(Donation.objects.filter(transaction_id="TXN-ERR-WA-01").exists())
+
+            # 4. Contact
+            res4 = self.client.post('/api/contacts/', data={
+                "name": "Err Contact Devotee",
+                "email": "err_cnt@example.com",
+                "phone": "9876543208",
+                "subject": "Darshan Info",
+                "message": "Testing resilient form save despite whatsapp error.",
+            }, format='json')
+            self.assertEqual(res4.status_code, status.HTTP_201_CREATED)
+            self.assertTrue(Contact.objects.filter(email="err_cnt@example.com").exists())
+
 
 
