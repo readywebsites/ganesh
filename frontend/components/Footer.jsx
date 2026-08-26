@@ -237,7 +237,7 @@ function Footer() {
             {/* Brand Titles */}
             <div className="space-y-1">
               <h3 className="text-2xl sm:text-3xl font-heading font-bold text-[#3F3528] tracking-wide">
-                🙏 Surat Cha Gaurinandan
+                 Surat Cha Gaurinandan
               </h3>
               <p className="text-xs uppercase tracking-[0.3em] text-[#8F7430] font-subheading font-semibold">
                 Ganesh Mahotsav 2026
@@ -300,15 +300,15 @@ function Footer() {
                 <div className="w-8 h-8 rounded-full bg-[#FAF7EF] border border-[#B89A4A]/25 flex items-center justify-center text-[#8F7430] group-hover:border-[#B89A4A]/50 group-hover:bg-[#EEE7D8] transition-all duration-300 shrink-0 shadow-sm">
                   <span className="text-sm">📍</span>
                 </div>
-                <span className="group-hover:text-[#3F3528] transition-colors">Surat, Gujarat, India</span>
+                <span className="group-hover:text-[#3F3528] transition-colors">Surat Cha Gaurinandan | Ganesh Seva Mandal, VIP Rd, Vesu, Surat, Gujarat 395007</span>
               </li>
 
               <li className="flex items-center justify-center md:justify-start gap-3 group">
                 <div className="w-8 h-8 rounded-full bg-[#FAF7EF] border border-[#B89A4A]/25 flex items-center justify-center text-[#8F7430] group-hover:border-[#B89A4A]/50 group-hover:bg-[#EEE7D8] transition-all duration-300 shrink-0 shadow-sm">
                   <span className="text-sm">📞</span>
                 </div>
-                <a href="tel:+919876543210" className="group-hover:text-[#B89A4A] transition-colors">
-                  +91 98765 43210
+                <a href="tel:+919662279799" className="group-hover:text-[#B89A4A] transition-colors">
+                  +91 9662279799
                 </a>
               </li>
 
@@ -366,7 +366,7 @@ function Footer() {
           {/* Full Width Thin Luxury Golden Line Divider */}
           <div className="relative w-full h-[1px] bg-gradient-to-r from-transparent via-[#B89A4A]/25 to-transparent mb-8">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#FFFDF7] border border-[#B89A4A]/30 flex items-center justify-center text-[10px] text-[#8F7430] shadow-[0_2px_8px_rgba(63,53,40,0.05)]">
-              🕉️
+              
             </div>
           </div>
 

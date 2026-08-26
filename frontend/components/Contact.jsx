@@ -109,7 +109,7 @@ function Contact() {
                 <div className="contact-details">
                   <h4>Devotee Helplines</h4>
                   <p>
-                    Primary Call: +91 261 2849102<br />
+                   
                     WhatsApp Support: +91 9662279799
                   </p>
                 </div>
@@ -148,7 +148,7 @@ function Contact() {
 
             {submitted ? (
               <div className="p-4 bg-gold/10 border border-gold/40 text-gold rounded-lg text-center my-auto">
-                <p className="font-bold text-lg mb-1">🙏 Dhanyawad!</p>
+                <p className="font-bold text-lg mb-1"> Dhanyawad!</p>
                 <p className="text-sm">Your message has been received. Our team will get back to you shortly.</p>
                 <button onClick={() => setSubmitted(false)} className="mt-4 text-xs text-amber-300 underline">Send another message</button>
               </div>
