@@ -96,7 +96,7 @@ function Contact() {
                 </div>
                 <div className="contact-details">
                   <h4>Temple Mandap Location</h4>
-                  <p>Nandanvan 2, Vesu, Surat, Gujarat 395007</p>
+                  <p>Surat Cha Gaurinandan | Ganesh Seva Mandal, VIP Rd, Vesu, Surat, Gujarat 395007</p>
                 </div>
               </div>
 
@@ -111,7 +111,7 @@ function Contact() {
                   <h4>Devotee Helplines</h4>
                   <p>
                     Primary Call: +91 261 2849102<br />
-                    WhatsApp Support: +91 99999 99999
+                    WhatsApp Support: +91 9662279799
                   </p>
                 </div>
               </div>
@@ -218,7 +218,7 @@ function Contact() {
           <div className="map-container gold-pulse-border h-full min-h-[300px] relative rounded-xl overflow-hidden flex items-center justify-center bg-[#EEE7D8]">
             {showMap ? (
               <iframe
-                src="https://maps.app.goo.gl/E9d5WymkXrvbuzWf6?g_st=iw"
+                src="https://www.google.com/maps/place/Surat+Cha+Gaurinandan+%7C+Ganesh+Seva+Mandal/@21.1405016,72.7775943,17z/data=!3m1!4b1!4m6!3m5!1s0x3be0537c51595665:0xd3160fffa667353e!8m2!3d21.1405016!4d72.7775943!16s%2Fg%2F11zg_6x9fs!18m1!1e1?entry=ttu&g_ep=EgoyMDI2MDgyMy4wIKXMDSoASAFQAw%3D%3D"
                 className="map-iframe w-full h-full min-h-[300px]"
                 allowFullScreen=""
                 loading="lazy"
@@ -237,7 +237,7 @@ function Contact() {
 
             <div className="map-action-overlay">
               <a
-                href="https://maps.app.goo.gl/E9d5WymkXrvbuzWf6?g_st=iw"
+                href="https://www.google.com/maps/place/Surat+Cha+Gaurinandan+%7C+Ganesh+Seva+Mandal/@21.1405016,72.7775943,17z/data=!3m1!4b1!4m6!3m5!1s0x3be0537c51595665:0xd3160fffa667353e!8m2!3d21.1405016!4d72.7775943!16s%2Fg%2F11zg_6x9fs!18m1!1e1?entry=ttu&g_ep=EgoyMDI2MDgyMy4wIKXMDSoASAFQAw%3D%3D"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-primary map-directions-btn shimmer-btn"
