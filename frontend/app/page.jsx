@@ -5,7 +5,6 @@ import useLenis from '@/hooks/useLenis';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import About from '@/components/About';
-import CinematicStoryOverlay from '@/components/CinematicStoryOverlay';
 
 // Dynamic imports for code splitting below-the-fold components
 const TempleWorldCanvas = dynamic(() => import('@/components/3d/TempleWorldCanvas'), { ssr: false });
@@ -26,9 +25,6 @@ export default function Home() {
     <main className="relative min-h-screen bg-[#F7F3EA] text-[#3F3528] selection:bg-[#D8BD72] selection:text-[#3F3528]">
       {/* 3D WebGL World Layer */}
       <TempleWorldCanvas />
-
-      {/* Cinematic 7-Scene Story Overlay */}
-      <CinematicStoryOverlay />
 
       {/* HTML Content Overlay Layer */}
       <div className="relative z-10">

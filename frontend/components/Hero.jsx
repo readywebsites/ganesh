@@ -21,12 +21,11 @@ function Hero() {
   return (
     <section
       id="home"
-      className="relative h-screen min-h-screen w-full flex items-center justify-center overflow-hidden p-0 m-0 select-none"
-      style={{ minHeight: '100vh', maxHeight: '100vh', padding: 0, margin: 0 }}
+      className="relative min-h-screen w-full flex items-center justify-center overflow-hidden p-0 m-0 select-none"
     >
       <div className="hero-overlay pointer-events-none" />
 
-      <div className="hero-content text-center flex flex-col justify-between items-center h-full w-full max-w-7xl px-6 pt-28 pb-10 box-border z-10">
+      <div className="hero-content text-center flex flex-col justify-between items-center w-full max-w-7xl px-6 pt-24 pb-8 md:pt-28 md:pb-10 box-border z-10">
         {/* Top Tagline Badge */}
         <div className="hero-top">
           <div className="hero-tagline inline-flex items-center gap-2 px-5 py-2 rounded-full border border-[#B89A4A]/40 bg-[#FAF7EF]/80 text-[#8F7430] tracking-[0.25em] text-[11px] md:text-xs uppercase backdrop-blur-xl shadow-[0_10px_30px_rgba(184,154,74,0.15)]">
@@ -36,18 +35,18 @@ function Hero() {
         </div>
 
         {/* Main Title & CTA Center Block */}
-        <div className="hero-middle my-auto py-6">
+        <div className="hero-middle my-auto py-4 md:py-6 flex flex-col items-center justify-center">
           <div className="hero-title-container">
             <h1 className="hero-title-gujarati">
               <span className="title-line-1">સુરત ચા</span>
               <span className="title-line-2">ગૌરીનંદન</span>
             </h1>
-            <p className="hero-subtitle text-lg md:text-2xl text-[#776B5B] tracking-[0.3em] uppercase font-heading mt-4 font-light">
+            <p className="hero-subtitle text-lg md:text-2xl text-[#776B5B] tracking-[0.3em] uppercase font-heading mt-3 md:mt-4 font-light">
               Ganesh Mahotsav 2026
             </p>
           </div>
 
-          <div className="hero-cta-wrapper mt-8 md:mt-10">
+          <div className="hero-cta-wrapper mt-6 md:mt-8">
             <a
               href="#about"
               onClick={scrollToAbout}
@@ -62,8 +61,8 @@ function Hero() {
         </div>
 
         {/* Bottom Details & Apple Scroll Indicator */}
-        <div className="hero-bottom mt-4 flex flex-col items-center">
-          <div className="hero-details text-[11px] md:text-xs tracking-[0.2em] text-[#776B5B] mb-4 uppercase">
+        <div className="hero-bottom mt-2 flex flex-col items-center">
+          <div className="hero-details text-[11px] md:text-xs tracking-[0.2em] text-[#776B5B] mb-3 md:mb-4 uppercase">
             CELEBRATING <strong className="text-[#8F7430] font-bold">GANESH CHATURTHI 2026</strong> | BHADRAPADA SHUDDHA CHATURTHI
           </div>
           
@@ -77,7 +76,7 @@ function Hero() {
             <span className="scroll-text text-[10px] tracking-[0.25em] text-[#776B5B] uppercase mb-2 group-hover:text-[#3F3528] transition-colors">
               Scroll down to explore
             </span>
-            <div className="scroll-line w-[2px] h-10 bg-gradient-to-b from-[#B89A4A] via-[#D8BD72] to-transparent animate-bounce" />
+            <div className="scroll-line w-[2px] h-8 md:h-10 bg-gradient-to-b from-[#B89A4A] via-[#D8BD72] to-transparent animate-bounce" />
           </div>
         </div>
       </div>

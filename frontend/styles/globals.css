@@ -505,10 +505,9 @@ section {
     z-index: 3;
     width: 100%;
     max-width: var(--max-width);
-    height: 100%;
-    max-height: 100vh;
+    min-height: 100vh;
     margin: 0 auto;
-    padding: 6rem 2rem 2rem 2rem;
+    padding: 6.5rem 1.5rem 2rem 1.5rem;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -524,43 +523,52 @@ section {
     color: var(--color-gold-dark);
     text-transform: uppercase;
     text-shadow: 0 0 10px rgba(184, 154, 74, 0.3);
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .hero-title-container {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
+    overflow: visible;
 }
 
 .hero-title-gujarati {
-    font-family: 'Noto Sans Gujarati', var(--font-heading), serif;
-    font-size: clamp(3.2rem, 9vw, 6.8rem);
-    font-weight: 900;
-    line-height: 1.05;
-    letter-spacing: -0.02em;
+    font-family: var(--font-gujarati), 'Noto Sans Gujarati', var(--font-heading), serif;
+    font-size: clamp(2.6rem, 7.5vw, 5.8rem);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     margin-bottom: 0.5rem;
+    overflow: visible;
+    padding: 0.2rem 0;
 }
 
 .title-line-1 {
+    display: inline-block;
+    padding: 0.1em 0.05em;
     background: linear-gradient(180deg, #3F3528 0%, #8F7430 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 4px 30px rgba(184, 154, 74, 0.25));
+    filter: drop-shadow(0 4px 20px rgba(184, 154, 74, 0.25));
+    overflow: visible;
 }
 
 .title-line-2 {
+    display: inline-block;
+    padding: 0.1em 0.05em;
     background: linear-gradient(180deg, #8F7430 0%, #B89A4A 60%, #B88635 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 6px 40px rgba(184, 154, 74, 0.35));
+    filter: drop-shadow(0 6px 30px rgba(184, 154, 74, 0.35));
+    overflow: visible;
 }
 
 .hero-subtitle {
     font-family: var(--font-subheading);
-    font-size: clamp(1.2rem, 3vw, 2rem);
+    font-size: clamp(1.1rem, 2.5vw, 1.8rem);
     letter-spacing: 3px;
     color: var(--color-text-light);
     opacity: 0.9;
@@ -583,7 +591,7 @@ section {
     flex-direction: column;
     align-items: center;
     gap: 0.5rem;
-    margin-top: 1.5rem;
+    margin-top: 1rem;
 }
 
 .scroll-text {
