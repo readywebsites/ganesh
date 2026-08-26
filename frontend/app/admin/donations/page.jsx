@@ -102,6 +102,38 @@ export default function AdminDonations() {
     document.body.removeChild(link);
   };
 
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const res = await fetch(getApiUrl(`/donations/${id}/`), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: newStatus.toLowerCase() === 'success' ? 'verified' : newStatus.toLowerCase(),
+          paymentStatus: newStatus.toUpperCase(),
+        }),
+      });
+      const data = await res.json();
+      if (data.success || res.ok) {
+        setDonations((prev) =>
+          prev.map((d) =>
+            d._id === id || d.id === id
+              ? {
+                  ...d,
+                  paymentStatus: newStatus.toUpperCase(),
+                  status: newStatus.toLowerCase() === 'success' ? 'verified' : newStatus.toLowerCase(),
+                }
+              : d
+          )
+        );
+      } else {
+        alert(data.message || 'Failed to update donation status');
+      }
+    } catch (err) {
+      console.error('Status update error:', err);
+      alert('Network error while updating donation status');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-zinc-900 border border-zinc-800 p-5 rounded-2xl">
@@ -115,11 +147,11 @@ export default function AdminDonations() {
         <div className="flex items-center space-x-2">
           <button
             onClick={() => setModalOpen(true)}
-            className="px-4 py-2 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-black rounded-lg"
+            className="px-4 py-2 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-black rounded-lg transition-colors"
           >
             + Add Manual Donation
           </button>
-          <button onClick={exportCSV} className="px-3 py-2 text-xs font-semibold bg-zinc-800 hover:bg-zinc-700 text-amber-300 rounded-lg border border-amber-500/20">
+          <button onClick={exportCSV} className="px-3 py-2 text-xs font-semibold bg-zinc-800 hover:bg-zinc-700 text-amber-300 rounded-lg border border-amber-500/20 transition-colors">
             📊 Export CSV
           </button>
         </div>
@@ -140,9 +172,9 @@ export default function AdminDonations() {
           className="bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
         >
           <option value="All">All Payment Statuses</option>
-          <option value="Success">Success</option>
-          <option value="Pending">Pending</option>
-          <option value="Failed">Failed</option>
+          <option value="PENDING">PENDING</option>
+          <option value="SUCCESS">SUCCESS</option>
+          <option value="REJECTED">REJECTED</option>
         </select>
       </div>
 
@@ -154,6 +186,7 @@ export default function AdminDonations() {
                 <th className="p-4">Transaction ID</th>
                 <th className="p-4">Devotee Name</th>
                 <th className="p-4">Amount (₹)</th>
+                <th className="p-4">Method</th>
                 <th className="p-4">Payment Status</th>
                 <th className="p-4">Contact Details</th>
                 <th className="p-4">Date</th>
@@ -163,54 +196,65 @@ export default function AdminDonations() {
             <tbody className="divide-y divide-zinc-800">
               {loading ? (
                 <tr>
-                  <td colSpan="7" className="p-8 text-center text-zinc-500">
+                  <td colSpan="8" className="p-8 text-center text-zinc-500">
                     Loading donation records...
                   </td>
                 </tr>
               ) : donations.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="p-8 text-center text-zinc-500">
+                  <td colSpan="8" className="p-8 text-center text-zinc-500">
                     No donation records found.
                   </td>
                 </tr>
               ) : (
-                donations.map((d) => (
-                  <tr key={d._id} className="hover:bg-zinc-800/50 transition-colors">
-                    <td className="p-4 font-mono text-zinc-400">{d.transactionId}</td>
-                    <td className="p-4 font-semibold text-white">
-                      {d.name}
-                      {d.notes && <span className="block text-[10px] text-zinc-400 italic">{d.notes}</span>}
-                    </td>
-                    <td className="p-4 font-bold text-emerald-400 text-sm">₹{d.amount?.toLocaleString()}</td>
-                    <td className="p-4">
-                      <span
-                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                          d.paymentStatus === 'Success'
-                            ? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
-                            : d.paymentStatus === 'Pending'
-                            ? 'bg-yellow-950 text-yellow-400 border border-yellow-800'
-                            : 'bg-red-950 text-red-400 border border-red-800'
-                        }`}
-                      >
-                        {d.paymentStatus}
-                      </span>
-                    </td>
-                    <td className="p-4 text-[11px] text-zinc-400">
-                      {d.phone || 'N/A'} {d.email ? `(${d.email})` : ''}
-                    </td>
-                    <td className="p-4 text-zinc-500 font-mono">
-                      {new Date(d.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="p-4 text-right space-x-2">
-                      <button
-                        onClick={() => handleDelete(d._id)}
-                        className="px-2 py-1 bg-zinc-800 hover:bg-red-950 text-zinc-400 hover:text-red-400 rounded text-[10px]"
-                      >
-                        🗑️ Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                donations.map((d) => {
+                  const currentStatus = (d.paymentStatus || (d.status === 'verified' ? 'SUCCESS' : d.status === 'rejected' ? 'REJECTED' : 'PENDING')).toUpperCase();
+                  return (
+                    <tr key={d._id || d.id} className="hover:bg-zinc-800/50 transition-colors">
+                      <td className="p-4 font-mono text-zinc-400 text-[11px]">{d.transactionId}</td>
+                      <td className="p-4 font-semibold text-white">
+                        {d.name}
+                        {d.notes && <span className="block text-[10px] text-zinc-400 italic">{d.notes}</span>}
+                      </td>
+                      <td className="p-4 font-bold text-emerald-400 text-sm">₹{d.amount?.toLocaleString()}</td>
+                      <td className="p-4 text-[11px] font-mono text-amber-300/80">
+                        {d.payment_method || d.paymentMethod || 'GPay / UPI'}
+                      </td>
+                      <td className="p-4">
+                        <select
+                          value={currentStatus}
+                          onChange={(e) => handleStatusChange(d._id || d.id, e.target.value)}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border cursor-pointer focus:outline-none ${
+                            currentStatus === 'SUCCESS'
+                              ? 'bg-emerald-950/80 text-emerald-300 border-emerald-700'
+                              : currentStatus === 'PENDING'
+                              ? 'bg-yellow-950/80 text-yellow-300 border-yellow-700'
+                              : 'bg-red-950/80 text-red-300 border-red-700'
+                          }`}
+                        >
+                          <option value="PENDING">⏳ PENDING</option>
+                          <option value="SUCCESS">✓ SUCCESS</option>
+                          <option value="REJECTED">✕ REJECTED</option>
+                        </select>
+                      </td>
+                      <td className="p-4 text-[11px] text-zinc-400">
+                        <div>{d.phone || 'N/A'}</div>
+                        {d.email && <div className="text-[10px] text-zinc-500">{d.email}</div>}
+                      </td>
+                      <td className="p-4 text-zinc-500 font-mono">
+                        {new Date(d.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="p-4 text-right space-x-2">
+                        <button
+                          onClick={() => handleDelete(d._id || d.id)}
+                          className="px-2.5 py-1 bg-zinc-800 hover:bg-red-950 text-zinc-400 hover:text-red-400 rounded text-[11px] transition-colors"
+                        >
+                          🗑️ Delete
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -277,9 +321,9 @@ export default function AdminDonations() {
                     onChange={(e) => setNewDonation({ ...newDonation, paymentStatus: e.target.value })}
                     className="w-full bg-zinc-950 border border-zinc-700 rounded px-3 py-2 text-white"
                   >
-                    <option value="Success">Success</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Failed">Failed</option>
+                    <option value="PENDING">PENDING</option>
+                    <option value="SUCCESS">SUCCESS</option>
+                    <option value="REJECTED">REJECTED</option>
                   </select>
                 </div>
               </div>

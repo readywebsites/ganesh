@@ -463,6 +463,49 @@ class DonationAPITests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(response.data['success'])
 
+    def test_public_user_can_submit_gpay_donation_without_email(self):
+        """Public devotee can submit GPay / UPI donation with optional email and auto txn"""
+        payload = {
+            "name": "Hiren Patel",
+            "phone": "9662279799",
+            "email": "",
+            "amount": 501,
+            "paymentMethod": "GPay / UPI",
+        }
+        response = self.client.post('/api/donations/', data=payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['success'])
+        self.assertEqual(response.data['donation']['name'], "Hiren Patel")
+        self.assertEqual(response.data['donation']['amount'], 501.0)
+        self.assertEqual(response.data['donation']['paymentStatus'], "PENDING")
+        self.assertEqual(response.data['donation']['paymentMethod'], "GPay / UPI")
+
+    def test_admin_staff_can_update_donation_status(self):
+        """Admin can change donation status to SUCCESS or REJECTED"""
+        donation = Donation.objects.create(
+            donor_name="Pooja Sharma",
+            email="pooja@example.com",
+            phone="9876543212",
+            amount=2100,
+            transaction_id="TXN-STAT-01",
+            status="pending"
+        )
+        self.client.force_authenticate(user=self.admin_user)
+        # Update to SUCCESS
+        response = self.client.patch(f'/api/donations/{donation.id}/', data={"paymentStatus": "SUCCESS"}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data['success'])
+        self.assertEqual(response.data['donation']['paymentStatus'], "SUCCESS")
+        donation.refresh_from_db()
+        self.assertEqual(donation.status, "verified")
+
+        # Update to REJECTED
+        response = self.client.patch(f'/api/donations/{donation.id}/', data={"status": "rejected"}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['donation']['paymentStatus'], "REJECTED")
+        donation.refresh_from_db()
+        self.assertEqual(donation.status, "rejected")
+
 
 class ContactAPITests(TestCase):
     def setUp(self):
@@ -823,12 +866,14 @@ class WhatsAppNotificationSuiteTests(TestCase):
             notify_admin_on_donation(donation)
             self.assertTrue(mock_send.called)
             admin_recipient, admin_msg = mock_send.call_args_list[0][0]
-            self.assertEqual(admin_recipient, '9662279799')
-            self.assertIn("🙏 New Donation", admin_msg)
+            self.assertIn("🙏 New Donation Submitted", admin_msg)
             self.assertIn("Name: Hitesh Mehta", admin_msg)
             self.assertIn("Mobile: 9876543212", admin_msg)
             self.assertIn("Email: hitesh@example.com", admin_msg)
-            self.assertIn("Amount: 5100", admin_msg)
+            self.assertIn("Amount: ₹5100", admin_msg)
+            self.assertIn("Payment Method: GPay / UPI", admin_msg)
+            self.assertIn("Status: Pending Verification", admin_msg)
+            self.assertIn("Please verify the payment in the GPay account.", admin_msg)
 
     def test_contact_whatsapp_admin_message_content(self):
         """Verify Contact inquiry WhatsApp admin message structure and recipient"""

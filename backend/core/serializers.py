@@ -157,8 +157,8 @@ class DonationSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='donor_name', required=False)
     transaction_id = serializers.CharField(required=False)
     transactionId = serializers.CharField(source='transaction_id', required=False)
-    payment_method = serializers.CharField(required=False, default='upi')
-    email = serializers.EmailField(required=False)
+    payment_method = serializers.CharField(required=False, default='GPay / UPI')
+    email = serializers.EmailField(required=False, allow_blank=True, allow_null=True)
     phone = serializers.CharField(required=False)
 
     class Meta:
@@ -174,24 +174,45 @@ class DonationSerializer(serializers.ModelSerializer):
         if 'donorName' in mutable_data and 'donor_name' not in mutable_data:
             mutable_data['donor_name'] = mutable_data['donorName']
 
+        if 'mobile' in mutable_data and 'phone' not in mutable_data:
+            mutable_data['phone'] = mutable_data['mobile']
+
+        if 'paymentMethod' in mutable_data and 'payment_method' not in mutable_data:
+            mutable_data['payment_method'] = mutable_data['paymentMethod']
+
+        if 'payment_method' not in mutable_data or not str(mutable_data.get('payment_method', '')).strip():
+            mutable_data['payment_method'] = 'GPay / UPI'
+        elif str(mutable_data.get('payment_method')).lower() == 'upi':
+            mutable_data['payment_method'] = 'GPay / UPI'
+
         if 'transactionId' in mutable_data and 'transaction_id' not in mutable_data:
             mutable_data['transaction_id'] = mutable_data['transactionId']
         if 'transaction_id' not in mutable_data or not str(mutable_data.get('transaction_id', '')).strip():
             short_uuid = uuid.uuid4().hex[:8].upper()
-            mutable_data['transaction_id'] = f"TXN-UPI-{short_uuid}"
+            mutable_data['transaction_id'] = f"TXN-GPAY-{short_uuid}"
 
-        if 'email' not in mutable_data or not str(mutable_data.get('email', '')).strip():
-            mutable_data['email'] = 'devotee@suratchagaurinandan.com'
+        if 'email' in mutable_data and not str(mutable_data.get('email', '')).strip():
+            mutable_data['email'] = ''
 
         if 'phone' not in mutable_data or not str(mutable_data.get('phone', '')).strip():
             mutable_data['phone'] = '9876543210'
 
-        if 'paymentStatus' in mutable_data and 'status' not in mutable_data:
-            ps = str(mutable_data['paymentStatus']).lower()
-            if ps in ['success', 'verified', 'approved']:
+        # Map status / paymentStatus / payment_status
+        status_in = None
+        if 'status' in mutable_data:
+            status_in = str(mutable_data['status']).lower()
+        elif 'paymentStatus' in mutable_data:
+            status_in = str(mutable_data['paymentStatus']).lower()
+        elif 'payment_status' in mutable_data:
+            status_in = str(mutable_data['payment_status']).lower()
+
+        if status_in:
+            if status_in in ['success', 'verified', 'approved']:
                 mutable_data['status'] = 'verified'
-            elif ps in ['rejected', 'failed']:
+            elif status_in in ['rejected', 'failed']:
                 mutable_data['status'] = 'rejected'
+            elif status_in in ['refunded']:
+                mutable_data['status'] = 'refunded'
             else:
                 mutable_data['status'] = 'pending'
 
@@ -230,8 +251,11 @@ class DonationSerializer(serializers.ModelSerializer):
         data['transactionId'] = instance.transaction_id
         data['transaction_id'] = instance.transaction_id
         data['amount'] = float(instance.amount) if instance.amount is not None else 0.0
-        data['paymentStatus'] = 'Success' if instance.status == 'verified' else ('Failed' if instance.status == 'rejected' else 'Pending')
+        data['paymentStatus'] = 'SUCCESS' if instance.status == 'verified' else ('REJECTED' if instance.status == 'rejected' else 'PENDING')
+        data['payment_status'] = data['paymentStatus']
         data['status'] = instance.status
+        data['payment_method'] = instance.payment_method or 'GPay / UPI'
+        data['paymentMethod'] = instance.payment_method or 'GPay / UPI'
         data['createdAt'] = instance.created_at.isoformat() if instance.created_at else None
         data['date'] = instance.created_at.strftime('%Y-%m-%d') if instance.created_at else None
         return data

@@ -356,9 +356,74 @@ class DonationViewSet(PublicCreateViewSetMixin, viewsets.ModelViewSet):
             "donation": serializer.data
         }, status=status.HTTP_201_CREATED, headers=headers)
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        status_param = self.request.query_params.get('status')
+        search_param = self.request.query_params.get('search')
+
+        if status_param and status_param != 'All':
+            status_lower = status_param.lower()
+            if status_lower in ('success', 'verified'):
+                queryset = queryset.filter(status='verified')
+            elif status_lower in ('failed', 'rejected'):
+                queryset = queryset.filter(status='rejected')
+            elif status_lower in ('pending',):
+                queryset = queryset.filter(status='pending')
+            else:
+                queryset = queryset.filter(status__iexact=status_param)
+
+        if search_param:
+            queryset = queryset.filter(
+                models.Q(donor_name__icontains=search_param) |
+                models.Q(email__icontains=search_param) |
+                models.Q(phone__icontains=search_param) |
+                models.Q(transaction_id__icontains=search_param)
+            )
+
+        return queryset
+
+    def get_object(self):
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        lookup_val = self.kwargs.get(lookup_url_kwarg)
+        if not lookup_val:
+            return super().get_object()
+
+        # Try standard UUID lookup
+        try:
+            val_uuid = uuid.UUID(str(lookup_val))
+            return Donation.objects.get(id=val_uuid)
+        except (ValueError, Donation.DoesNotExist):
+            pass
+
+        clean_val = str(lookup_val).strip()
+        donation = Donation.objects.filter(transaction_id__iexact=clean_val).first()
+        if donation:
+            return donation
+
+        donation = Donation.objects.filter(id__startswith=clean_val.replace('-', '')).first()
+        if donation:
+            return donation
+
+        raise Http404(f"Donation '{lookup_val}' not found.")
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response({
+            "success": True,
+            "message": "Donation updated successfully.",
+            "data": serializer.data,
+            "donation": serializer.data
+        })
+
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-        total_amount = Donation.objects.aggregate(total=models.Sum('amount'))['total'] or 0
+        total_amount = Donation.objects.filter(status='verified').aggregate(total=models.Sum('amount'))['total']
+        if total_amount is None:
+            total_amount = Donation.objects.aggregate(total=models.Sum('amount'))['total'] or 0
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)

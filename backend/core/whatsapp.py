@@ -203,15 +203,22 @@ def notify_admin_on_donation(donation) -> None:
         name = getattr(donation, 'donor_name', '')
         phone = getattr(donation, 'phone', '')
         email = getattr(donation, 'email', '')
+        email_str = email if email and email != 'devotee@suratchagaurinandan.com' else 'N/A'
         amount = getattr(donation, 'amount', '')
+        payment_method = getattr(donation, 'payment_method', 'GPay / UPI') or 'GPay / UPI'
+        if payment_method == 'upi':
+            payment_method = 'GPay / UPI'
 
-        # 1. Admin Notification
+        # 1. Admin Notification (Exact User Format)
         admin_message = (
-            f"🙏 New Donation\n\n"
+            f"🙏 New Donation Submitted\n\n"
             f"Name: {name}\n"
             f"Mobile: {phone}\n"
-            f"Email: {email}\n"
-            f"Amount: {amount}"
+            f"Email: {email_str}\n"
+            f"Amount: ₹{amount}\n"
+            f"Payment Method: {payment_method}\n"
+            f"Status: Pending Verification\n\n"
+            f"Please verify the payment in the GPay account."
         )
         send_whatsapp_message(admin_phone, admin_message)
 
@@ -220,8 +227,11 @@ def notify_admin_on_donation(donation) -> None:
             transaction_id = getattr(donation, 'transaction_id', '')
             donor_message = (
                 f"🙏 Dhanyawad {name}!\n\n"
-                f"We have received your divine donation offering of ₹{amount}.\n"
-                f"Transaction ID: {transaction_id}\n\n"
+                f"Your sacred donation details of ₹{amount} have been submitted successfully.\n"
+                f"Payment Method: {payment_method}\n"
+                f"Reference ID: {transaction_id}\n"
+                f"Status: Pending Verification\n\n"
+                f"Payment confirmation will be verified shortly.\n"
                 f"May Lord Ganesha shower you and your family with boundless blessings.\n"
                 f"Surat Cha Gaurinandan Trust 🙏"
             )

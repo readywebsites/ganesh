@@ -112,6 +112,7 @@ class AartiBooking(models.Model):
 
 class Donation(models.Model):
     class PaymentMethodChoices(models.TextChoices):
+        GPAY_UPI = 'GPay / UPI', _('GPay / UPI')
         UPI = 'upi', _('UPI / QR Code')
         CARD = 'card', _('Credit/Debit Card')
         NETBANKING = 'netbanking', _('Net Banking')
@@ -119,21 +120,21 @@ class Donation(models.Model):
 
     class StatusChoices(models.TextChoices):
         PENDING = 'pending', _('Pending Verification')
-        VERIFIED = 'verified', _('Verified & Processed')
+        VERIFIED = 'verified', _('Verified / Success')
         REJECTED = 'rejected', _('Rejected')
         REFUNDED = 'refunded', _('Refunded')
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_("ID"))
     donor_name = models.CharField(max_length=150, verbose_name=_("Donor Name"))
-    email = models.EmailField(verbose_name=_("Email Address"))
+    email = models.EmailField(verbose_name=_("Email Address"), blank=True, null=True, default='')
     phone = models.CharField(max_length=20, verbose_name=_("Phone Number"))
     amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name=_("Amount (INR)"))
     currency = models.CharField(max_length=10, default='INR', verbose_name=_("Currency"))
     transaction_id = models.CharField(max_length=100, unique=True, verbose_name=_("Transaction ID"))
     payment_method = models.CharField(
-        max_length=30,
+        max_length=50,
         choices=PaymentMethodChoices.choices,
-        default=PaymentMethodChoices.UPI,
+        default=PaymentMethodChoices.GPAY_UPI,
         verbose_name=_("Payment Method")
     )
     receipt_image = models.ImageField(
