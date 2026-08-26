@@ -259,3 +259,36 @@ class Contact(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.subject}"
+
+
+class Event(models.Model):
+    class StatusChoices(models.TextChoices):
+        ACTIVE = 'active', _('Active')
+        DRAFT = 'draft', _('Draft')
+        ARCHIVED = 'archived', _('Archived')
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_("ID"))
+    title = models.CharField(max_length=200, verbose_name=_("Event Title"))
+    day = models.CharField(max_length=100, verbose_name=_("Day / Date Tag"))
+    description = models.TextField(verbose_name=_("Event Description"))
+    time = models.CharField(max_length=100, blank=True, default='', verbose_name=_("Time"))
+    location = models.CharField(max_length=200, blank=True, default='Main Temple Hall', verbose_name=_("Location"))
+    banner_url = models.CharField(max_length=500, blank=True, default='', verbose_name=_("Banner URL"))
+    order = models.PositiveIntegerField(default=1, verbose_name=_("Display Order"))
+    is_active = models.BooleanField(default=True, verbose_name=_("Is Active"))
+    status = models.CharField(
+        max_length=20,
+        choices=StatusChoices.choices,
+        default=StatusChoices.ACTIVE,
+        verbose_name=_("Status")
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Created At"))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=_("Updated At"))
+
+    class Meta:
+        verbose_name = _("Festival Event")
+        verbose_name_plural = _("Festival Events")
+        ordering = ['order', 'created_at']
+
+    def __str__(self):
+        return f"#{self.order} - {self.title} ({self.day})"

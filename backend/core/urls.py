@@ -6,6 +6,7 @@ from .views import (
     DonationViewSet,
     MembershipViewSet,
     ContactViewSet,
+    EventViewSet,
 )
 
 # Initialize DRF DefaultRouter
@@ -20,6 +21,9 @@ router.register(r'memberships', MembershipViewSet, basename='membership')
 router.register(r'members', MembershipViewSet, basename='member')
 router.register(r'contacts', ContactViewSet, basename='contact')
 router.register(r'contact', ContactViewSet, basename='contact-singular')
+router.register(r'events', EventViewSet, basename='event')
+router.register(r'event', EventViewSet, basename='event-singular')
+router.register(r'schedule', EventViewSet, basename='schedule')
 
 # Include router URLs in app's urlpatterns
 urlpatterns = [

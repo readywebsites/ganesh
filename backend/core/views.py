@@ -9,13 +9,14 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.authentication import BasicAuthentication
 from .authentication import CsrfExemptSessionAuthentication
-from .models import Gallery, AartiBooking, Donation, Membership, Contact
+from .models import Gallery, AartiBooking, Donation, Membership, Contact, Event
 from .serializers import (
     GallerySerializer,
     AartiBookingSerializer,
     DonationSerializer,
     MembershipSerializer,
     ContactSerializer,
+    EventSerializer,
 )
 from .whatsapp import (
     notify_admin_and_customer_on_booking,
@@ -724,3 +725,124 @@ class ContactViewSet(PublicCreateViewSetMixin, viewsets.ModelViewSet):
             "success": True,
             "message": "Contact message deleted successfully."
         }, status=status.HTTP_200_OK)
+
+
+class EventViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing Mahotsav celebration events & timeline schedule.
+    Public GET for devotees, full CRUD for admin.
+    """
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+    authentication_classes = [CsrfExemptSessionAuthentication, BasicAuthentication]
+    permission_classes = [permissions.AllowAny]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['title', 'day', 'description', 'location']
+    ordering_fields = ['order', 'created_at']
+    ordering = ['order', 'created_at']
+
+    def get_queryset(self):
+        queryset = Event.objects.all().order_by('order', 'created_at')
+        # If public non-staff user requests, filter to active events
+        user = getattr(self.request, 'user', None)
+        is_admin_req = user and (user.is_staff or user.is_superuser)
+        if not is_admin_req and not self.request.query_params.get('all'):
+            queryset = queryset.filter(is_active=True)
+
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(
+                models.Q(title__icontains=search) |
+                models.Q(day__icontains=search) |
+                models.Q(description__icontains=search) |
+                models.Q(location__icontains=search)
+            )
+
+        active_filter = self.request.query_params.get('active')
+        if active_filter is not None:
+            is_act = active_filter.lower() in ('true', '1', 'yes')
+            queryset = queryset.filter(is_active=is_act)
+
+        return queryset
+
+    def get_object(self):
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        lookup_val = self.kwargs.get(lookup_url_kwarg)
+        if not lookup_val:
+            return super().get_object()
+
+        try:
+            val_uuid = uuid.UUID(str(lookup_val))
+            return Event.objects.get(id=val_uuid)
+        except (ValueError, Event.DoesNotExist):
+            pass
+
+        clean_val = str(lookup_val).strip()
+        event = Event.objects.filter(id__startswith=clean_val.replace('-', '')).first()
+        if event:
+            return event
+
+        raise Http404(f"Event '{lookup_val}' not found.")
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({
+            "success": True,
+            "count": len(serializer.data),
+            "data": serializer.data,
+            "events": serializer.data
+        })
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            error_message = "Validation failed."
+            if 'non_field_errors' in serializer.errors:
+                error_message = str(serializer.errors['non_field_errors'][0])
+            else:
+                for k, v in serializer.errors.items():
+                    first_v = v[0] if isinstance(v, list) else v
+                    error_message = f"{k}: {first_v}"
+                    break
+            return Response({
+                "success": False,
+                "message": error_message,
+                "errors": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        event = serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response({
+            "success": True,
+            "message": "Event created successfully.",
+            "data": serializer.data,
+            "event": serializer.data
+        }, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        if not serializer.is_valid():
+            return Response({
+                "success": False,
+                "message": "Validation failed.",
+                "errors": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+        self.perform_update(serializer)
+        return Response({
+            "success": True,
+            "message": "Event updated successfully.",
+            "data": serializer.data,
+            "event": serializer.data
+        })
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({
+            "success": True,
+            "message": "Event deleted successfully."
+        }, status=status.HTTP_200_OK)
+

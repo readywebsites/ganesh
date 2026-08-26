@@ -5,7 +5,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 from django.contrib.auth.models import User
-from .models import AartiBooking, Membership, Donation, Contact
+from .models import AartiBooking, Membership, Donation, Contact, Event
 from .whatsapp import (
     notify_admin_and_customer_on_booking,
     notify_admin_and_customer_on_membership,
@@ -993,6 +993,113 @@ class WhatsAppNotificationSuiteTests(TestCase):
             }, format='json')
             self.assertEqual(res4.status_code, status.HTTP_201_CREATED)
             self.assertTrue(Contact.objects.filter(email="err_cnt@example.com").exists())
+
+
+class EventAPITests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.admin_user = User.objects.create_superuser(
+            username='admin_events',
+            email='admin_events@example.com',
+            password='testpassword123'
+        )
+        # Create the 4 initial events in exact order
+        self.event1 = Event.objects.create(
+            order=1,
+            day='Day 01 | Bhadrapada Chaturthi',
+            title='Pran Pratishtha (Divine Invocation)',
+            description='Welcome the Lord with traditional Dhol Tasha drums.',
+            time='08:30 AM - 11:30 AM',
+            location='Main Temple Hall',
+            is_active=True
+        )
+        self.event2 = Event.objects.create(
+            order=2,
+            day='Day 05 | Bhadrapada Ashtami',
+            title='Maha Chhappan Bhog Offering',
+            description='A glorious visual offering of 56 varieties of handcrafted Modaks.',
+            time='12:30 PM onwards',
+            location='Prasad Mandap',
+            is_active=True
+        )
+        self.event3 = Event.objects.create(
+            order=3,
+            day='Day 08 | Bhadrapada Ekadashi',
+            title='Divine Maha Aarti & Jagran',
+            description='A spectacular evening filled with hundreds of brass lamps.',
+            time='07:00 PM - 11:00 PM',
+            location='Sanctuary Courtyard',
+            is_active=True
+        )
+        self.event4 = Event.objects.create(
+            order=4,
+            day='Day 10 | Anant Chaturdashi',
+            title='Visarjan (Divine Immersion)',
+            description='The emotional send-off procession under saffron colors.',
+            time='09:00 AM onwards',
+            location='Sacred Water Ghats',
+            is_active=True
+        )
+
+    def test_public_can_list_all_4_initial_events_in_exact_order(self):
+        """Public endpoint returns all 4 events sorted by order 1, 2, 3, 4"""
+        res = self.client.get('/api/events/')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertTrue(res.data['success'])
+        events = res.data['data']
+        self.assertEqual(len(events), 4)
+        self.assertEqual(events[0]['order'], 1)
+        self.assertEqual(events[0]['title'], 'Pran Pratishtha (Divine Invocation)')
+        self.assertEqual(events[1]['order'], 2)
+        self.assertEqual(events[1]['title'], 'Maha Chhappan Bhog Offering')
+        self.assertEqual(events[2]['order'], 3)
+        self.assertEqual(events[2]['title'], 'Divine Maha Aarti & Jagran')
+        self.assertEqual(events[3]['order'], 4)
+        self.assertEqual(events[3]['title'], 'Visarjan (Divine Immersion)')
+
+    def test_adding_future_events_preserves_automatic_alternation_order(self):
+        """Adding 5th and 6th events automatically places them in sorted order for zig-zag alternation"""
+        # Create 5th event
+        res5 = self.client.post('/api/events/', data={
+            "title": "5th Mega Cultural Evening",
+            "day": "Day 06 | Cultural Gala",
+            "description": "Grand classical dance & music tribute to Lord Ganesha.",
+            "time": "06:00 PM - 09:00 PM",
+            "location": "Open Amphitheatre",
+            "order": 5,
+            "is_active": True,
+        }, format='json')
+        self.assertEqual(res5.status_code, status.HTTP_201_CREATED)
+
+        # Create 6th event
+        res6 = self.client.post('/api/events/', data={
+            "title": "6th Annakshetra Grand Feast",
+            "day": "Day 09 | Maha Bhandara",
+            "description": "Serving 50,000 devotees with sanctified prasadam.",
+            "time": "11:00 AM - 04:00 PM",
+            "location": "Bhandara Complex",
+            "order": 6,
+            "is_active": True,
+        }, format='json')
+        self.assertEqual(res6.status_code, status.HTTP_201_CREATED)
+
+        # Verify sorted listing
+        res = self.client.get('/api/events/')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        events = res.data['data']
+        self.assertEqual(len(events), 6)
+        # Check alternating pattern expectations:
+        # idx 0 (1st) -> LEFT
+        # idx 1 (2nd) -> RIGHT
+        # idx 2 (3rd) -> LEFT
+        # idx 3 (4th) -> RIGHT
+        # idx 4 (5th) -> LEFT
+        # idx 5 (6th) -> RIGHT
+        orders = [e['order'] for e in events]
+        self.assertEqual(orders, [1, 2, 3, 4, 5, 6])
+        self.assertEqual(events[4]['title'], "5th Mega Cultural Evening")
+        self.assertEqual(events[5]['title'], "6th Annakshetra Grand Feast")
+
 
 
 

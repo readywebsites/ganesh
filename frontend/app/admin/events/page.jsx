@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getApiUrl } from '@/lib/api';
 
 export default function AdminEvents() {
   const [events, setEvents] = useState([]);
@@ -14,16 +15,20 @@ export default function AdminEvents() {
     time: '',
     location: '',
     bannerUrl: '',
-    order: 0,
+    order: 1,
     active: true,
   });
 
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/events');
+      const res = await fetch(getApiUrl('/events/?all=true'));
       const data = await res.json();
-      if (data.success) setEvents(data.data || []);
+      const rawList = Array.isArray(data) ? data : data.data || data.events || [];
+      if (Array.isArray(rawList)) {
+        const sorted = [...rawList].sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
+        setEvents(sorted);
+      }
     } catch (err) {
       console.error('Error fetching events:', err);
     } finally {
@@ -38,10 +43,10 @@ export default function AdminEvents() {
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this event?')) return;
     try {
-      const res = await fetch(`/api/events/${id}`, { method: 'DELETE' });
+      const res = await fetch(getApiUrl(`/events/${id}/`), { method: 'DELETE' });
       const data = await res.json();
-      if (data.success) {
-        setEvents(events.filter((e) => e._id !== id));
+      if (data.success || res.ok) {
+        setEvents(events.filter((e) => (e._id || e.id) !== id));
       }
     } catch (err) {
       alert('Failed to delete event');
@@ -51,20 +56,28 @@ export default function AdminEvents() {
   const handleSave = async (e) => {
     e.preventDefault();
     try {
-      const url = editingEvent ? `/api/events/${editingEvent._id}` : '/api/events';
-      const method = editingEvent ? 'PUT' : 'POST';
+      const id = editingEvent ? (editingEvent._id || editingEvent.id) : null;
+      const url = id ? getApiUrl(`/events/${id}/`) : getApiUrl('/events/');
+      const method = id ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, order: Number(formData.order) }),
+        body: JSON.stringify({
+          ...formData,
+          day: formData.date,
+          order: Number(formData.order) || 1,
+          is_active: Boolean(formData.active),
+        }),
       });
       const data = await res.json();
-      if (data.success) {
+      if (data.success || res.ok) {
         fetchEvents();
         setModalOpen(false);
         setEditingEvent(null);
-        setFormData({ title: '', description: '', date: '', time: '', location: '', bannerUrl: '', order: 0, active: true });
+        setFormData({ title: '', description: '', date: '', time: '', location: '', bannerUrl: '', order: 1, active: true });
+      } else {
+        alert(data.message || 'Failed to save event');
       }
     } catch (err) {
       alert('Failed to save event');
@@ -80,14 +93,14 @@ export default function AdminEvents() {
   const openEditModal = (ev) => {
     setEditingEvent(ev);
     setFormData({
-      title: ev.title,
-      description: ev.description,
-      date: ev.date,
+      title: ev.title || '',
+      description: ev.description || ev.desc || '',
+      date: ev.date || ev.day || '',
       time: ev.time || '',
       location: ev.location || '',
-      bannerUrl: ev.bannerUrl || '',
-      order: ev.order || 0,
-      active: ev.active ?? true,
+      bannerUrl: ev.bannerUrl || ev.banner_url || '',
+      order: ev.order || 1,
+      active: ev.active ?? ev.is_active ?? true,
     });
     setModalOpen(true);
   };

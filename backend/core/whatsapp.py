@@ -204,7 +204,13 @@ def notify_admin_on_donation(donation) -> None:
         phone = getattr(donation, 'phone', '')
         email = getattr(donation, 'email', '')
         email_str = email if email and email != 'devotee@suratchagaurinandan.com' else 'N/A'
-        amount = getattr(donation, 'amount', '')
+        raw_amount = getattr(donation, 'amount', '')
+        try:
+            amt_val = float(raw_amount)
+            formatted_amount = f"{int(amt_val)}" if amt_val.is_integer() else f"{amt_val:.2f}"
+        except (ValueError, TypeError):
+            formatted_amount = str(raw_amount)
+
         payment_method = getattr(donation, 'payment_method', 'GPay / UPI') or 'GPay / UPI'
         if payment_method == 'upi':
             payment_method = 'GPay / UPI'
@@ -215,7 +221,7 @@ def notify_admin_on_donation(donation) -> None:
             f"Name: {name}\n"
             f"Mobile: {phone}\n"
             f"Email: {email_str}\n"
-            f"Amount: ₹{amount}\n"
+            f"Amount: ₹{formatted_amount}\n"
             f"Payment Method: {payment_method}\n"
             f"Status: Pending Verification\n\n"
             f"Please verify the payment in the GPay account."
@@ -227,7 +233,7 @@ def notify_admin_on_donation(donation) -> None:
             transaction_id = getattr(donation, 'transaction_id', '')
             donor_message = (
                 f"🙏 Dhanyawad {name}!\n\n"
-                f"Your sacred donation details of ₹{amount} have been submitted successfully.\n"
+                f"Your sacred donation details of ₹{formatted_amount} have been submitted successfully.\n"
                 f"Payment Method: {payment_method}\n"
                 f"Reference ID: {transaction_id}\n"
                 f"Status: Pending Verification\n\n"

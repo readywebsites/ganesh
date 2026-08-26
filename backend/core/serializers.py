@@ -3,7 +3,7 @@ import re
 from datetime import date
 from django.db import models
 from rest_framework import serializers
-from .models import Gallery, AartiBooking, Donation, Membership, Contact
+from .models import Gallery, AartiBooking, Donation, Membership, Contact, Event
 
 
 class GallerySerializer(serializers.ModelSerializer):
@@ -361,4 +361,52 @@ class ContactSerializer(serializers.ModelSerializer):
         data['_id'] = str(instance.id)
         data['createdAt'] = instance.created_at.isoformat() if instance.created_at else None
         data['date'] = instance.created_at.strftime('%Y-%m-%d') if instance.created_at else None
+        return data
+
+
+class EventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = '__all__'
+        read_only_fields = ('id', 'created_at', 'updated_at')
+
+    def to_internal_value(self, data):
+        mutable_data = data.copy() if hasattr(data, 'copy') else dict(data)
+        # Map frontend aliases if sent (desc -> description, date -> day, active -> is_active, bannerUrl -> banner_url)
+        if 'desc' in mutable_data and 'description' not in mutable_data:
+            mutable_data['description'] = mutable_data['desc']
+        if 'date' in mutable_data and 'day' not in mutable_data:
+            mutable_data['day'] = mutable_data['date']
+        if 'active' in mutable_data and 'is_active' not in mutable_data:
+            mutable_data['is_active'] = mutable_data['active']
+        if 'bannerUrl' in mutable_data and 'banner_url' not in mutable_data:
+            mutable_data['banner_url'] = mutable_data['bannerUrl']
+        return super().to_internal_value(mutable_data)
+
+    def validate_title(self, value):
+        val = value.strip()
+        if len(val) < 2:
+            raise serializers.ValidationError("Title must be at least 2 characters long.")
+        return val
+
+    def validate_day(self, value):
+        val = value.strip()
+        if not val:
+            raise serializers.ValidationError("Day/Date tag is required.")
+        return val
+
+    def validate_description(self, value):
+        val = value.strip()
+        if len(val) < 5:
+            raise serializers.ValidationError("Description must be at least 5 characters long.")
+        return val
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['_id'] = str(instance.id)
+        data['desc'] = instance.description
+        data['date'] = instance.day
+        data['active'] = instance.is_active
+        data['bannerUrl'] = instance.banner_url
+        data['createdAt'] = instance.created_at.isoformat() if instance.created_at else None
         return data
