@@ -14,7 +14,7 @@ export default function AdminSettings() {
     youtube: 'https://youtube.com',
     instagram: 'https://instagram.com',
     mapLocation: 'Nandanvan 2, Vesu, Surat, Gujarat 395007',
-    mapDirectionsUrl: 'https://maps.app.goo.gl/E9d5WymkXrvbuzWf6?g_st=iw',
+    mapDirectionsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Nandanvan+2,+Vesu,+Surat,+Gujarat+395007',
     mapEmbedUrl: 'https://maps.google.com/maps?q=Nandanvan%202,%20Vesu,%20Surat,%20Gujarat%20395007&t=&z=16&ie=UTF8&iwloc=&output=embed',
     metaTitle: 'Surat Cha Gaurinandan | Official Ganesh Mahotsav 2026',
     metaDescription: 'Experience Surat Cha Gaurinandan Ganesh Mahotsav 2026 with live 24/7 Darshan, events, and community blessings.',

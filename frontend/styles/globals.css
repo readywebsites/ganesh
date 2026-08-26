@@ -1850,15 +1850,15 @@ section {
 
 .contact-item {
     display: flex;
-    gap: 1.25rem;
-    margin-bottom: 1.5rem;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
 }
 
 .contact-icon {
-    width: 50px;
-    height: 50px;
+    width: 54px;
+    height: 54px;
     border-radius: 50%;
-    background: rgba(184, 154, 74, 0.15);
+    background: rgba(184, 154, 74, 0.12);
     border: var(--border-gold);
     display: flex;
     align-items: center;
@@ -1868,25 +1868,22 @@ section {
 }
 
 .contact-icon svg {
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     fill: currentColor;
 }
 
 .contact-details h4 {
-    font-family: var(--font-heading), var(--font-subheading), serif;
-    font-size: 1.15rem;
-    font-weight: 700;
+    font-family: var(--font-subheading);
+    font-size: 1.2rem;
     color: var(--color-gold-dark);
-    margin-bottom: 0.25rem;
-    text-shadow: 0 1px 2px rgba(184, 154, 74, 0.1);
+    margin-bottom: 0.4rem;
 }
 
 .contact-details p {
-    color: #2B231A;
+    color: var(--color-text-muted);
     font-size: 0.95rem;
-    font-weight: 500;
-    line-height: 1.55;
+    line-height: 1.6;
 }
 
 .social-links {
