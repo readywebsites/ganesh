@@ -227,7 +227,7 @@ function Contact() {
             ) : (
               <div className="text-center p-6 cursor-pointer" onClick={() => setShowMap(true)}>
                 <span className="text-4xl mb-2 block">📍</span>
-                <h4 className="font-heading text-[#8F7430] text-lg mb-1">Nandanvan 2, Vesu, Surat</h4>
+                <h4 className="font-heading text-[#8F7430] text-lg mb-1">Surat Cha Gaurinandan | Ganesh Seva Mandal,VIP Rd, Vesu, Surat, Gujarat 395007</h4>
                 <p className="text-xs text-gray-400 mb-4">Click to load interactive sanctuary map</p>
                 <button className="btn-primary shimmer-btn text-xs px-4 py-2">
                   <span>Load Interactive Map</span>
@@ -237,7 +237,7 @@ function Contact() {
 
             <div className="map-action-overlay">
               <a
-                href="https://www.google.com/maps/dir/?api=1&destination=Nandanvan+2,+Vesu,+Surat,+Gujarat+395007"
+                href="https://maps.app.goo.gl/E9d5WymkXrvbuzWf6?g_st=iw"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-primary map-directions-btn shimmer-btn"
