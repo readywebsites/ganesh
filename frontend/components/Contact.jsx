@@ -15,7 +15,6 @@ function Contact() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [showMap, setShowMap] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -216,28 +215,18 @@ function Contact() {
 
           {/* Real Google Maps Embed */}
           <div className="map-container gold-pulse-border h-full min-h-[300px] relative rounded-xl overflow-hidden flex items-center justify-center bg-[#EEE7D8]">
-            {showMap ? (
-              <iframe
-                src="https://www.google.com/maps/place/Surat+Cha+Gaurinandan+%7C+Ganesh+Seva+Mandal/@21.1405016,72.7775943,17z/data=!3m1!4b1!4m6!3m5!1s0x3be0537c51595665:0xd3160fffa667353e!8m2!3d21.1405016!4d72.7775943!16s%2Fg%2F11zg_6x9fs!18m1!1e1?entry=ttu&g_ep=EgoyMDI2MDgyMy4wIKXMDSoASAFQAw%3D%3D"
-                className="map-iframe w-full h-full min-h-[300px]"
-                allowFullScreen=""
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              ></iframe>
-            ) : (
-              <div className="text-center p-6 cursor-pointer" onClick={() => setShowMap(true)}>
-                <span className="text-4xl mb-2 block">📍</span>
-                <h4 className="font-heading text-[#8F7430] text-lg mb-1">Surat Cha Gaurinandan | Ganesh Seva Mandal,VIP Rd, Vesu, Surat, Gujarat 395007</h4>
-                <p className="text-xs text-gray-400 mb-4">Click to load interactive sanctuary map</p>
-                <button className="btn-primary shimmer-btn text-xs px-4 py-2">
-                  <span>Load Interactive Map</span>
-                </button>
-              </div>
-            )}
+            <iframe
+              src="https://maps.google.com/maps?q=Surat%20Cha%20Gaurinandan%20%7C%20Ganesh%20Seva%20Mandal%2C%20VIP%20Rd%2C%20Vesu%2C%20Surat%2C%20Gujarat%20395007&t=&z=16&ie=UTF8&iwloc=&output=embed"
+              className="map-iframe w-full h-full min-h-[300px]"
+              allowFullScreen=""
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Surat Cha Gaurinandan Location Map"
+            ></iframe>
 
             <div className="map-action-overlay">
               <a
-                href="https://www.google.com/maps/place/Surat+Cha+Gaurinandan+%7C+Ganesh+Seva+Mandal/@21.1405016,72.7775943,17z/data=!3m1!4b1!4m6!3m5!1s0x3be0537c51595665:0xd3160fffa667353e!8m2!3d21.1405016!4d72.7775943!16s%2Fg%2F11zg_6x9fs!18m1!1e1?entry=ttu&g_ep=EgoyMDI2MDgyMy4wIKXMDSoASAFQAw%3D%3D"
+                href="https://maps.app.goo.gl/E9d5WymkXrvbuzWf6?g_st=iw"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-primary map-directions-btn shimmer-btn"
