@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 export default function AdminMapSettings() {
   const [formData, setFormData] = useState({
     mapLocation: 'Nandanvan 2, Vesu, Surat, Gujarat 395007',
-    mapDirectionsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Nandanvan+2,+Vesu,+Surat,+Gujarat+395007',
+    mapDirectionsUrl: 'https://maps.app.goo.gl/E9d5WymkXrvbuzWf6?g_st=iw',
     mapEmbedUrl: 'https://maps.google.com/maps?q=Nandanvan%202,%20Vesu,%20Surat,%20Gujarat%20395007&t=&z=16&ie=UTF8&iwloc=&output=embed',
   });
   const [loading, setLoading] = useState(true);
