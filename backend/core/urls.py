@@ -8,6 +8,7 @@ from .views import (
     ContactViewSet,
     EventViewSet,
 )
+from .whatsapp_webhook import WhatsAppWebhookView
 
 # Initialize DRF DefaultRouter
 router = DefaultRouter()
@@ -27,6 +28,12 @@ router.register(r'schedule', EventViewSet, basename='schedule')
 
 # Include router URLs in app's urlpatterns
 urlpatterns = [
+    # WhatsApp Cloud API Webhook Endpoint (GET for Meta verification, POST for events)
+    path('whatsapp/webhook', WhatsAppWebhookView.as_view(), name='whatsapp-webhook-noslash'),
+    path('whatsapp/webhook/', WhatsAppWebhookView.as_view(), name='whatsapp-webhook'),
+    path('api/whatsapp/webhook', WhatsAppWebhookView.as_view(), name='whatsapp-webhook-api-noslash'),
+    path('api/whatsapp/webhook/', WhatsAppWebhookView.as_view(), name='whatsapp-webhook-api'),
+
     # Availability aliases
     path('aarti-bookings/availability', AartiBookingViewSet.as_view({'get': 'availability'}), name='aarti-availability-noslash'),
     path('aarti/slots', AartiBookingViewSet.as_view({'get': 'availability'}), name='legacy-aarti-slots'),

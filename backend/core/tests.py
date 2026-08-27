@@ -1102,5 +1102,122 @@ class EventAPITests(TestCase):
         self.assertEqual(events[5]['title'], "6th Annakshetra Grand Feast")
 
 
+class WhatsAppWebhookAPITests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.verify_token = "test_meta_webhook_secret_2026"
+
+    def test_webhook_verification_get_success(self):
+        """GET /api/whatsapp/webhook verification returns hub.challenge with HTTP 200 when tokens match"""
+        with patch.dict('os.environ', {'WHATSAPP_VERIFY_TOKEN': self.verify_token}):
+            url = f'/api/whatsapp/webhook?hub.mode=subscribe&hub.verify_token={self.verify_token}&hub.challenge=1158201444'
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.content.decode('utf-8'), '1158201444')
+            self.assertEqual(response['Content-Type'], 'text/plain')
+
+    def test_webhook_verification_get_token_mismatch_returns_403(self):
+        """GET /api/whatsapp/webhook returns 403 Forbidden when verify token does not match"""
+        with patch.dict('os.environ', {'WHATSAPP_VERIFY_TOKEN': self.verify_token}):
+            url = '/api/whatsapp/webhook?hub.mode=subscribe&hub.verify_token=wrong_token&hub.challenge=1158201444'
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 403)
+            self.assertIn("mismatch", response.content.decode('utf-8'))
+
+    def test_webhook_verification_get_missing_params_returns_400(self):
+        """GET /api/whatsapp/webhook returns 400 Bad Request when query params are missing"""
+        response = self.client.get('/api/whatsapp/webhook')
+        self.assertEqual(response.status_code, 400)
+
+    def test_webhook_post_incoming_message_returns_200(self):
+        """POST /api/whatsapp/webhook receives message payload and returns 200 OK EVENT_RECEIVED"""
+        payload = {
+            "object": "whatsapp_business_account",
+            "entry": [{
+                "id": "WABA_123456",
+                "changes": [{
+                    "value": {
+                        "messaging_product": "whatsapp",
+                        "metadata": {
+                            "display_phone_number": "919662279799",
+                            "phone_number_id": "123456789"
+                        },
+                        "contacts": [{
+                            "profile": {"name": "Devotee Ramesh"},
+                            "wa_id": "919876543210"
+                        }],
+                        "messages": [{
+                            "from": "919876543210",
+                            "id": "wamid.HBgLM...",
+                            "timestamp": "1724740000",
+                            "text": {"body": "Ganpati Bappa Morya! What are the Aarti timings?"},
+                            "type": "text"
+                        }]
+                    },
+                    "field": "messages"
+                }]
+            }]
+        }
+        response = self.client.post('/api/whatsapp/webhook', data=payload, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content.decode('utf-8'), 'EVENT_RECEIVED')
+
+    def test_webhook_post_status_receipt_returns_200(self):
+        """POST /api/whatsapp/webhook receives delivery receipt payload and returns 200 OK"""
+        payload = {
+            "object": "whatsapp_business_account",
+            "entry": [{
+                "id": "WABA_123456",
+                "changes": [{
+                    "value": {
+                        "messaging_product": "whatsapp",
+                        "metadata": {
+                            "phone_number_id": "123456789"
+                        },
+                        "statuses": [{
+                            "id": "wamid.HBgLM...",
+                            "status": "delivered",
+                            "timestamp": "1724740010",
+                            "recipient_id": "919876543210"
+                        }]
+                    },
+                    "field": "messages"
+                }]
+            }]
+        }
+        response = self.client.post('/api/whatsapp/webhook/', data=payload, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content.decode('utf-8'), 'EVENT_RECEIVED')
+
+    def test_webhook_signature_verification_when_configured(self):
+        """POST with WHATSAPP_APP_SECRET validates X-Hub-Signature-256 HMAC"""
+        import hmac
+        import hashlib
+        app_secret = "my_secret_meta_key"
+        payload_dict = {"object": "whatsapp_business_account", "entry": []}
+        payload_bytes = json.dumps(payload_dict).encode('utf-8')
+        signature = hmac.new(app_secret.encode('utf-8'), payload_bytes, hashlib.sha256).hexdigest()
+
+        with patch.dict('os.environ', {'WHATSAPP_APP_SECRET': app_secret}):
+            # Valid signature
+            res_valid = self.client.post(
+                '/api/whatsapp/webhook/',
+                data=payload_bytes,
+                content_type='application/json',
+                HTTP_X_HUB_SIGNATURE_256=f"sha256={signature}"
+            )
+            self.assertEqual(res_valid.status_code, 200)
+
+            # Invalid signature
+            res_invalid = self.client.post(
+                '/api/whatsapp/webhook/',
+                data=payload_bytes,
+                content_type='application/json',
+                HTTP_X_HUB_SIGNATURE_256="sha256=invalid_hex_signature"
+            )
+            self.assertEqual(res_invalid.status_code, 403)
+
+
+
 
 
