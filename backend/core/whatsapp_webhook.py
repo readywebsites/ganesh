@@ -16,7 +16,7 @@ def get_verify_token() -> str:
     Returns the configured WhatsApp Webhook Verification Token.
     Can be set via environment variable `WHATSAPP_VERIFY_TOKEN`.
     """
-    return os.environ.get('WHATSAPP_VERIFY_TOKEN', 'surat_cha_gaurinandan_2026_webhook_secret').strip()
+    return os.environ.get('WHATSAPP_VERIFY_TOKEN', 'ganpati_biz499_webhook_token_2026_x9k2p8v').strip()
 
 
 @method_decorator(csrf_exempt, name='dispatch')
