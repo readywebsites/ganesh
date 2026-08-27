@@ -43,6 +43,7 @@ function formatHumanDate(dateStr) {
 
 export default function AartiBooking() {
   const sectionRef = useRef(null);
+  const aartiSelectionRef = useRef(null);
   const formRef = useRef(null);
 
   // Flow State: Step 1 (Date), Step 2 (Aarti Selection), Step 3/4 (Form), Step 5 (Success)
@@ -138,15 +139,44 @@ export default function AartiBooking() {
     };
   }, [selectedDate]);
 
-  // Handle Date Click
+  // Smooth Scroll to Aarti Selection Section
+  const scrollToAartiSelection = () => {
+    if (typeof window === 'undefined') return;
+    const target = aartiSelectionRef.current || document.getElementById('aarti-selection-section');
+    if (target) {
+      const navOffset = window.innerWidth < 768 ? 75 : 95;
+      const targetY = target.getBoundingClientRect().top + window.pageYOffset - navOffset;
+
+      if (window.__lenis && typeof window.__lenis.scrollTo === 'function') {
+        window.__lenis.scrollTo(targetY, {
+          duration: 1.2,
+          easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        });
+      } else if (window.lenis && typeof window.lenis.scrollTo === 'function') {
+        window.lenis.scrollTo(targetY, { duration: 1.2 });
+      } else {
+        window.scrollTo({
+          top: Math.max(0, targetY),
+          behavior: 'smooth',
+        });
+      }
+    }
+  };
+
+  // Handle Date Click — Automatically smooth-scroll to Aarti Selection
   const handleDateSelect = (dateStr) => {
     setSelectedDate(dateStr);
     setSelectedSlot(null);
     setApiError('');
     setSuccessBooking(null);
+
+    // Auto smooth scroll to Aarti Selection section
+    setTimeout(() => {
+      scrollToAartiSelection();
+    }, 60);
   };
 
-  // Handle Aarti Slot Selection (Morning or Night)
+  // Handle Aarti Slot Selection (Morning or Night) — Smooth-scroll to Devotee Details Form
   const handleSlotSelect = (slotKey) => {
     const isFull = slotData?.[slotKey]?.isFull;
     if (isFull) return;
@@ -155,12 +185,23 @@ export default function AartiBooking() {
     setApiError('');
     setSuccessBooking(null);
 
-    // Smooth scroll to form on mobile
+    // Smooth scroll to form
     setTimeout(() => {
       if (formRef.current) {
-        formRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        const navOffset = window.innerWidth < 768 ? 75 : 95;
+        const targetY = formRef.current.getBoundingClientRect().top + window.pageYOffset - navOffset;
+        if (window.__lenis && typeof window.__lenis.scrollTo === 'function') {
+          window.__lenis.scrollTo(targetY, { duration: 1.2 });
+        } else if (window.lenis && typeof window.lenis.scrollTo === 'function') {
+          window.lenis.scrollTo(targetY, { duration: 1.2 });
+        } else {
+          window.scrollTo({
+            top: Math.max(0, targetY),
+            behavior: 'smooth',
+          });
+        }
       }
-    }, 100);
+    }, 80);
   };
 
   // Form Input Change
@@ -610,7 +651,7 @@ Ganpati Bappa Morya! 🙏`;
                       key={item.dateStr}
                       type="button"
                       onClick={() => handleDateSelect(item.dateStr)}
-                      className={`relative p-3 rounded-2xl flex flex-col items-center justify-center transition-all duration-200 text-center ${
+                      className={`relative p-3 rounded-2xl flex flex-col items-center justify-center transition-all duration-200 text-center cursor-pointer ${
                         isSelected
                           ? 'bg-gradient-to-b from-[#8F7430] to-[#776025] text-[#FFFDF7] shadow-[0_6px_20px_rgba(143,116,48,0.35)] scale-[1.03] border-2 border-[#B89A4A]'
                           : 'bg-[#FAF7EF] border border-[#B89A4A]/25 text-[#3F3528] hover:border-[#8F7430] hover:bg-[#FFFDF7] shadow-sm'
@@ -652,7 +693,11 @@ Ganpati Bappa Morya! 🙏`;
             {/* ========================================================================= */}
             {/* STEP 2: SHOW AARTI OPTIONS DIRECTLY */}
             {/* ========================================================================= */}
-            <div className="space-y-4">
+            <div
+              id="aarti-selection-section"
+              ref={aartiSelectionRef}
+              className="scroll-mt-24 sm:scroll-mt-28 space-y-4 pt-2"
+            >
               <div className="flex items-center gap-2.5 px-2">
                 <span className="w-7 h-7 rounded-full bg-[#8F7430] text-[#FFFDF7] flex items-center justify-center text-xs font-black">
                   2
@@ -895,7 +940,7 @@ Ganpati Bappa Morya! 🙏`;
             {selectedSlot && (
               <div
                 ref={formRef}
-                className="bg-[#FFFDF7] border-2 border-[#B89A4A]/40 rounded-3xl p-6 sm:p-8 md:p-10 shadow-[0_20px_50px_rgba(63,53,40,0.08)] space-y-6 animate-in fade-in duration-300"
+                className="scroll-mt-24 sm:scroll-mt-28 bg-[#FFFDF7] border-2 border-[#B89A4A]/40 rounded-3xl p-6 sm:p-8 md:p-10 shadow-[0_20px_50px_rgba(63,53,40,0.08)] space-y-6 animate-in fade-in duration-300"
               >
                 {/* Form Top Header with Selected Booking Information */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#B89A4A]/20 pb-5">
