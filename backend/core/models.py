@@ -267,15 +267,33 @@ class Event(models.Model):
         DRAFT = 'draft', _('Draft')
         ARCHIVED = 'archived', _('Archived')
 
+    class CategoryChoices(models.TextChoices):
+        RITUAL = 'Ritual', _('Ritual & Pooja')
+        AARTI = 'Aarti', _('Aarti & Darshan')
+        MAHAPRASAD = 'Mahaprasad', _('Mahaprasad & Bhog')
+        CULTURAL = 'Cultural', _('Cultural & Music')
+        PROCESSION = 'Procession', _('Procession & Visarjan')
+        GENERAL = 'General', _('General')
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_("ID"))
+    date = models.DateField(null=True, blank=True, verbose_name=_("Date"))
     title = models.CharField(max_length=200, verbose_name=_("Event Title"))
-    day = models.CharField(max_length=100, verbose_name=_("Day / Date Tag"))
-    description = models.TextField(verbose_name=_("Event Description"))
-    time = models.CharField(max_length=100, blank=True, default='', verbose_name=_("Time"))
+    description = models.TextField(verbose_name=_("Description"))
+    start_time = models.CharField(max_length=50, blank=True, default='', verbose_name=_("Start Time"))
+    end_time = models.CharField(max_length=50, blank=True, default='', verbose_name=_("End Time"))
+    time = models.CharField(max_length=100, blank=True, default='', verbose_name=_("Time (Display)"))
     location = models.CharField(max_length=200, blank=True, default='Main Temple Hall', verbose_name=_("Location"))
+    category = models.CharField(
+        max_length=100,
+        blank=True,
+        default='Ritual',
+        choices=CategoryChoices.choices,
+        verbose_name=_("Category")
+    )
+    day = models.CharField(max_length=100, blank=True, default='', verbose_name=_("Day / Date Tag"))
     banner_url = models.CharField(max_length=500, blank=True, default='', verbose_name=_("Banner URL"))
     order = models.PositiveIntegerField(default=1, verbose_name=_("Display Order"))
-    is_active = models.BooleanField(default=True, verbose_name=_("Is Active"))
+    is_active = models.BooleanField(default=True, verbose_name=_("Active / Inactive"))
     status = models.CharField(
         max_length=20,
         choices=StatusChoices.choices,
@@ -286,9 +304,38 @@ class Event(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name=_("Updated At"))
 
     class Meta:
-        verbose_name = _("Festival Event")
-        verbose_name_plural = _("Festival Events")
+        verbose_name = _("Celebration Schedule")
+        verbose_name_plural = _("Celebration Schedule")
         ordering = ['order', 'created_at']
 
+    def save(self, *args, **kwargs):
+        # Auto-compute day tag if not given
+        if not self.day and self.date:
+            self.day = self.date.strftime('%d %B %Y')
+        elif not self.day:
+            self.day = f"Event #{self.order}"
+
+        # Auto-compute time from start_time / end_time if not explicitly filled
+        if self.start_time and self.end_time and not self.time:
+            self.time = f"{self.start_time} - {self.end_time}"
+        elif self.start_time and not self.time:
+            self.time = f"{self.start_time} onwards"
+        elif self.time and not self.start_time:
+            if ' - ' in self.time:
+                parts = self.time.split(' - ', 1)
+                self.start_time = parts[0].strip()
+                self.end_time = parts[1].strip()
+            elif ' onwards' in self.time:
+                self.start_time = self.time.replace(' onwards', '').strip()
+
+        # Sync is_active and status
+        if not self.is_active and self.status == self.StatusChoices.ACTIVE:
+            self.status = self.StatusChoices.DRAFT
+        elif self.is_active and self.status == self.StatusChoices.DRAFT:
+            self.status = self.StatusChoices.ACTIVE
+
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"#{self.order} - {self.title} ({self.day})"
+        day_tag = self.day or (self.date.strftime('%d %b %Y') if self.date else f"#{self.order}")
+        return f"#{self.order} - {self.title} ({day_tag})"

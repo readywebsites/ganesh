@@ -390,9 +390,7 @@ class EventSerializer(serializers.ModelSerializer):
         return val
 
     def validate_day(self, value):
-        val = value.strip()
-        if not val:
-            raise serializers.ValidationError("Day/Date tag is required.")
+        val = (value or '').strip()
         return val
 
     def validate_description(self, value):
@@ -405,7 +403,7 @@ class EventSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data['_id'] = str(instance.id)
         data['desc'] = instance.description
-        data['date'] = instance.day
+        data['date'] = str(instance.date) if instance.date else instance.day
         data['active'] = instance.is_active
         data['bannerUrl'] = instance.banner_url
         data['createdAt'] = instance.created_at.isoformat() if instance.created_at else None

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from .models import Gallery, AartiBooking, Donation, Membership, Contact
+from .models import Gallery, AartiBooking, Donation, Membership, Contact, Event
 
 
 @admin.register(Gallery)
@@ -215,3 +215,59 @@ class ContactAdmin(admin.ModelAdmin):
         return "No Attachment"
 
     attachment_preview_large.short_description = "Attachment Preview"
+
+
+@admin.register(Event)
+class EventAdmin(admin.ModelAdmin):
+    list_display = (
+        'order',
+        'title',
+        'date_display',
+        'timing_display',
+        'category',
+        'location',
+        'is_active',
+        'status',
+        'created_at',
+    )
+    list_filter = ('is_active', 'category', 'status', 'created_at')
+    search_fields = ('title', 'description', 'day', 'location', 'category')
+    ordering = ('order', 'created_at')
+    list_editable = ('order', 'is_active')
+    list_display_links = ('title',)
+    readonly_fields = ('id', 'created_at', 'updated_at')
+    fieldsets = (
+        ('Schedule Event Information', {
+            'fields': ('title', 'category', 'description')
+        }),
+        ('Date & Timings', {
+            'fields': ('date', 'start_time', 'end_time', 'time', 'day')
+        }),
+        ('Location & Media', {
+            'fields': ('location', 'banner_url')
+        }),
+        ('Display & Visibility', {
+            'fields': ('order', 'is_active', 'status')
+        }),
+        ('System Metadata', {
+            'fields': ('id', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    def date_display(self, obj):
+        if obj.date:
+            return obj.date.strftime('%d %b %Y')
+        return obj.day or "—"
+    date_display.short_description = "Date / Day"
+
+    def timing_display(self, obj):
+        if obj.start_time and obj.end_time:
+            return f"{obj.start_time} - {obj.end_time}"
+        if obj.time:
+            return obj.time
+        if obj.start_time:
+            return f"{obj.start_time} onwards"
+        return "—"
+    timing_display.short_description = "Timing"
+

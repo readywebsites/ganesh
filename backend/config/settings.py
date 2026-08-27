@@ -26,9 +26,12 @@ SECRET_KEY = 'django-insecure-%kviui@^n!(ydnsma28r28u!_bq-+-rw#(2tuzq6ry^c0#!g-g
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["ganpati.biz499.com",
+ALLOWED_HOSTS = [
+    "ganpati.biz499.com",
     "localhost",
     "127.0.0.1",
+    "testserver",
+    "*",
 ]
 
 
@@ -177,7 +180,7 @@ JAZZMIN_SETTINGS = {
     "site_icon": "images/favicon.ico",
 
     # Global Quick Search Bar
-    "search_model": ["core.Membership", "core.Donation", "core.Gallery", "core.AartiBooking"],
+    "search_model": ["core.Event", "core.Membership", "core.Donation", "core.Gallery", "core.AartiBooking"],
 
     # User Profile Avatar
     "user_avatar": None,
@@ -198,6 +201,7 @@ JAZZMIN_SETTINGS = {
 
     # Custom Sidebar Icons (FontAwesome 5)
     "icons": {
+        "core.Event": "fas fa-calendar-alt",
         "core.Gallery": "fas fa-camera-retro",
         "core.AartiBooking": "fas fa-pray",
         "core.Donation": "fas fa-hand-holding-usd",
