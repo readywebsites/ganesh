@@ -7,6 +7,9 @@ from .views import (
     MembershipViewSet,
     ContactViewSet,
     EventViewSet,
+    InstagramFeedView,
+    InstagramStatusView,
+    InstagramRefreshTokenView,
 )
 from .whatsapp_webhook import WhatsAppWebhookView
 
@@ -62,6 +65,16 @@ urlpatterns = [
     path('contacts/send/', ContactViewSet.as_view({'post': 'create'}), name='legacy-contact-send-slash'),
     path('contact/send', ContactViewSet.as_view({'post': 'create'}), name='legacy-contact-singular-send'),
     path('contact/send/', ContactViewSet.as_view({'post': 'create'}), name='legacy-contact-singular-send-slash'),
-    
+
+    # Instagram Live Feed endpoints & aliases
+    path('instagram/feed', InstagramFeedView.as_view(), name='instagram-feed-noslash'),
+    path('instagram/feed/', InstagramFeedView.as_view(), name='instagram-feed'),
+    path('instagram', InstagramFeedView.as_view(), name='instagram-root-noslash'),
+    path('instagram/', InstagramFeedView.as_view(), name='instagram-root'),
+    path('instagram/status', InstagramStatusView.as_view(), name='instagram-status-noslash'),
+    path('instagram/status/', InstagramStatusView.as_view(), name='instagram-status'),
+    path('instagram/refresh-token', InstagramRefreshTokenView.as_view(), name='instagram-refresh-token-noslash'),
+    path('instagram/refresh-token/', InstagramRefreshTokenView.as_view(), name='instagram-refresh-token'),
+
     path('', include(router.urls)),
 ]

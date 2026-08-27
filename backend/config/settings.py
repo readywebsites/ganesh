@@ -269,3 +269,19 @@ WHATSAPP_ACCESS_TOKEN = os.environ.get('WHATSAPP_ACCESS_TOKEN', '')
 WHATSAPP_PHONE_NUMBER_ID = os.environ.get('WHATSAPP_PHONE_NUMBER_ID', '')
 WHATSAPP_VERIFY_TOKEN = os.environ.get('WHATSAPP_VERIFY_TOKEN', 'ganpati_biz499_webhook_token_2026_x9k2p8v')
 WHATSAPP_APP_SECRET = os.environ.get('WHATSAPP_APP_SECRET', '')
+
+# Instagram Graph / Basic Display API Configuration
+INSTAGRAM_ACCESS_TOKEN = os.environ.get('INSTAGRAM_ACCESS_TOKEN', '')
+INSTAGRAM_APP_SECRET = os.environ.get('INSTAGRAM_APP_SECRET', '')
+INSTAGRAM_APP_ID = os.environ.get('INSTAGRAM_APP_ID', '')
+INSTAGRAM_USER_ID = os.environ.get('INSTAGRAM_USER_ID', 'me')
+INSTAGRAM_CACHE_TIMEOUT = int(os.environ.get('INSTAGRAM_CACHE_TIMEOUT', '300'))
+
+# In-memory Caching for API responses
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'ganesh_mahotsav_cache',
+    }
+}
+

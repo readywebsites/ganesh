@@ -1218,6 +1218,153 @@ class WhatsAppWebhookAPITests(TestCase):
             self.assertEqual(res_invalid.status_code, 403)
 
 
+class InstagramFeedAPITests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        from django.core.cache import cache
+        cache.clear()
+
+    def test_unconfigured_instagram_feed_returns_fallback(self):
+        """When token is empty, feed returns graceful fallback items with unconfigured flag."""
+        with patch.dict('os.environ', {'INSTAGRAM_ACCESS_TOKEN': ''}):
+            response = self.client.get('/api/instagram/feed/')
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertTrue(response.data['success'])
+            self.assertFalse(response.data['configured'])
+            self.assertEqual(response.data['status'], 'unconfigured')
+            self.assertGreater(len(response.data['data']), 0)
+            self.assertIn('caption', response.data['data'][0])
+
+    def test_live_instagram_feed_mocked_meta_api(self):
+        """When token is set, mock Meta Graph API response and check parsed structure."""
+        mock_meta_response = {
+            "data": [
+                {
+                    "id": "17890123456789012",
+                    "caption": "🚩 Live Aarti Darshan at Surat Cha Gaurinandan!",
+                    "media_type": "VIDEO",
+                    "media_url": "https://video.cdninstagram.com/reel1.mp4",
+                    "thumbnail_url": "https://scontent.cdninstagram.com/thumb1.jpg",
+                    "permalink": "https://www.instagram.com/reel/C-XYZ123/",
+                    "timestamp": "2026-08-27T10:00:00+0000",
+                    "username": "suratchagaurinandan",
+                },
+                {
+                    "id": "17890123456789013",
+                    "caption": "✨ Swarna Shringaar Darshan of Lord Ganesha",
+                    "media_type": "IMAGE",
+                    "media_url": "https://scontent.cdninstagram.com/photo2.jpg",
+                    "permalink": "https://www.instagram.com/p/C-ABC456/",
+                    "timestamp": "2026-08-26T15:30:00+0000",
+                    "username": "suratchagaurinandan",
+                }
+            ],
+            "paging": {
+                "cursors": {"after": "QVFIUk5j..."}
+            }
+        }
+
+        with patch.dict('os.environ', {
+            'INSTAGRAM_ACCESS_TOKEN': 'EAAG123fake_access_token',
+            'INSTAGRAM_APP_SECRET': 'fake_app_secret_12345'
+        }):
+            from django.core.cache import cache
+            cache.clear()
+            
+            with patch('urllib.request.urlopen') as mock_urlopen:
+                mock_cm = mock_urlopen.return_value.__enter__.return_value
+                mock_cm.read.return_value = json.dumps(mock_meta_response).encode('utf-8')
+
+                response = self.client.get('/api/instagram/feed/?limit=2&refresh=true')
+                self.assertEqual(response.status_code, status.HTTP_200_OK)
+                self.assertTrue(response.data['success'])
+                self.assertEqual(response.data['status'], 'live')
+                self.assertTrue(response.data['configured'])
+                self.assertEqual(len(response.data['data']), 2)
+
+                post_1 = response.data['data'][0]
+                self.assertEqual(post_1['id'], "17890123456789012")
+                self.assertTrue(post_1['is_reel'])
+                self.assertEqual(post_1['formatted_date'], "27 Aug 2026")
+
+                post_2 = response.data['data'][1]
+                self.assertFalse(post_2['is_reel'])
+                self.assertEqual(post_2['formatted_date'], "26 Aug 2026")
+
+    def test_instagram_appsecret_proof_calculation(self):
+        """Validates HMAC-SHA256 calculation for Meta appsecret_proof."""
+        from .instagram import compute_appsecret_proof
+        import hmac
+        import hashlib
+
+        token = "test_token_abc"
+        secret = "test_secret_xyz"
+        expected = hmac.new(secret.encode('utf-8'), token.encode('utf-8'), hashlib.sha256).hexdigest()
+        self.assertEqual(compute_appsecret_proof(token, secret), expected)
+        self.assertEqual(compute_appsecret_proof("", secret), "")
+        self.assertEqual(compute_appsecret_proof(token, ""), "")
+
+    def test_instagram_meta_api_error_handling(self):
+        """When Meta API throws HTTP error (e.g. invalid token), returns error status with fallback gracefully."""
+        import urllib.error
+        from io import BytesIO
+
+        with patch.dict('os.environ', {'INSTAGRAM_ACCESS_TOKEN': 'expired_token'}):
+            from django.core.cache import cache
+            cache.clear()
+
+            error_body = json.dumps({
+                "error": {
+                    "message": "Invalid OAuth access token - Cannot parse access token",
+                    "type": "OAuthException",
+                    "code": 190
+                }
+            }).encode('utf-8')
+
+            http_err = urllib.error.HTTPError(
+                url="https://graph.instagram.com/me/media",
+                code=400,
+                msg="Bad Request",
+                hdrs={},
+                fp=BytesIO(error_body)
+            )
+
+            with patch('urllib.request.urlopen', side_effect=http_err):
+                response = self.client.get('/api/instagram/feed/?refresh=true')
+                self.assertEqual(response.status_code, status.HTTP_200_OK)
+                self.assertFalse(response.data['success'])
+                self.assertEqual(response.data['status'], 'error')
+                self.assertIn('Invalid OAuth', response.data['message'])
+                # Fallback items provided so site does not break
+                self.assertGreater(len(response.data['data']), 0)
+
+    def test_instagram_status_endpoint(self):
+        """Tests the status / diagnostic endpoint."""
+        response = self.client.get('/api/instagram/status/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data['success'])
+        self.assertIn('status', response.data)
+        self.assertIn('configured', response.data['status'])
+        self.assertIn('has_access_token', response.data['status'])
+        self.assertIn('profile_url', response.data['status'])
+
+    def test_instagram_token_refresh_admin_only(self):
+        """Only authenticated admin/staff users can invoke the token refresh endpoint."""
+        # Anonymous user -> 401 or 403
+        anon_res = self.client.post('/api/instagram/refresh-token/')
+        self.assertIn(anon_res.status_code, [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN])
+
+        # Staff user
+        admin_user = User.objects.create_superuser('ig_admin', 'admin@example.com', 'AdminPass123!')
+        self.client.force_authenticate(user=admin_user)
+
+        with patch.dict('os.environ', {'INSTAGRAM_ACCESS_TOKEN': ''}):
+            res = self.client.post('/api/instagram/refresh-token/')
+            self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertFalse(res.data['success'])
+
+
+
 
 
 

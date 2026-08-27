@@ -4,6 +4,7 @@ from datetime import datetime, date
 from django.db import transaction, models
 from django.http import Http404
 from rest_framework import viewsets, permissions, filters, status
+from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
@@ -23,6 +24,11 @@ from .whatsapp import (
     notify_admin_and_customer_on_membership,
     notify_admin_on_donation,
     notify_admin_on_contact,
+)
+from .instagram import (
+    fetch_instagram_feed,
+    get_instagram_status_info,
+    refresh_long_lived_token,
 )
 
 logger = logging.getLogger(__name__)
@@ -845,4 +851,60 @@ class EventViewSet(viewsets.ModelViewSet):
             "success": True,
             "message": "Event deleted successfully."
         }, status=status.HTTP_200_OK)
+
+
+class InstagramFeedView(APIView):
+    """
+    Public API Endpoint to fetch live Instagram posts & reels.
+    Query Parameters:
+      - limit: Number of posts to retrieve (1-50, default 12)
+      - refresh: Force bypass server cache (true/1/yes)
+    """
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+
+    def get(self, request, *args, **kwargs):
+        # Extract limit query param with validation
+        limit_param = request.query_params.get('limit', '12')
+        try:
+            limit = int(limit_param)
+            limit = max(1, min(limit, 50))
+        except (ValueError, TypeError):
+            limit = 12
+
+        # Check if caller requested fresh bypass of cache
+        refresh_param = request.query_params.get('refresh', 'false').lower()
+        refresh = refresh_param in ('true', '1', 'yes')
+
+        result = fetch_instagram_feed(limit=limit, refresh=refresh)
+        return Response(result, status=status.HTTP_200_OK)
+
+
+class InstagramStatusView(APIView):
+    """
+    Status / Healthcheck endpoint reporting Instagram credentials configuration.
+    """
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+
+    def get(self, request, *args, **kwargs):
+        status_info = get_instagram_status_info()
+        return Response({
+            "success": True,
+            "status": status_info
+        }, status=status.HTTP_200_OK)
+
+
+class InstagramRefreshTokenView(APIView):
+    """
+    Admin endpoint to manually trigger a long-lived Instagram access token refresh.
+    """
+    permission_classes = [permissions.IsAdminUser]
+    authentication_classes = [CsrfExemptSessionAuthentication, BasicAuthentication]
+
+    def post(self, request, *args, **kwargs):
+        result = refresh_long_lived_token()
+        http_status = status.HTTP_200_OK if result.get('success') else status.HTTP_400_BAD_REQUEST
+        return Response(result, status=http_status)
+
 
