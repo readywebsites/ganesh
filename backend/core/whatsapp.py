@@ -168,7 +168,8 @@ def notify_admin_and_customer_on_membership(membership) -> None:
     """
     Sends WhatsApp notifications on successful Bhakta Membership registration:
     1. Admin notification to +919662279799 (or configured WHATSAPP_PHONE_NUMBER)
-    2. Member confirmation message to member's mobile number
+       containing complete membership registration details.
+    2. Member confirmation message to member's mobile number.
     """
     try:
         admin_phone = get_admin_phone()
@@ -176,34 +177,60 @@ def notify_admin_and_customer_on_membership(membership) -> None:
         phone = getattr(membership, 'phone', '')
         email = getattr(membership, 'email', '')
         city = getattr(membership, 'city', '') or 'Surat'
+        address = getattr(membership, 'address', '')
+        occupation = getattr(membership, 'occupation', '') or 'Not Specified'
+        volunteer = getattr(membership, 'volunteer', '') or 'Aarti & Ritual Assistance'
+        membership_id = getattr(membership, 'membership_id', str(membership.id))
 
         if hasattr(membership, 'get_membership_tier_display'):
             membership_type = membership.get_membership_tier_display()
         else:
             membership_type = getattr(membership, 'membership_tier', 'Silver Bhakta')
 
-        # 1. Admin Notification
+        # Format city & address
+        city_address = f"{city}, {address}" if address and address != city else city
+
+        # Registration Date/Time
+        created_at = getattr(membership, 'created_at', None)
+        if created_at and hasattr(created_at, 'strftime'):
+            reg_time = created_at.strftime('%d %B %Y, %I:%M %p')
+        else:
+            from django.utils import timezone
+            reg_time = timezone.now().strftime('%d %B %Y, %I:%M %p')
+
+        # Status & Payment Status
+        raw_status = getattr(membership, 'status', 'active')
+        payment_status = "Active / Confirmed (Complimentary Sewak Pass)" if raw_status == 'active' else raw_status.capitalize()
+
+        # 1. Admin Notification (Complete user-specified details)
         admin_message = (
-            f"🙏 New Membership Registration\n\n"
-            f"Name: {full_name}\n"
-            f"Mobile: {phone}\n"
+            f"🙏 NEW MEMBERSHIP REGISTRATION\n\n"
+            f"Membership ID: {membership_id}\n"
+            f"Member Name: {full_name}\n"
+            f"Mobile Number: {phone}\n"
             f"Email: {email}\n"
-            f"City: {city}\n"
-            f"Membership Type: {membership_type}"
+            f"City/Address: {city_address}\n"
+            f"Membership Type: {membership_type}\n"
+            f"Number of Members: 1\n"
+            f"Amount: Free / Complimentary Sewak Pass\n"
+            f"Payment Status: {payment_status}\n"
+            f"Registration Date/Time: {reg_time}\n"
+            f"Occupation: {occupation}\n"
+            f"Volunteer Interest: {volunteer}"
         )
         send_whatsapp_message(admin_phone, admin_message)
 
         # 2. Member Confirmation Notification
         if phone:
-            membership_id = getattr(membership, 'membership_id', str(membership.id))
-            volunteer = getattr(membership, 'volunteer', '') or 'Aarti & Ritual Assistance'
             member_message = (
                 f"🙏 Pranam {full_name}!\n\n"
                 f"Welcome to Surat Cha Gaurinandan Mahotsav 2026.\n"
                 f"Your Bhakta Membership Registration is Confirmed.\n\n"
                 f"Membership ID: {membership_id}\n"
+                f"Membership Type: {membership_type}\n"
                 f"Volunteer Sewa: {volunteer}\n"
-                f"City: {city}\n\n"
+                f"City: {city}\n"
+                f"Registration Date: {reg_time}\n\n"
                 f"Thank you for joining the sacred Mahotsav Sevak family.\n"
                 f"Ganpati Bappa Morya! 🌺"
             )

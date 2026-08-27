@@ -387,7 +387,7 @@ class MembershipAPITests(TestCase):
             self.assertEqual(mock_send.call_count, 2)
             admin_args = mock_send.call_args_list[0][0]
             self.assertEqual(admin_args[0], '9662279799')
-            self.assertIn("New Membership Registration", admin_args[1])
+            self.assertIn("NEW MEMBERSHIP REGISTRATION", admin_args[1].upper())
             self.assertIn("Vikram Sethi", admin_args[1])
             self.assertIn("9876543212", admin_args[1])
             member_args = mock_send.call_args_list[1][0]
@@ -844,12 +844,14 @@ class WhatsAppNotificationSuiteTests(TestCase):
             self.assertTrue(mock_send.called)
             admin_recipient, admin_msg = mock_send.call_args_list[0][0]
             self.assertEqual(admin_recipient, '9662279799')
-            self.assertIn("🙏 New Membership Registration", admin_msg)
-            self.assertIn("Name: Pooja Patel", admin_msg)
-            self.assertIn("Mobile: 9876543211", admin_msg)
+            self.assertIn("NEW MEMBERSHIP REGISTRATION", admin_msg.upper())
+            self.assertIn("Member Name: Pooja Patel", admin_msg)
+            self.assertIn("Mobile Number: 9876543211", admin_msg)
             self.assertIn("Email: pooja.patel@example.com", admin_msg)
-            self.assertIn("City: Surat", admin_msg)
+            self.assertIn("City/Address: Surat", admin_msg)
             self.assertIn("Membership Type: Silver Bhakta", admin_msg)
+            self.assertIn("Number of Members: 1", admin_msg)
+            self.assertIn("Payment Status:", admin_msg)
 
     def test_donation_whatsapp_admin_message_content(self):
         """Verify Donation WhatsApp admin message structure and recipient"""
