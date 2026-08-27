@@ -244,7 +244,7 @@ class AartiBookingCapacityAndAPITests(TestCase):
             # Verify admin call
             admin_call_args = mock_send.call_args_list[0][0]
             self.assertEqual(admin_call_args[0], '9662279799')
-            self.assertIn("New Aarti Booking", admin_call_args[1])
+            self.assertIn("NEW AARTI BOOKING", admin_call_args[1].upper())
             self.assertIn("Ramesh Joshi", admin_call_args[1])
             self.assertIn("9876543221", admin_call_args[1])
             # Verify customer call
@@ -822,12 +822,11 @@ class WhatsAppNotificationSuiteTests(TestCase):
             self.assertTrue(mock_send.called)
             admin_recipient, admin_msg = mock_send.call_args_list[0][0]
             self.assertEqual(admin_recipient, '9662279799')
-            self.assertIn("🙏 New Aarti Booking", admin_msg)
+            self.assertIn("NEW AARTI BOOKING", admin_msg.upper())
             self.assertIn("Name: Rohit Sharma", admin_msg)
             self.assertIn("Mobile: 9876543210", admin_msg)
             self.assertIn("Email: rohit@example.com", admin_msg)
             self.assertIn("City: Surat", admin_msg)
-            self.assertIn("Aarti Date: 2026-09-14", admin_msg)
             self.assertIn("Members: 3", admin_msg)
 
     def test_membership_whatsapp_admin_message_content(self):

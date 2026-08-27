@@ -5,136 +5,217 @@ import { gsap } from 'gsap';
 import QRCode from 'qrcode';
 import { getApiUrl, extractErrorMessage, getFriendlyErrorMessage } from '@/lib/api';
 
+// Available Festival Dates for Surat Cha Gaurinandan Ganesh Mahotsav 2026 (14 Sept - 25 Sept 2026)
+const FESTIVAL_DATES = [
+  { dateStr: '2026-09-14', dayNum: 14, dayName: 'Mon', festivalTag: 'Sthapana' },
+  { dateStr: '2026-09-15', dayNum: 15, dayName: 'Tue' },
+  { dateStr: '2026-09-16', dayNum: 16, dayName: 'Wed' },
+  { dateStr: '2026-09-17', dayNum: 17, dayName: 'Thu' },
+  { dateStr: '2026-09-18', dayNum: 18, dayName: 'Fri' },
+  { dateStr: '2026-09-19', dayNum: 19, dayName: 'Sat' },
+  { dateStr: '2026-09-20', dayNum: 20, dayName: 'Sun', festivalTag: 'Maha Aarti' },
+  { dateStr: '2026-09-21', dayNum: 21, dayName: 'Mon' },
+  { dateStr: '2026-09-22', dayNum: 22, dayName: 'Tue' },
+  { dateStr: '2026-09-23', dayNum: 23, dayName: 'Wed' },
+  { dateStr: '2026-09-24', dayNum: 24, dayName: 'Thu' },
+  { dateStr: '2026-09-25', dayNum: 25, dayName: 'Fri', festivalTag: 'Visarjan' },
+];
+
+function formatHumanDate(dateStr) {
+  if (!dateStr) return '20 September 2026';
+  try {
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      const day = parseInt(parts[2], 10);
+      const months = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+      ];
+      const month = months[parseInt(parts[1], 10) - 1] || 'September';
+      const year = parts[0];
+      return `${day} ${month} ${year}`;
+    }
+    return dateStr;
+  } catch {
+    return dateStr;
+  }
+}
+
 export default function AartiBooking() {
   const sectionRef = useRef(null);
-  const cardsRef = useRef(null);
+  const formRef = useRef(null);
 
-  // Date selection state (default selected: 2026-09-14)
-  const [selectedDate, setSelectedDate] = useState('2026-09-14');
+  // Flow State: Step 1 (Date), Step 2 (Aarti Selection), Step 3/4 (Form), Step 5 (Success)
+  const [selectedDate, setSelectedDate] = useState('2026-09-20');
+  const [selectedSlot, setSelectedSlot] = useState(null); // 'morning' | 'night'
   const [slotData, setSlotData] = useState(null);
   const [loadingSlot, setLoadingSlot] = useState(false);
 
-  // Modal & Form State
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedSlotName, setSelectedSlotName] = useState(''); // 'Morning Aarti' or 'Night Aarti'
-  
+  // Form State
   const [formData, setFormData] = useState({
     name: '',
     mobile: '',
     email: '',
-    city: '',
+    city: 'Surat',
     members: '1',
     specialNote: '',
-    agreeRules: false,
   });
 
+  const [formErrors, setFormErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [apiError, setApiError] = useState('');
   const [successBooking, setSuccessBooking] = useState(null);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
 
-  // Fetch slot configuration and booking counts for selectedDate
-  useEffect(() => {
-    if (!selectedDate) return;
-
-    const fetchSlotInfo = async () => {
-      setLoadingSlot(true);
-      try {
-        const res = await fetch(getApiUrl(`/aarti-bookings/availability/?date=${selectedDate}`));
-        const data = await res.json();
-        if (data.morning && data.night) {
-          setSlotData({
-            date: data.date || selectedDate,
-            bookingOpen: true,
-            morning: {
-              slot: 'Morning Aarti',
-              time: '09:00 AM',
-              capacity: data.morning.capacity || 5,
-              booked: data.morning.booked || 0,
-              remaining: data.morning.remaining ?? 5,
-              isFull: data.morning.is_full || (data.morning.remaining <= 0),
-            },
-            night: {
-              slot: 'Night Aarti',
-              time: '08:00 PM',
-              capacity: data.night.capacity || 5,
-              booked: data.night.booked || 0,
-              remaining: data.night.remaining ?? 5,
-              isFull: data.night.is_full || (data.night.remaining <= 0),
-            },
-          });
-        } else if (data.success && data.slot) {
-          setSlotData(data.slot);
-        } else {
-          // Fallback defaults
-          setSlotData({
-            date: selectedDate,
-            bookingOpen: true,
-            morning: { slot: 'Morning Aarti', time: '09:00 AM', capacity: 5, booked: 0, remaining: 5, isFull: false },
-            night: { slot: 'Night Aarti', time: '08:00 PM', capacity: 5, booked: 0, remaining: 5, isFull: false },
-          });
-        }
-      } catch (err) {
-        console.error('Failed to fetch slot details:', err);
-        setSlotData({
-          date: selectedDate,
-          bookingOpen: true,
-          morning: { slot: 'Morning Aarti', time: '09:00 AM', capacity: 5, booked: 0, remaining: 5, isFull: false },
-          night: { slot: 'Night Aarti', time: '08:00 PM', capacity: 5, booked: 0, remaining: 5, isFull: false },
-        });
-      } finally {
-        setLoadingSlot(false);
-      }
-    };
-
-    fetchSlotInfo();
-  }, [selectedDate]);
-
-  // GSAP Entrance Animation
+  // Initial Section Entrance
   useEffect(() => {
     if (sectionRef.current) {
       gsap.fromTo(
         sectionRef.current,
-        { opacity: 0, y: 50 },
-        { opacity: 1, y: 0, duration: 1, ease: 'power3.out' }
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' }
       );
     }
   }, []);
 
-  // Open booking modal
-  const handleOpenBooking = (slotName) => {
-    setSelectedSlotName(slotName);
-    setErrorMsg('');
+  // Fetch slot availability whenever selectedDate changes
+  useEffect(() => {
+    if (!selectedDate) return;
+
+    let isMounted = true;
+    const fetchSlotAvailability = async () => {
+      setLoadingSlot(true);
+      try {
+        const res = await fetch(getApiUrl(`/aarti-bookings/availability/?date=${selectedDate}`));
+        const data = await res.json();
+        if (isMounted) {
+          if (data && data.morning && data.night) {
+            setSlotData({
+              date: data.date || selectedDate,
+              morning: {
+                title: 'Morning Aarti',
+                time: '09:00 AM',
+                capacity: data.morning.capacity || 5,
+                booked: data.morning.booked || 0,
+                remaining: data.morning.remaining ?? 5,
+                isFull: Boolean(data.morning.is_full || data.morning.remaining <= 0),
+              },
+              night: {
+                title: 'Night Aarti',
+                time: '08:00 PM',
+                capacity: data.night.capacity || 5,
+                booked: data.night.booked || 0,
+                remaining: data.night.remaining ?? 5,
+                isFull: Boolean(data.night.is_full || data.night.remaining <= 0),
+              },
+            });
+          } else {
+            setSlotData({
+              date: selectedDate,
+              morning: { title: 'Morning Aarti', time: '09:00 AM', capacity: 5, booked: 0, remaining: 5, isFull: false },
+              night: { title: 'Night Aarti', time: '08:00 PM', capacity: 5, booked: 0, remaining: 5, isFull: false },
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load slot availability:', err);
+        if (isMounted) {
+          setSlotData({
+            date: selectedDate,
+            morning: { title: 'Morning Aarti', time: '09:00 AM', capacity: 5, booked: 0, remaining: 5, isFull: false },
+            night: { title: 'Night Aarti', time: '08:00 PM', capacity: 5, booked: 0, remaining: 5, isFull: false },
+          });
+        }
+      } finally {
+        if (isMounted) setLoadingSlot(false);
+      }
+    };
+
+    fetchSlotAvailability();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedDate]);
+
+  // Handle Date Click
+  const handleDateSelect = (dateStr) => {
+    setSelectedDate(dateStr);
+    setSelectedSlot(null);
+    setApiError('');
     setSuccessBooking(null);
-    setModalOpen(true);
   };
 
-  // Form input handler
+  // Handle Aarti Slot Selection (Morning or Night)
+  const handleSlotSelect = (slotKey) => {
+    const isFull = slotData?.[slotKey]?.isFull;
+    if (isFull) return;
+
+    setSelectedSlot(slotKey);
+    setApiError('');
+    setSuccessBooking(null);
+
+    // Smooth scroll to form on mobile
+    setTimeout(() => {
+      if (formRef.current) {
+        formRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }, 100);
+  };
+
+  // Form Input Change
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (formErrors[name]) {
+      setFormErrors((prev) => ({ ...prev, [name]: '' }));
+    }
   };
 
-  // Submit booking
-  const handleSubmitBooking = async (e) => {
-    e.preventDefault();
-    setErrorMsg('');
-
-    if (!formData.agreeRules) {
-      setErrorMsg('Please accept the temple rules to proceed with booking.');
-      return;
+  // Form Validation
+  const validateForm = () => {
+    const errors = {};
+    if (!formData.name.trim() || formData.name.trim().length < 2) {
+      errors.name = 'Please enter your full name (at least 2 characters).';
     }
 
-    if (!/^\d{10}$/.test(formData.mobile.trim())) {
-      setErrorMsg('Please enter a valid 10-digit mobile number.');
+    const cleanPhone = formData.mobile.replace(/\D/g, '');
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      errors.mobile = 'Please enter a valid 10-digit mobile number.';
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email.trim() || !emailRegex.test(formData.email.trim())) {
+      errors.email = 'Please enter a valid email address.';
+    }
+
+    if (!formData.city.trim()) {
+      errors.city = 'Please enter your city.';
+    }
+
+    const membersCount = parseInt(formData.members, 10);
+    if (isNaN(membersCount) || membersCount < 1 || membersCount > 5) {
+      errors.members = 'Members must be between 1 and 5 devotees.';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // STEP 4 — Submit Booking
+  const handleConfirmBooking = async (e) => {
+    e.preventDefault();
+    setApiError('');
+
+    if (!validateForm()) return;
+    if (!selectedSlot) {
+      setApiError('Please select either Morning Aarti or Night Aarti.');
       return;
     }
 
     setSubmitting(true);
 
+    const slotTitle = selectedSlot === 'morning' ? 'Morning Aarti' : 'Night Aarti';
     const payload = {
       devotee_name: formData.name.trim(),
       name: formData.name.trim(),
@@ -144,20 +225,18 @@ export default function AartiBooking() {
       city: formData.city.trim() || 'Surat',
       booking_date: selectedDate,
       date: selectedDate,
-      aarti_type: selectedSlotName.toLowerCase().includes('morning') ? 'morning' : 'night',
-      slot: selectedSlotName,
+      aarti_type: selectedSlot,
+      slot: slotTitle,
       number_of_devotees: parseInt(formData.members, 10) || 1,
       members: parseInt(formData.members, 10) || 1,
-      notes: formData.specialNote || '',
-      specialNote: formData.specialNote || '',
+      notes: formData.specialNote.trim(),
+      specialNote: formData.specialNote.trim(),
     };
 
     try {
       const response = await fetch(getApiUrl('/aarti-bookings/'), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
@@ -169,738 +248,732 @@ export default function AartiBooking() {
       }
 
       if (!response.ok) {
-        const validationMessage = extractErrorMessage(
+        const errorMsg = extractErrorMessage(
           data,
           response.status,
-          'Unable to submit the Aarti booking. Please check your inputs.'
+          'Unable to complete Aarti booking. Please check your details.'
         );
-        throw new Error(validationMessage);
-      }
-
-      if (data && data.success === false) {
-        const errorMsg = extractErrorMessage(data, response.status, 'Booking submission failed.');
         throw new Error(errorMsg);
       }
 
-      const bookingInfo = data?.booking || data?.data || data;
-      setSuccessBooking(bookingInfo);
-
-      // Generate client-side QR Code URL
-      try {
-        const qrUrl = await QRCode.toDataURL(
-          JSON.stringify({
-            bookingId: bookingInfo.bookingId || bookingInfo.booking_id || bookingInfo.id,
-            name: bookingInfo.name || bookingInfo.devotee_name,
-            date: bookingInfo.date || bookingInfo.booking_date,
-            slot: bookingInfo.slot || bookingInfo.aarti,
-            members: bookingInfo.members || bookingInfo.number_of_devotees,
-          })
-        );
-        setQrCodeUrl(qrUrl);
-      } catch (qrErr) {
-        console.error('QR generation error:', qrErr);
+      if (data && data.success === false) {
+        throw new Error(data.message || 'Aarti booking submission failed.');
       }
 
-      // Refresh slot data from availability endpoint
+      const bookingResult = data?.booking || data?.data || data;
+      const finalBooking = {
+        bookingId: bookingResult.bookingId || bookingResult.booking_id || bookingResult.id,
+        name: bookingResult.name || bookingResult.devotee_name || formData.name,
+        mobile: bookingResult.mobile || bookingResult.phone || formData.mobile,
+        email: bookingResult.email || formData.email,
+        city: bookingResult.city || formData.city || 'Surat',
+        date: bookingResult.date || bookingResult.booking_date || selectedDate,
+        formattedDate: formatHumanDate(bookingResult.date || bookingResult.booking_date || selectedDate),
+        slot: slotTitle,
+        time: selectedSlot === 'morning' ? '09:00 AM' : '08:00 PM',
+        members: bookingResult.members || bookingResult.number_of_devotees || formData.members,
+        specialNote: formData.specialNote.trim(),
+      };
+
+      setSuccessBooking(finalBooking);
+
+      // Generate QR Code for VIP Pass
+      try {
+        const qr = await QRCode.toDataURL(
+          JSON.stringify({
+            id: finalBooking.bookingId,
+            name: finalBooking.name,
+            date: finalBooking.formattedDate,
+            aarti: finalBooking.slot,
+            time: finalBooking.time,
+            members: finalBooking.members,
+          }),
+          { margin: 1, width: 220, color: { dark: '#3F3528', light: '#FFFDF7' } }
+        );
+        setQrCodeUrl(qr);
+      } catch (qrErr) {
+        console.error('QR code generation failed:', qrErr);
+      }
+
+      // Refresh slot capacity
       try {
         const refreshRes = await fetch(getApiUrl(`/aarti-bookings/availability/?date=${selectedDate}`));
         const refreshData = await refreshRes.json();
-        if (refreshData.morning && refreshData.night) {
+        if (refreshData?.morning && refreshData?.night) {
           setSlotData({
             date: refreshData.date || selectedDate,
-            bookingOpen: true,
             morning: {
-              slot: 'Morning Aarti',
+              title: 'Morning Aarti',
               time: '09:00 AM',
               capacity: refreshData.morning.capacity || 5,
               booked: refreshData.morning.booked || 0,
               remaining: refreshData.morning.remaining ?? 5,
-              isFull: refreshData.morning.is_full || (refreshData.morning.remaining <= 0),
+              isFull: Boolean(refreshData.morning.is_full || refreshData.morning.remaining <= 0),
             },
             night: {
-              slot: 'Night Aarti',
+              title: 'Night Aarti',
               time: '08:00 PM',
               capacity: refreshData.night.capacity || 5,
               booked: refreshData.night.booked || 0,
               remaining: refreshData.night.remaining ?? 5,
-              isFull: refreshData.night.is_full || (refreshData.night.remaining <= 0),
+              isFull: Boolean(refreshData.night.is_full || refreshData.night.remaining <= 0),
             },
           });
         }
-      } catch (refreshErr) {
-        console.error('Slot refresh error:', refreshErr);
+      } catch {}
+
+      // Scroll to top of booking section for seamless success view
+      if (sectionRef.current) {
+        sectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     } catch (err) {
       console.error('Booking submission error:', err);
-      setErrorMsg(getFriendlyErrorMessage(err, 'Unable to submit booking. Please try again.'));
+      setApiError(getFriendlyErrorMessage(err, 'Unable to submit booking. Please try again.'));
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Download QR Code PNG
-  const handleDownloadQR = () => {
-    if (!qrCodeUrl) return;
-    const link = document.createElement('a');
-    link.href = qrCodeUrl;
-    link.download = `${successBooking?.bookingId || 'Aarti_Pass'}_QR.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  // Reset flow to book another
+  const handleBookAnother = () => {
+    setSuccessBooking(null);
+    setSelectedSlot(null);
+    setQrCodeUrl('');
+    setFormData({
+      name: '',
+      mobile: '',
+      email: '',
+      city: 'Surat',
+      members: '1',
+      specialNote: '',
+    });
+    setFormErrors({});
+    setApiError('');
   };
 
-  // Download Printable PDF Ticket Pass
-  const handleDownloadPDF = () => {
+  // Download Printable VIP Pass
+  const handleDownloadPass = () => {
     if (!successBooking) return;
-    
     const printWin = window.open('', '_blank');
     if (!printWin) {
-      alert('Please allow popups to download your Aarti Pass PDF.');
+      alert('Please allow popups to open and print your Aarti Pass.');
       return;
     }
 
-    const htmlContent = `
+    const passHtml = `
       <!DOCTYPE html>
       <html>
       <head>
+        <meta charset="utf-8">
         <title>Aarti Pass - ${successBooking.bookingId}</title>
         <style>
-          body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #050505; color: #fff; padding: 40px; display: flex; justify-content: center; }
-          .pass-card { width: 500px; background: #0d0d0d; border: 2px solid #d4af37; border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 0 40px rgba(212,175,55,0.3); }
-          .title { font-size: 24px; font-weight: 800; color: #d4af37; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
-          .sub { font-size: 13px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
-          .qr { width: 180px; height: 180px; margin: 15px auto; border: 3px solid #d4af37; border-radius: 12px; padding: 8px; background: #fff; }
-          .badge { display: inline-block; background: #d4af37; color: #000; font-weight: 800; padding: 6px 16px; border-radius: 20px; font-size: 13px; margin-bottom: 20px; }
-          .grid { text-align: left; background: #161616; border-radius: 12px; padding: 16px; margin-top: 20px; border: 1px solid #333; }
-          .row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
-          .label { color: #888; }
-          .val { color: #fff; font-weight: 600; }
-          .gold { color: #f6e0a4; font-weight: 700; }
-          .footer { margin-top: 25px; font-size: 11px; color: #777; line-height: 1.5; }
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F7F3EA; color: #3F3528; display: flex; justify-content: center; padding: 40px 20px; }
+          .pass-box { width: 100%; max-width: 480px; background: #FFFDF7; border: 2px solid #B89A4A; border-radius: 24px; padding: 32px; text-align: center; box-shadow: 0 10px 40px rgba(184,154,74,0.2); }
+          .om { font-size: 32px; color: #8F7430; margin-bottom: 8px; }
+          .title { font-size: 22px; font-weight: 800; color: #3F3528; letter-spacing: 0.5px; }
+          .subtitle { font-size: 13px; color: #8F7430; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+          .badge { display: inline-block; background: #B89A4A; color: #FFFDF7; font-weight: 700; font-size: 11px; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; margin: 16px 0; letter-spacing: 1px; }
+          .id-label { font-size: 11px; text-transform: uppercase; color: #776B5B; font-weight: 600; }
+          .id-val { font-size: 24px; font-weight: 900; color: #8F7430; font-family: monospace; letter-spacing: 1px; margin: 4px 0 16px; }
+          .qr-img { width: 160px; height: 160px; margin: 0 auto 20px; border: 2px solid #B89A4A; border-radius: 16px; padding: 8px; background: #FFFDF7; }
+          .details { background: #FAF7EF; border: 1px solid #E6D8B8; border-radius: 16px; padding: 18px; text-align: left; font-size: 13px; line-height: 1.8; margin-bottom: 20px; }
+          .details-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #E6D8B8; padding: 6px 0; }
+          .details-row:last-child { border-bottom: none; }
+          .lbl { color: #776B5B; font-weight: 600; }
+          .val { color: #3F3528; font-weight: 700; }
+          .val-gold { color: #8F7430; font-weight: 800; }
+          .note { font-size: 11px; color: #776B5B; line-height: 1.5; }
+          .blessing { color: #8F7430; font-weight: 700; margin-top: 10px; font-size: 13px; }
         </style>
       </head>
       <body>
-        <div class="pass-card">
-          <div class="title">Surat Cha Gaurinandan</div>
-          <div class="sub">Ganesh Mahotsav 2026 • VIP Aarti Pass</div>
-          <div class="badge">CONFIRMED PASS</div>
+        <div class="pass-box">
+          <div class="om">🕉️</div>
+          <h1 class="title">Surat Cha Gaurinandan</h1>
+          <p class="subtitle">Ganesh Mahotsav 2026 • VIP Aarti Pass</p>
+          <div class="badge">Confirmed VIP Pass</div>
           
-          <div>
-            <div style="font-size: 12px; color: #888;">BOOKING ID</div>
-            <div style="font-size: 26px; font-weight: 900; color: #d4af37; letter-spacing: 2px;">${successBooking.bookingId}</div>
+          <div class="id-label">Booking ID</div>
+          <div class="id-val">${successBooking.bookingId}</div>
+
+          ${qrCodeUrl ? `<img src="${qrCodeUrl}" class="qr-img" alt="QR Code" />` : ''}
+
+          <div class="details">
+            <div class="details-row"><span class="lbl">Date:</span><span class="val-gold">${successBooking.formattedDate}</span></div>
+            <div class="details-row"><span class="lbl">Aarti:</span><span class="val-gold">${successBooking.slot}</span></div>
+            <div class="details-row"><span class="lbl">Time:</span><span class="val-gold">${successBooking.time}</span></div>
+            <div class="details-row"><span class="lbl">Devotee Name:</span><span class="val">${successBooking.name}</span></div>
+            <div class="details-row"><span class="lbl">Mobile:</span><span class="val">${successBooking.mobile}</span></div>
+            <div class="details-row"><span class="lbl">Members Allowed:</span><span class="val">${successBooking.members} Devotee(s)</span></div>
+            <div class="details-row"><span class="lbl">City:</span><span class="val">${successBooking.city}</span></div>
           </div>
 
-          <img src="${qrCodeUrl}" class="qr" alt="Pass QR" />
-
-          <div class="grid">
-            <div class="row"><span class="label">Devotee:</span><span class="val">${successBooking.name}</span></div>
-            <div class="row"><span class="label">Date:</span><span class="val gold">${successBooking.date}</span></div>
-            <div class="row"><span class="label">Slot:</span><span class="val gold">${successBooking.slot} (${successBooking.slot.includes('Morning') ? '09:00 AM' : '08:00 PM'})</span></div>
-            <div class="row"><span class="label">Members Allowed:</span><span class="val">${successBooking.members} Person(s)</span></div>
-            <div class="row"><span class="label">City:</span><span class="val">${successBooking.city}</span></div>
-            <div class="row"><span class="label">Mobile:</span><span class="val">${successBooking.mobile}</span></div>
-          </div>
-
-          <div class="footer">
-            <p><strong>Temple Address:</strong> VIP Road, Vesu, Surat, Gujarat 395007</p>
-            <p>Please present this QR code pass 20 minutes prior to Aarti. Entry is strictly non-transferable.</p>
-            <p style="color: #d4af37; font-weight: bold; margin-top: 10px;">Ganpati Bappa Morya! 🙏</p>
-          </div>
+          <p class="note">📍 Please arrive at the temple hall 20 minutes prior to the Aarti.<br>Entry is strictly validated via this Booking ID / QR Pass.</p>
+          <p class="blessing">🙏 Ganpati Bappa Morya! 🙏</p>
         </div>
         <script>
-          window.onload = function() {
-            window.print();
-          };
+          window.onload = function() { window.print(); }
         </script>
       </body>
       </html>
     `;
-
-    printWin.document.write(htmlContent);
+    printWin.document.write(passHtml);
     printWin.document.close();
   };
 
-  // Open WhatsApp Link directly
+  // Open devotee WhatsApp message
   const handleOpenWhatsApp = () => {
     if (!successBooking) return;
-    const timeStr = successBooking.slot.includes('Morning') ? '09:00 AM' : '08:00 PM';
-    const text = `🙏 Surat Cha Gaurinandan Ganesh Mahotsav
+    const msg = `🙏 Surat Cha Gaurinandan Ganesh Mahotsav 2026
 
-Your Aarti Booking has been Confirmed.
+*Aarti Booking Confirmed*
 
-Booking ID:
-${successBooking.bookingId}
+Booking ID: ${successBooking.bookingId}
+Date: ${successBooking.formattedDate}
+Aarti: ${successBooking.slot}
+Time: ${successBooking.time}
+Members: ${successBooking.members}
 
-Date:
-${successBooking.date}
-
-Slot:
-${successBooking.slot}
-
-Time:
-${timeStr}
-
-Members:
-${successBooking.members}
+Name: ${successBooking.name}
+Mobile: ${successBooking.mobile}
 
 Please arrive 20 minutes before the Aarti.
+Ganpati Bappa Morya! 🙏`;
 
-Ganpati Bappa Morya 🙏`;
-
-    const encoded = encodeURIComponent(text);
+    const encoded = encodeURIComponent(msg);
     const cleanMobile = successBooking.mobile.replace(/\D/g, '');
     const phone = cleanMobile.length === 10 ? `91${cleanMobile}` : cleanMobile;
     window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encoded}`, '_blank');
   };
 
-  // September 2026 Calendar Grid Setup
-  // September 1, 2026 is a Tuesday (index 2 in Sun..Sat grid, so 2 blank cells at start)
-  // Total days in Sept 2026: 30
-  const calendarDays = [];
-  const startBlankOffset = 2; // Sun(0), Mon(1) -> Tuesday is 2
-  for (let i = 0; i < startBlankOffset; i++) {
-    calendarDays.push({ isBlank: true, id: `blank-${i}` });
-  }
-
-  // Days 1 to 30
-  for (let d = 1; d <= 30; d++) {
-    const dateStr = `2026-09-${String(d).padStart(2, '0')}`;
-    const dayOfWeekIndex = (startBlankOffset + d - 1) % 7;
-    const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-    const dayName = dayNames[dayOfWeekIndex];
-
-    const isSelectable = d >= 14 && d <= 25;
-    const isFestival = d === 14 || d === 20 || d === 25;
-    let festivalName = '';
-    if (d === 14) festivalName = 'Sthapana';
-    if (d === 20) festivalName = 'Maha Aarti';
-    if (d === 25) festivalName = 'Visarjan';
-
-    calendarDays.push({
-      isBlank: false,
-      dayNum: d,
-      dateStr,
-      dayName,
-      isSelectable,
-      isFestival,
-      festivalName,
-    });
-  }
-
   return (
-    <section id="aarti" ref={sectionRef} className="relative py-28 bg-[#F7F3EA] text-[#3F3528] overflow-hidden border-t border-[#B89A4A]/15">
-      {/* Background Luxury Ambient Glows */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-[#B89A4A]/10 rounded-full blur-[160px] pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-[500px] h-[500px] bg-[#C99B45]/10 rounded-full blur-[140px] pointer-events-none" />
+    <section
+      id="aarti"
+      ref={sectionRef}
+      className="relative py-24 sm:py-28 bg-[#F7F3EA] text-[#3F3528] overflow-hidden border-t border-[#B89A4A]/20"
+    >
+      {/* Warm Ambient Temple Lights */}
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[650px] h-[650px] bg-[#B89A4A]/10 rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-10 right-10 w-[450px] h-[450px] bg-[#D8BD72]/10 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#B89A4A]/10 border border-[#B89A4A]/30 text-[#8F7430] text-xs uppercase tracking-widest font-semibold backdrop-blur-md shadow-[0_4px_15px_rgba(184,154,74,0.15)]">
-            <span>🏵️</span> Ganesh Mahotsav 2026 • VIP Aarti Portal
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+
+        {/* Section Header (Minimal & Clean) */}
+        <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#B89A4A]/10 border border-[#B89A4A]/30 text-[#8F7430] text-xs uppercase tracking-widest font-semibold">
+            <span>🏵️</span> Ganesh Mahotsav 2026
           </div>
-          
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#3F3528] via-[#8F7430] to-[#B89A4A] font-heading">
-            Exclusive Aarti Pass Booking
+
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#3F3528] via-[#8F7430] to-[#B89A4A] font-heading tracking-tight">
+            Book Aarti Pass
           </h2>
-          
-          <p className="text-[#776B5B] text-sm md:text-base leading-relaxed max-w-2xl mx-auto">
-            Experience the divine blessings of <strong className="text-[#8F7430]">Surat Cha Gaurinandan</strong>. Select your sacred date from the luxury September calendar below.
+
+          <p className="text-[#776B5B] text-sm sm:text-base leading-relaxed">
+            Select your date, choose your Aarti time, and reserve your sacred darshan pass in seconds.
           </p>
         </div>
 
         {/* ========================================================================= */}
-        {/* CALENDAR SECTION (Apple + Awwwards Square Glass Grid) */}
+        {/* STEP 5: SUCCESS CONFIRMATION SCREEN */}
         {/* ========================================================================= */}
-        <div className="mb-16">
-          
-          {/* Calendar Header Card */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8 bg-[#FFFDF7]/85 border border-[#B89A4A]/30 backdrop-blur-xl p-6 rounded-3xl shadow-[0_10px_30px_rgba(63,53,40,0.08)]">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-[#B89A4A]/15 border border-[#B89A4A]/40 flex items-center justify-center text-[#8F7430] text-2xl shadow-[0_0_15px_rgba(184,154,74,0.2)]">
-                📅
+        {successBooking ? (
+          <div className="bg-[#FFFDF7] border-2 border-[#B89A4A]/40 rounded-3xl p-6 sm:p-10 shadow-[0_20px_50px_rgba(184,154,74,0.15)] text-center max-w-xl mx-auto space-y-6 animate-in fade-in zoom-in-95 duration-500">
+            
+            {/* Header Blessing */}
+            <div className="space-y-2">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#B89A4A] to-[#D8BD72] flex items-center justify-center text-[#FFFDF7] text-3xl mx-auto shadow-[0_4px_20px_rgba(184,154,74,0.35)]">
+                🙏
               </div>
+              <h3 className="text-2xl sm:text-3xl font-black text-[#3F3528] font-heading tracking-tight">
+                Aarti Booking Confirmed
+              </h3>
+              <p className="text-xs text-[#8F7430] font-semibold uppercase tracking-wider">
+                Surat Cha Gaurinandan Mahotsav 2026
+              </p>
+            </div>
+
+            {/* Confirmed Ticket Card */}
+            <div className="bg-[#FAF7EF] border border-[#B89A4A]/30 rounded-2xl p-5 sm:p-6 text-left space-y-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-[#8F7430] text-[#FFFDF7] text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-bl-xl">
+                Confirmed Pass
+              </div>
+
               <div>
-                <h3 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#3F3528] via-[#8F7430] to-[#B89A4A] font-heading tracking-wide">
-                  September 2026
-                </h3>
-                <p className="text-xs text-[#8F7430]/90 font-medium tracking-wider uppercase">
-                  Selectable Range: 14 Sept – 25 Sept 2026
-                </p>
+                <span className="text-[10px] uppercase font-bold text-[#776B5B] tracking-wider block">
+                  Booking ID
+                </span>
+                <span className="text-xl sm:text-2xl font-black text-[#8F7430] font-mono tracking-wider">
+                  {successBooking.bookingId}
+                </span>
               </div>
-            </div>
 
-            <div className="flex items-center gap-4 text-xs font-semibold">
-              <div className="flex items-center gap-2 text-[#3F3528]">
-                <span className="w-3 h-3 rounded-full bg-gradient-to-r from-[#B89A4A] to-[#8F7430] shadow-[0_0_10px_rgba(184,154,74,0.4)]" />
-                <span>Selected</span>
-              </div>
-              <div className="flex items-center gap-2 text-[#8F7430]">
-                <span className="w-3 h-3 rounded-full bg-[#EEE7D8] border border-[#B89A4A]/50" />
-                <span>Bookable</span>
-              </div>
-              <div className="flex items-center gap-2 text-[#9A8D78]">
-                <span className="w-3 h-3 rounded-full bg-[#EEE7D8]/50 border border-[#B89A4A]/20 opacity-40" />
-                <span>Unavailable</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Calendar Container */}
-          <div className="bg-[#FFFDF7]/90 border border-[#B89A4A]/25 backdrop-blur-2xl rounded-3xl p-4 sm:p-6 md:p-8 shadow-[0_20px_60px_rgba(63,53,40,0.08)] max-w-4xl mx-auto overflow-x-auto">
-            
-            {/* Days of Week Header */}
-            <div className="grid grid-cols-7 gap-2 sm:gap-3 md:gap-4 mb-4 text-center justify-items-center">
-              {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((day) => (
-                <div key={day} className="w-[60px] sm:w-[80px] md:w-[100px] text-[10px] sm:text-xs font-bold tracking-widest text-amber-400/70 uppercase">
-                  {day}
+              {qrCodeUrl && (
+                <div className="flex justify-center py-2">
+                  <img
+                    src={qrCodeUrl}
+                    alt="Aarti Pass QR"
+                    className="w-36 h-36 rounded-xl border border-[#B89A4A]/40 p-1.5 bg-[#FFFDF7] shadow-sm"
+                  />
                 </div>
-              ))}
-            </div>
+              )}
 
-            {/* Square Date Cards Grid */}
-            <div className="grid grid-cols-7 gap-2 sm:gap-3 md:gap-4 justify-items-center">
-              {calendarDays.map((item) => {
-                if (item.isBlank) {
-                  return (
-                    <div
-                      key={item.id}
-                      className="w-[60px] h-[60px] sm:w-[80px] sm:h-[80px] md:w-[100px] md:h-[100px] rounded-2xl bg-transparent opacity-0 pointer-events-none"
-                    />
-                  );
-                }
-
-                const isSelected = selectedDate === item.dateStr;
-
-                return (
-                  <button
-                    key={item.dateStr}
-                    disabled={!item.isSelectable}
-                    onClick={() => item.isSelectable && setSelectedDate(item.dateStr)}
-                    className={`w-[60px] h-[60px] sm:w-[80px] sm:h-[80px] md:w-[100px] md:h-[100px] rounded-2xl flex flex-col items-center justify-center relative transition-all duration-300 group overflow-hidden ${
-                      !item.isSelectable
-                        ? 'bg-[#EEE7D8]/40 border border-[#B89A4A]/15 text-[#9A8D78] opacity-30 cursor-not-allowed pointer-events-none'
-                        : isSelected
-                        ? 'bg-gradient-to-br from-[#B89A4A] via-[#D8BD72] to-[#C99B45] text-[#3F3528] border-2 border-[#8F7430] shadow-[0_4px_20px_rgba(184,154,74,0.35)] scale-105 sm:scale-110 font-bold z-10'
-                        : item.isFestival
-                        ? 'bg-gradient-to-b from-[#FAF7EF] to-[#EEE7D8] border-2 border-[#B89A4A]/60 text-[#8F7430] shadow-[0_4px_15px_rgba(63,53,40,0.06)] hover:border-[#8F7430] hover:scale-105 hover:shadow-[0_4px_20px_rgba(184,154,74,0.25)] cursor-pointer'
-                        : 'bg-[#FFFDF7]/90 backdrop-blur-xl border border-[#B89A4A]/30 text-[#3F3528] shadow-[0_4px_15px_rgba(63,53,40,0.06)] hover:border-[#8F7430] hover:scale-105 hover:shadow-[0_4px_20px_rgba(184,154,74,0.25)] cursor-pointer'
-                    }`}
-                  >
-                    {/* Top Day Name */}
-                    <span className={`text-[9px] sm:text-[10px] uppercase font-bold tracking-wider mb-0.5 ${
-                      isSelected ? 'text-[#3F3528]' : !item.isSelectable ? 'text-[#9A8D78]' : 'text-[#8F7430]'
-                    }`}>
-                      {item.dayName}
-                    </span>
-
-                    {/* Central Large Day Number */}
-                    <span className={`text-lg sm:text-2xl md:text-3xl font-black font-heading leading-none ${
-                      isSelected ? 'text-[#3F3528]' : !item.isSelectable ? 'text-[#9A8D78]' : 'text-[#3F3528]'
-                    }`}>
-                      {item.dayNum}
-                    </span>
-
-                    {/* Bottom Festival Indicator Badge */}
-                    {item.isFestival && (
-                      <div className={`mt-1 text-[8px] sm:text-[9px] font-extrabold px-1.5 py-0.5 rounded-full tracking-tighter truncate max-w-[90%] ${
-                        isSelected
-                          ? 'bg-[#FAF7EF] text-[#8F7430] border border-[#B89A4A]/50'
-                          : 'bg-[#B89A4A]/20 text-[#8F7430] border border-[#B89A4A]/40 shadow-[0_0_10px_rgba(184,154,74,0.2)]'
-                      }`}>
-                        ✨ {item.festivalName}
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* ========================================================================= */}
-          {/* BOOKING INFO CARD (Apple Luxury Card) */}
-          {/* ========================================================================= */}
-          <div className="mt-12 bg-[#FFFDF7]/85 border border-[#B89A4A]/30 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 shadow-[0_15px_50px_rgba(63,53,40,0.08)] relative overflow-hidden group hover:border-[#B89A4A]/50 transition-all duration-500">
-            <div className="absolute -top-24 -right-24 w-72 h-72 bg-[#B89A4A]/10 rounded-full blur-3xl pointer-events-none" />
-            
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 border-b border-[#B89A4A]/20 pb-6 mb-6">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-[#B89A4A]/15 border border-[#B89A4A]/40 flex items-center justify-center text-3xl shadow-[0_0_20px_rgba(184,154,74,0.15)] text-[#8F7430]">
-                  🙏
+              <div className="grid grid-cols-2 gap-3 text-xs border-t border-[#B89A4A]/20 pt-3">
+                <div>
+                  <span className="text-[#776B5B] block text-[11px]">Date</span>
+                  <span className="font-bold text-[#3F3528]">{successBooking.formattedDate}</span>
                 </div>
                 <div>
-                  <h3 className="text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#3F3528] via-[#8F7430] to-[#B89A4A] font-heading">
-                    Aarti Booking Information
-                  </h3>
-                  <p className="text-xs text-[#8F7430]/80 font-semibold tracking-widest uppercase mt-0.5">
-                    Surat Cha Gaurinandan Mahotsav 2026
-                  </p>
+                  <span className="text-[#776B5B] block text-[11px]">Aarti</span>
+                  <span className="font-bold text-[#8F7430]">{successBooking.slot}</span>
                 </div>
-              </div>
-              
-              <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-[#B89A4A]/15 via-[#D8BD72]/20 to-[#B89A4A]/15 border border-[#B89A4A]/40 text-[#8F7430] font-extrabold text-sm shadow-[0_0_20px_rgba(184,154,74,0.15)]">
-                <span>✨</span> Ganpati Bappa Morya <span>✨</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="p-4 rounded-2xl bg-[#FAF7EF]/90 border border-[#B89A4A]/25 flex items-center gap-3.5">
-                <span className="text-3xl">📅</span>
                 <div>
-                  <div className="text-[10px] uppercase font-bold text-[#776B5B] tracking-wider">Booking Dates</div>
-                  <div className="text-xs sm:text-sm font-bold text-[#8F7430]">14 Sept – 25 Sept 2026</div>
+                  <span className="text-[#776B5B] block text-[11px]">Time</span>
+                  <span className="font-bold text-[#8F7430]">{successBooking.time}</span>
                 </div>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-[#FAF7EF]/90 border border-[#B89A4A]/25 flex items-center gap-3.5">
-                <span className="text-3xl">🌅</span>
                 <div>
-                  <div className="text-[10px] uppercase font-bold text-[#776B5B] tracking-wider">Morning Aarti</div>
-                  <div className="text-sm font-black text-[#8F7430]">09:00 AM</div>
+                  <span className="text-[#776B5B] block text-[11px]">Members</span>
+                  <span className="font-bold text-[#3F3528]">{successBooking.members} Person(s)</span>
                 </div>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-[#FAF7EF]/90 border border-[#B89A4A]/25 flex items-center gap-3.5">
-                <span className="text-3xl">🌙</span>
                 <div>
-                  <div className="text-[10px] uppercase font-bold text-[#776B5B] tracking-wider">Night Aarti</div>
-                  <div className="text-sm font-black text-[#8F7430]">08:00 PM</div>
+                  <span className="text-[#776B5B] block text-[11px]">Name</span>
+                  <span className="font-semibold text-[#3F3528] truncate block">{successBooking.name}</span>
                 </div>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-[#FAF7EF]/90 border border-[#B89A4A]/25 flex items-center gap-3.5">
-                <span className="text-3xl">👥</span>
                 <div>
-                  <div className="text-[10px] uppercase font-bold text-[#776B5B] tracking-wider">Max Capacity</div>
-                  <div className="text-sm font-black text-[#8F7430]">5 Bookings / Slot</div>
+                  <span className="text-[#776B5B] block text-[11px]">Mobile</span>
+                  <span className="font-semibold text-[#3F3528]">{successBooking.mobile}</span>
                 </div>
               </div>
             </div>
 
-            <div className="mt-6 pt-5 border-t border-zinc-900 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-amber-400/90 font-semibold">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">📍</span>
-                <span>Please arrive <strong>20 minutes before</strong> the Aarti.</span>
-              </div>
-              <div className="flex items-center gap-2 text-zinc-400 text-xs">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
-                <span>Instant QR Pass Allocation</span>
-              </div>
+            {/* Action Buttons */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={handleDownloadPass}
+                className="w-full py-3 px-4 rounded-xl bg-[#8F7430] text-[#FFFDF7] font-bold text-xs hover:bg-[#776025] transition-all flex items-center justify-center gap-2 shadow-md"
+              >
+                <span>📄</span> Download Printable Pass
+              </button>
+
+              <button
+                type="button"
+                onClick={handleOpenWhatsApp}
+                className="w-full py-3 px-4 rounded-xl bg-emerald-700 text-[#FFFDF7] font-bold text-xs hover:bg-emerald-800 transition-all flex items-center justify-center gap-2 shadow-md"
+              >
+                <span>💬</span> Open WhatsApp Pass
+              </button>
             </div>
-          </div>
 
-        </div>
-
-        {/* ========================================================================= */}
-        {/* BOOKING CARDS (Morning & Night Aarti - 40% Larger Size & Premium Animations) */}
-        {/* ========================================================================= */}
-        <div ref={cardsRef} className="space-y-8">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xl sm:text-2xl font-black text-amber-400 flex items-center gap-2 font-heading">
-              <span>🪔</span> Available Aarti Passes for {selectedDate}
-            </h3>
-            {slotData?.bookingOpen === false && (
-              <span className="text-xs font-extrabold text-red-400 bg-red-950/60 px-4 py-1.5 rounded-full border border-red-500/40 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
-                🔴 Bookings Closed for this Date
-              </span>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
-            
-            {/* MORNING AARTI SLOT CARD */}
-            {(() => {
-              const morning = slotData?.morning || {
-                slot: 'Morning Aarti',
-                time: '09:00 AM',
-                capacity: 5,
-                booked: 0,
-                remaining: 5,
-                isFull: false,
-              };
-              const isFull = morning.isFull || morning.remaining <= 0;
-              const isAlmostFull = !isFull && morning.remaining <= 3;
-              const isClosed = slotData?.bookingOpen === false;
-              const pctBooked = Math.min(100, Math.round((morning.booked / morning.capacity) * 100));
-
-              return (
-                <div className="relative group rounded-3xl p-8 sm:p-10 md:p-12 bg-zinc-950/90 border border-amber-500/30 backdrop-blur-2xl transition-all duration-500 hover:border-amber-500/60 hover:shadow-[0_15px_60px_rgba(212,175,55,0.2)] flex flex-col justify-between overflow-hidden hover:scale-[1.02]">
-                  <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-amber-500/20 transition-all duration-500" />
-
-                  <div>
-                    {/* Header Row */}
-                    <div className="flex items-start justify-between mb-8">
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-2xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-4xl shadow-[0_0_25px_rgba(212,175,55,0.3)]">
-                          🌅
-                        </div>
-                        <div>
-                          <div className="text-xs font-extrabold uppercase tracking-widest text-amber-400 mb-1">
-                            Morning Ritual
-                          </div>
-                          <h4 className="text-3xl sm:text-4xl font-black text-white font-heading">Morning Aarti</h4>
-                        </div>
-                      </div>
-
-                      {/* Status Badge */}
-                      <div>
-                        {isFull ? (
-                          <span className="px-4 py-2 rounded-full text-xs font-black bg-red-500/20 text-red-400 border border-red-500/50 flex items-center gap-2 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
-                            <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
-                            🔴 FULLY BOOKED
-                          </span>
-                        ) : isAlmostFull ? (
-                          <span className="px-4 py-2 rounded-full text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-500/50 flex items-center gap-2 shadow-[0_0_15px_rgba(245,158,11,0.3)]">
-                            <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
-                            ⚠️ Few Seats Left
-                          </span>
-                        ) : (
-                          <span className="px-4 py-2 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 flex items-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-                            🟢 AVAILABLE
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Time Display */}
-                    <div className="mb-8">
-                      <div className="text-xs uppercase font-bold text-zinc-500 tracking-wider mb-1">Aarti Time</div>
-                      <div className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-400 font-heading">
-                        09:00 AM
-                      </div>
-                    </div>
-
-                    {/* Capacity Progress Bar */}
-                    <div className="space-y-2 mb-8">
-                      <div className="flex justify-between text-xs font-bold">
-                        <span className="text-zinc-400">Capacity Occupancy</span>
-                        <span className="text-amber-400">{pctBooked}% Booked</span>
-                      </div>
-                      <div className="w-full h-3 rounded-full bg-zinc-900 border border-zinc-800 overflow-hidden p-0.5">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all duration-500 shadow-[0_0_12px_rgba(212,175,55,0.6)]"
-                          style={{ width: `${pctBooked}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Seat Stats Grid */}
-                    <div className="grid grid-cols-3 gap-4 my-6 p-5 rounded-2xl bg-[#FAF7EF]/90 border border-[#B89A4A]/25 text-center">
-                      <div>
-                        <div className="text-[11px] text-[#776B5B] uppercase font-bold tracking-wider">Booked</div>
-                        <div className="text-xl sm:text-2xl font-bold text-[#3F3528] mt-1">{morning.booked}</div>
-                      </div>
-                      <div className="border-x border-[#B89A4A]/20">
-                        <div className="text-[11px] text-[#8F7430] uppercase font-extrabold tracking-wider">Seats Left</div>
-                        <div className="text-2xl sm:text-3xl font-black text-[#8F7430] mt-0.5">{morning.remaining}</div>
-                      </div>
-                      <div>
-                        <div className="text-[11px] text-[#776B5B] uppercase font-bold tracking-wider">Maximum</div>
-                        <div className="text-xl sm:text-2xl font-bold text-[#776B5B] mt-1">{morning.capacity}</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Large Gold Book Now Button */}
-                  <button
-                    disabled={isFull || isClosed || loadingSlot}
-                    onClick={() => handleOpenBooking('Morning Aarti')}
-                    className={`w-full py-5 rounded-2xl font-extrabold text-base sm:text-lg transition-all duration-300 flex items-center justify-center gap-3 mt-6 ${
-                      isFull || isClosed
-                        ? 'bg-[#EEE7D8] text-[#9A8D78] cursor-not-allowed border border-[#B89A4A]/20'
-                        : 'bg-gradient-to-r from-[#B89A4A] via-[#D8BD72] to-[#C99B45] text-[#3F3528] hover:brightness-105 shadow-[0_4px_20px_rgba(184,154,74,0.25)] hover:shadow-[0_6px_30px_rgba(184,154,74,0.4)] active:scale-[0.98]'
-                    }`}
-                  >
-                    {isFull ? (
-                      '🔴 FULLY BOOKED'
-                    ) : isClosed ? (
-                      'Bookings Closed'
-                    ) : (
-                      <>
-                        <span>Book Morning Aarti Pass</span>
-                        <span className="text-xl">→</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              );
-            })()}
-
-            {/* NIGHT AARTI SLOT CARD */}
-            {(() => {
-              const night = slotData?.night || {
-                slot: 'Night Aarti',
-                time: '08:00 PM',
-                capacity: 5,
-                booked: 0,
-                remaining: 5,
-                isFull: false,
-              };
-              const isFull = night.isFull || night.remaining <= 0;
-              const isAlmostFull = !isFull && night.remaining <= 3;
-              const isClosed = slotData?.bookingOpen === false;
-              const pctBooked = Math.min(100, Math.round((night.booked / night.capacity) * 100));
-
-              return (
-                <div className="relative group rounded-3xl p-8 sm:p-10 md:p-12 bg-[#FFFDF7]/90 border border-[#B89A4A]/30 backdrop-blur-2xl transition-all duration-500 hover:border-[#B89A4A]/60 hover:shadow-[0_15px_60px_rgba(184,154,74,0.15)] flex flex-col justify-between overflow-hidden hover:scale-[1.02]">
-                  <div className="absolute top-0 right-0 w-48 h-48 bg-[#B89A4A]/10 rounded-full blur-3xl pointer-events-none group-hover:bg-[#B89A4A]/20 transition-all duration-500" />
-
-                  <div>
-                    {/* Header Row */}
-                    <div className="flex items-start justify-between mb-8">
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-2xl bg-[#B89A4A]/15 border border-[#B89A4A]/40 flex items-center justify-center text-4xl shadow-[0_0_25px_rgba(184,154,74,0.2)]">
-                          🌙
-                        </div>
-                        <div>
-                          <div className="text-xs font-extrabold uppercase tracking-widest text-[#8F7430] mb-1">
-                            Evening Celebration
-                          </div>
-                          <h4 className="text-3xl sm:text-4xl font-black text-[#3F3528] font-heading">Night Aarti</h4>
-                        </div>
-                      </div>
-
-                      {/* Status Badge */}
-                      <div>
-                        {isFull ? (
-                          <span className="px-4 py-2 rounded-full text-xs font-black bg-red-500/10 text-red-600 border border-red-500/30 flex items-center gap-2 shadow-sm">
-                            <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
-                            🔴 FULLY BOOKED
-                          </span>
-                        ) : isAlmostFull ? (
-                          <span className="px-4 py-2 rounded-full text-xs font-black bg-[#C99B45]/15 text-[#B88635] border border-[#C99B45]/40 flex items-center gap-2 shadow-sm">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#C99B45] animate-pulse" />
-                            ⚠️ Few Seats Left
-                          </span>
-                        ) : (
-                          <span className="px-4 py-2 rounded-full text-xs font-black bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 flex items-center gap-2 shadow-sm">
-                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                            🟢 AVAILABLE
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Time Display */}
-                    <div className="mb-8">
-                      <div className="text-xs uppercase font-bold text-[#776B5B] tracking-wider mb-1">Aarti Time</div>
-                      <div className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#3F3528] via-[#8F7430] to-[#B89A4A] font-heading">
-                        08:00 PM
-                      </div>
-                    </div>
-
-                    {/* Capacity Progress Bar */}
-                    <div className="space-y-2 mb-8">
-                      <div className="flex justify-between text-xs font-bold">
-                        <span className="text-[#776B5B]">Capacity Occupancy</span>
-                        <span className="text-[#8F7430]">{pctBooked}% Booked</span>
-                      </div>
-                      <div className="w-full h-3 rounded-full bg-[#EEE7D8] border border-[#B89A4A]/20 overflow-hidden p-0.5">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-[#B89A4A] to-[#D8BD72] transition-all duration-500 shadow-[0_0_12px_rgba(184,154,74,0.4)]"
-                          style={{ width: `${pctBooked}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Seat Stats Grid */}
-                    <div className="grid grid-cols-3 gap-4 my-6 p-5 rounded-2xl bg-[#FAF7EF]/90 border border-[#B89A4A]/25 text-center">
-                      <div>
-                        <div className="text-[11px] text-[#776B5B] uppercase font-bold tracking-wider">Booked</div>
-                        <div className="text-xl sm:text-2xl font-bold text-[#3F3528] mt-1">{night.booked}</div>
-                      </div>
-                      <div className="border-x border-[#B89A4A]/20">
-                        <div className="text-[11px] text-[#8F7430] uppercase font-extrabold tracking-wider">Seats Left</div>
-                        <div className="text-2xl sm:text-3xl font-black text-[#8F7430] mt-0.5">{night.remaining}</div>
-                      </div>
-                      <div>
-                        <div className="text-[11px] text-[#776B5B] uppercase font-bold tracking-wider">Maximum</div>
-                        <div className="text-xl sm:text-2xl font-bold text-[#776B5B] mt-1">{night.capacity}</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Large Gold Book Now Button */}
-                  <button
-                    disabled={isFull || isClosed || loadingSlot}
-                    onClick={() => handleOpenBooking('Night Aarti')}
-                    className={`w-full py-5 rounded-2xl font-extrabold text-base sm:text-lg transition-all duration-300 flex items-center justify-center gap-3 mt-6 ${
-                      isFull || isClosed
-                        ? 'bg-[#EEE7D8] text-[#9A8D78] cursor-not-allowed border border-[#B89A4A]/20'
-                        : 'bg-gradient-to-r from-[#B89A4A] via-[#D8BD72] to-[#C99B45] text-[#3F3528] hover:brightness-105 shadow-[0_4px_20px_rgba(184,154,74,0.25)] hover:shadow-[0_6px_30px_rgba(184,154,74,0.4)] active:scale-[0.98]'
-                    }`}
-                  >
-                    {isFull ? (
-                      '🔴 FULLY BOOKED'
-                    ) : isClosed ? (
-                      'Bookings Closed'
-                    ) : (
-                      <>
-                        <span>Book Night Aarti Pass</span>
-                        <span className="text-xl">→</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              );
-            })()}
-
-          </div>
-        </div>
-      </div>
-
-      {/* APPLE-STYLE GLASS BOOKING MODAL */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#F7F3EA]/90 backdrop-blur-xl animate-in fade-in duration-300 overflow-y-auto">
-          <div className="relative w-full max-w-xl bg-[#FFFDF7] border border-[#B89A4A]/30 rounded-3xl p-6 sm:p-8 shadow-[0_25px_60px_rgba(63,53,40,0.15)] my-8">
-            
-            {/* Close Button */}
             <button
-              onClick={() => setModalOpen(false)}
-              className="absolute top-5 right-5 text-[#776B5B] hover:text-[#3F3528] bg-[#FAF7EF] border border-[#B89A4A]/25 w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+              type="button"
+              onClick={handleBookAnother}
+              className="text-xs font-semibold text-[#8F7430] hover:underline pt-2 inline-block"
             >
-              ✕
+              ← Book Another Aarti Slot
             </button>
+          </div>
+        ) : (
+          <div className="space-y-10">
 
-            {!successBooking ? (
-              <>
-                <div className="mb-6">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#8F7430] bg-[#B89A4A]/10 px-3 py-1 rounded-full border border-[#B89A4A]/20">
-                    {selectedSlotName} Pass
+            {/* ========================================================================= */}
+            {/* STEP 1: SELECT DATE */}
+            {/* ========================================================================= */}
+            <div className="bg-[#FFFDF7] border border-[#B89A4A]/30 rounded-3xl p-5 sm:p-7 shadow-[0_10px_30px_rgba(63,53,40,0.06)] space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#B89A4A]/20 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-7 h-7 rounded-full bg-[#8F7430] text-[#FFFDF7] flex items-center justify-center text-xs font-black">
+                    1
                   </span>
-                  <h3 className="text-2xl font-extrabold text-[#3F3528] mt-2 font-heading">
-                    Complete Your Aarti Booking
-                  </h3>
-                  <p className="text-xs text-[#776B5B] mt-1">
-                    Date: <strong className="text-[#8F7430]">{selectedDate}</strong> • Slot: <strong className="text-[#8F7430]">{selectedSlotName} ({selectedSlotName.includes('Morning') ? '09:00 AM' : '08:00 PM'})</strong>
-                  </p>
+                  <div>
+                    <h3 className="text-lg font-bold text-[#3F3528] font-heading">
+                      Select Aarti Date
+                    </h3>
+                    <p className="text-xs text-[#776B5B]">
+                      Ganesh Mahotsav: 14 Sept – 25 Sept 2026
+                    </p>
+                  </div>
                 </div>
 
-                {errorMsg && (
-                  <div className="mb-4 p-3.5 rounded-xl bg-red-100/80 border border-red-400 text-red-800 text-xs font-medium">
-                    ⚠️ {errorMsg}
+                <div className="text-xs font-bold text-[#8F7430] bg-[#FAF7EF] px-3.5 py-1.5 rounded-full border border-[#B89A4A]/30 self-start sm:self-auto">
+                  Selected: {formatHumanDate(selectedDate)}
+                </div>
+              </div>
+
+              {/* Responsive Date Selector Cards */}
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 sm:gap-3">
+                {FESTIVAL_DATES.map((item) => {
+                  const isSelected = selectedDate === item.dateStr;
+
+                  return (
+                    <button
+                      key={item.dateStr}
+                      type="button"
+                      onClick={() => handleDateSelect(item.dateStr)}
+                      className={`relative p-3 rounded-2xl flex flex-col items-center justify-center transition-all duration-200 text-center ${
+                        isSelected
+                          ? 'bg-gradient-to-b from-[#8F7430] to-[#776025] text-[#FFFDF7] shadow-[0_6px_20px_rgba(143,116,48,0.35)] scale-[1.03] border-2 border-[#B89A4A]'
+                          : 'bg-[#FAF7EF] border border-[#B89A4A]/25 text-[#3F3528] hover:border-[#8F7430] hover:bg-[#FFFDF7] shadow-sm'
+                      }`}
+                    >
+                      <span className={`text-[10px] uppercase font-bold tracking-wider ${
+                        isSelected ? 'text-[#FFFDF7]/80' : 'text-[#776B5B]'
+                      }`}>
+                        {item.dayName}
+                      </span>
+
+                      <span className={`text-xl sm:text-2xl font-black font-heading leading-tight my-0.5 ${
+                        isSelected ? 'text-[#FFFDF7]' : 'text-[#3F3528]'
+                      }`}>
+                        {item.dayNum}
+                      </span>
+
+                      <span className={`text-[10px] font-semibold ${
+                        isSelected ? 'text-[#FFFDF7]/90' : 'text-[#8F7430]'
+                      }`}>
+                        Sept 2026
+                      </span>
+
+                      {item.festivalTag && (
+                        <span className={`mt-1 text-[8px] font-extrabold px-1.5 py-0.5 rounded-full truncate max-w-full ${
+                          isSelected
+                            ? 'bg-[#FFFDF7] text-[#8F7430]'
+                            : 'bg-[#8F7430]/15 text-[#8F7430] border border-[#8F7430]/30'
+                        }`}>
+                          ✨ {item.festivalTag}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ========================================================================= */}
+            {/* STEP 2: SHOW AARTI OPTIONS DIRECTLY */}
+            {/* ========================================================================= */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2.5 px-2">
+                <span className="w-7 h-7 rounded-full bg-[#8F7430] text-[#FFFDF7] flex items-center justify-center text-xs font-black">
+                  2
+                </span>
+                <div>
+                  <h3 className="text-lg font-bold text-[#3F3528] font-heading">
+                    Choose Aarti Slot for {formatHumanDate(selectedDate)}
+                  </h3>
+                  <p className="text-xs text-[#776B5B]">
+                    Select either Morning or Night Aarti to open the booking form
+                  </p>
+                </div>
+              </div>
+
+              {loadingSlot ? (
+                <div className="py-12 text-center text-[#8F7430] text-xs flex flex-col items-center justify-center gap-2 bg-[#FFFDF7] border border-[#B89A4A]/20 rounded-3xl">
+                  <div className="w-6 h-6 border-2 border-[#8F7430] border-t-transparent rounded-full animate-spin" />
+                  <span>Checking slot availability...</span>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                  
+                  {/* MORNING AARTI CARD */}
+                  {(() => {
+                    const morning = slotData?.morning || {
+                      title: 'Morning Aarti',
+                      time: '09:00 AM',
+                      capacity: 5,
+                      booked: 0,
+                      remaining: 5,
+                      isFull: false,
+                    };
+                    const isSelected = selectedSlot === 'morning';
+                    const isFull = morning.isFull;
+
+                    return (
+                      <div
+                        onClick={() => !isFull && handleSlotSelect('morning')}
+                        className={`relative rounded-3xl p-6 sm:p-7 border-2 transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer ${
+                          isFull
+                            ? 'bg-[#FAF7EF]/60 border-[#E6D8B8] opacity-60 cursor-not-allowed'
+                            : isSelected
+                            ? 'bg-[#FFFDF7] border-[#8F7430] shadow-[0_12px_35px_rgba(143,116,48,0.22)] ring-2 ring-[#8F7430]/30 scale-[1.01]'
+                            : 'bg-[#FFFDF7] border-[#B89A4A]/30 hover:border-[#8F7430] hover:shadow-[0_8px_25px_rgba(184,154,74,0.15)]'
+                        }`}
+                      >
+                        {/* Top Header */}
+                        <div>
+                          <div className="flex items-start justify-between gap-3 mb-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-12 rounded-2xl bg-[#B89A4A]/15 border border-[#B89A4A]/30 flex items-center justify-center text-2xl text-[#8F7430]">
+                                🌅
+                              </div>
+                              <div>
+                                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#8F7430] block">
+                                  Morning Ritual
+                                </span>
+                                <h4 className="text-xl sm:text-2xl font-black text-[#3F3528] font-heading">
+                                  Morning Aarti
+                                </h4>
+                              </div>
+                            </div>
+
+                            {/* Availability Badge */}
+                            <div>
+                              {isFull ? (
+                                <span className="px-3 py-1 rounded-full text-[10px] font-black bg-red-100 text-red-700 border border-red-300">
+                                  🔴 Sold Out
+                                </span>
+                              ) : morning.remaining <= 2 ? (
+                                <span className="px-3 py-1 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 border border-amber-300">
+                                  ⚠️ {morning.remaining} Left
+                                </span>
+                              ) : (
+                                <span className="px-3 py-1 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                  🟢 {morning.remaining} Available
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Time */}
+                          <div className="bg-[#FAF7EF] rounded-2xl p-4 border border-[#B89A4A]/20 flex items-center justify-between mb-5">
+                            <div>
+                              <span className="text-[10px] uppercase font-bold text-[#776B5B] block">
+                                Aarti Time
+                              </span>
+                              <span className="text-2xl sm:text-3xl font-black text-[#8F7430] font-heading">
+                                09:00 AM
+                              </span>
+                            </div>
+                            <div className="text-right text-xs">
+                              <span className="text-[#776B5B] block text-[10px]">Max Capacity</span>
+                              <span className="font-bold text-[#3F3528]">5 Devotees / Slot</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Select Button */}
+                        <button
+                          type="button"
+                          disabled={isFull}
+                          className={`w-full py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 ${
+                            isFull
+                              ? 'bg-[#E6D8B8] text-[#776B5B] cursor-not-allowed'
+                              : isSelected
+                              ? 'bg-[#8F7430] text-[#FFFDF7] shadow-md'
+                              : 'bg-[#B89A4A]/20 text-[#8F7430] hover:bg-[#8F7430] hover:text-[#FFFDF7]'
+                          }`}
+                        >
+                          {isFull ? (
+                            'Fully Booked'
+                          ) : isSelected ? (
+                            <>
+                              <span>✓ Selected — Fill Details Below</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>Select Morning Aarti</span>
+                              <span>→</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })()}
+
+                  {/* NIGHT AARTI CARD */}
+                  {(() => {
+                    const night = slotData?.night || {
+                      title: 'Night Aarti',
+                      time: '08:00 PM',
+                      capacity: 5,
+                      booked: 0,
+                      remaining: 5,
+                      isFull: false,
+                    };
+                    const isSelected = selectedSlot === 'night';
+                    const isFull = night.isFull;
+
+                    return (
+                      <div
+                        onClick={() => !isFull && handleSlotSelect('night')}
+                        className={`relative rounded-3xl p-6 sm:p-7 border-2 transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer ${
+                          isFull
+                            ? 'bg-[#FAF7EF]/60 border-[#E6D8B8] opacity-60 cursor-not-allowed'
+                            : isSelected
+                            ? 'bg-[#FFFDF7] border-[#8F7430] shadow-[0_12px_35px_rgba(143,116,48,0.22)] ring-2 ring-[#8F7430]/30 scale-[1.01]'
+                            : 'bg-[#FFFDF7] border-[#B89A4A]/30 hover:border-[#8F7430] hover:shadow-[0_8px_25px_rgba(184,154,74,0.15)]'
+                        }`}
+                      >
+                        {/* Top Header */}
+                        <div>
+                          <div className="flex items-start justify-between gap-3 mb-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-12 rounded-2xl bg-[#B89A4A]/15 border border-[#B89A4A]/30 flex items-center justify-center text-2xl text-[#8F7430]">
+                                🌙
+                              </div>
+                              <div>
+                                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#8F7430] block">
+                                  Evening Darshan
+                                </span>
+                                <h4 className="text-xl sm:text-2xl font-black text-[#3F3528] font-heading">
+                                  Night Aarti
+                                </h4>
+                              </div>
+                            </div>
+
+                            {/* Availability Badge */}
+                            <div>
+                              {isFull ? (
+                                <span className="px-3 py-1 rounded-full text-[10px] font-black bg-red-100 text-red-700 border border-red-300">
+                                  🔴 Sold Out
+                                </span>
+                              ) : night.remaining <= 2 ? (
+                                <span className="px-3 py-1 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 border border-amber-300">
+                                  ⚠️ {night.remaining} Left
+                                </span>
+                              ) : (
+                                <span className="px-3 py-1 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                  🟢 {night.remaining} Available
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Time */}
+                          <div className="bg-[#FAF7EF] rounded-2xl p-4 border border-[#B89A4A]/20 flex items-center justify-between mb-5">
+                            <div>
+                              <span className="text-[10px] uppercase font-bold text-[#776B5B] block">
+                                Aarti Time
+                              </span>
+                              <span className="text-2xl sm:text-3xl font-black text-[#8F7430] font-heading">
+                                08:00 PM
+                              </span>
+                            </div>
+                            <div className="text-right text-xs">
+                              <span className="text-[#776B5B] block text-[10px]">Max Capacity</span>
+                              <span className="font-bold text-[#3F3528]">5 Devotees / Slot</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Select Button */}
+                        <button
+                          type="button"
+                          disabled={isFull}
+                          className={`w-full py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 ${
+                            isFull
+                              ? 'bg-[#E6D8B8] text-[#776B5B] cursor-not-allowed'
+                              : isSelected
+                              ? 'bg-[#8F7430] text-[#FFFDF7] shadow-md'
+                              : 'bg-[#B89A4A]/20 text-[#8F7430] hover:bg-[#8F7430] hover:text-[#FFFDF7]'
+                          }`}
+                        >
+                          {isFull ? (
+                            'Fully Booked'
+                          ) : isSelected ? (
+                            <>
+                              <span>✓ Selected — Fill Details Below</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>Select Night Aarti</span>
+                              <span>→</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })()}
+
+                </div>
+              )}
+            </div>
+
+            {/* ========================================================================= */}
+            {/* STEP 3 & 4: BOOKING FORM & CONFIRMATION */}
+            {/* ========================================================================= */}
+            {selectedSlot && (
+              <div
+                ref={formRef}
+                className="bg-[#FFFDF7] border-2 border-[#B89A4A]/40 rounded-3xl p-6 sm:p-8 md:p-10 shadow-[0_20px_50px_rgba(63,53,40,0.08)] space-y-6 animate-in fade-in duration-300"
+              >
+                {/* Form Top Header with Selected Booking Information */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#B89A4A]/20 pb-5">
+                  <div className="flex items-center gap-3">
+                    <span className="w-8 h-8 rounded-full bg-[#8F7430] text-[#FFFDF7] flex items-center justify-center text-sm font-black">
+                      3
+                    </span>
+                    <div>
+                      <h3 className="text-xl sm:text-2xl font-black text-[#3F3528] font-heading">
+                        Devotee Details
+                      </h3>
+                      <p className="text-xs text-[#776B5B]">
+                        Please fill in your details to confirm the pass
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Clearly Display Selected Booking Information (No re-selection) */}
+                  <div className="bg-[#FAF7EF] border border-[#B89A4A]/30 rounded-2xl px-4 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+                    <div>
+                      <span className="text-[#776B5B] text-[10px] uppercase font-bold block">Date</span>
+                      <span className="font-bold text-[#3F3528]">{formatHumanDate(selectedDate)}</span>
+                    </div>
+                    <div className="w-px h-6 bg-[#B89A4A]/20 hidden sm:block" />
+                    <div>
+                      <span className="text-[#776B5B] text-[10px] uppercase font-bold block">Aarti</span>
+                      <span className="font-bold text-[#8F7430]">
+                        {selectedSlot === 'morning' ? 'Morning Aarti' : 'Night Aarti'}
+                      </span>
+                    </div>
+                    <div className="w-px h-6 bg-[#B89A4A]/20 hidden sm:block" />
+                    <div>
+                      <span className="text-[#776B5B] text-[10px] uppercase font-bold block">Time</span>
+                      <span className="font-bold text-[#8F7430]">
+                        {selectedSlot === 'morning' ? '09:00 AM' : '08:00 PM'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* API Error Alert */}
+                {apiError && (
+                  <div className="p-4 rounded-2xl bg-red-50 border border-red-300 text-red-800 text-xs font-medium flex items-center gap-2">
+                    <span>⚠️</span>
+                    <span>{apiError}</span>
                   </div>
                 )}
 
-                <form onSubmit={handleSubmitBooking} className="space-y-4">
+                {/* Form Fields */}
+                <form onSubmit={handleConfirmBooking} className="space-y-4">
+                  
+                  {/* Full Name */}
                   <div>
-                    <label className="block text-xs font-semibold text-[#3F3528] mb-1">Full Name *</label>
+                    <label className="block text-xs font-bold text-[#3F3528] mb-1.5">
+                      Full Name *
+                    </label>
                     <input
                       type="text"
                       name="name"
                       required
                       value={formData.name}
                       onChange={handleInputChange}
-                      placeholder="Enter your full name"
-                      className="w-full px-4 py-3 rounded-xl bg-[#FAF7EF] border border-[#B89A4A]/30 text-[#3F3528] placeholder-[#9A8D78] focus:outline-none focus:border-[#8F7430] transition-colors text-sm"
+                      placeholder="e.g. Ramesh Bhai Patel"
+                      className={`w-full px-4 py-3 rounded-xl bg-[#FAF7EF] border text-sm text-[#3F3528] placeholder-[#9A8D78] focus:outline-none transition-colors ${
+                        formErrors.name ? 'border-red-400 bg-red-50/40' : 'border-[#B89A4A]/30 focus:border-[#8F7430]'
+                      }`}
                     />
+                    {formErrors.name && (
+                      <p className="text-[11px] text-red-600 mt-1 font-medium">{formErrors.name}</p>
+                    )}
                   </div>
 
+                  {/* Mobile & Email */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-[#3F3528] mb-1">Mobile Number *</label>
+                      <label className="block text-xs font-bold text-[#3F3528] mb-1.5">
+                        Mobile Number *
+                      </label>
                       <input
                         type="tel"
                         name="mobile"
@@ -908,206 +981,125 @@ Ganpati Bappa Morya 🙏`;
                         maxLength={10}
                         value={formData.mobile}
                         onChange={handleInputChange}
-                        placeholder="10-digit mobile"
-                        className="w-full px-4 py-3 rounded-xl bg-[#FAF7EF] border border-[#B89A4A]/30 text-[#3F3528] placeholder-[#9A8D78] focus:outline-none focus:border-[#8F7430] transition-colors text-sm"
+                        placeholder="10-digit mobile (e.g. 9876543210)"
+                        className={`w-full px-4 py-3 rounded-xl bg-[#FAF7EF] border text-sm text-[#3F3528] placeholder-[#9A8D78] focus:outline-none transition-colors ${
+                          formErrors.mobile ? 'border-red-400 bg-red-50/40' : 'border-[#B89A4A]/30 focus:border-[#8F7430]'
+                        }`}
                       />
+                      {formErrors.mobile && (
+                        <p className="text-[11px] text-red-600 mt-1 font-medium">{formErrors.mobile}</p>
+                      )}
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-[#3F3528] mb-1">Email Address *</label>
+                      <label className="block text-xs font-bold text-[#3F3528] mb-1.5">
+                        Email Address *
+                      </label>
                       <input
                         type="email"
                         name="email"
                         required
                         value={formData.email}
                         onChange={handleInputChange}
-                        placeholder="name@example.com"
-                        className="w-full px-4 py-3 rounded-xl bg-[#FAF7EF] border border-[#B89A4A]/30 text-[#3F3528] placeholder-[#9A8D78] focus:outline-none focus:border-[#8F7430] transition-colors text-sm"
+                        placeholder="devotee@example.com"
+                        className={`w-full px-4 py-3 rounded-xl bg-[#FAF7EF] border text-sm text-[#3F3528] placeholder-[#9A8D78] focus:outline-none transition-colors ${
+                          formErrors.email ? 'border-red-400 bg-red-50/40' : 'border-[#B89A4A]/30 focus:border-[#8F7430]'
+                        }`}
                       />
+                      {formErrors.email && (
+                        <p className="text-[11px] text-red-600 mt-1 font-medium">{formErrors.email}</p>
+                      )}
                     </div>
                   </div>
 
+                  {/* City & Members */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-[#3F3528] mb-1">City *</label>
+                      <label className="block text-xs font-bold text-[#3F3528] mb-1.5">
+                        City *
+                      </label>
                       <input
                         type="text"
                         name="city"
                         required
                         value={formData.city}
                         onChange={handleInputChange}
-                        placeholder="Your city (e.g. Surat)"
-                        className="w-full px-4 py-3 rounded-xl bg-[#FAF7EF] border border-[#B89A4A]/30 text-[#3F3528] placeholder-[#9A8D78] focus:outline-none focus:border-[#8F7430] transition-colors text-sm"
+                        placeholder="e.g. Surat"
+                        className={`w-full px-4 py-3 rounded-xl bg-[#FAF7EF] border text-sm text-[#3F3528] placeholder-[#9A8D78] focus:outline-none transition-colors ${
+                          formErrors.city ? 'border-red-400 bg-red-50/40' : 'border-[#B89A4A]/30 focus:border-[#8F7430]'
+                        }`}
                       />
+                      {formErrors.city && (
+                        <p className="text-[11px] text-red-600 mt-1 font-medium">{formErrors.city}</p>
+                      )}
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-[#3F3528] mb-1">Number of Members * (1–5)</label>
+                      <label className="block text-xs font-bold text-[#3F3528] mb-1.5">
+                        Number of Members * (1 to 5)
+                      </label>
                       <select
                         name="members"
                         value={formData.members}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl bg-[#FAF7EF] border border-[#B89A4A]/30 text-[#3F3528] focus:outline-none focus:border-[#8F7430] transition-colors text-sm"
+                        className="w-full px-4 py-3 rounded-xl bg-[#FAF7EF] border border-[#B89A4A]/30 text-sm text-[#3F3528] focus:outline-none focus:border-[#8F7430] transition-colors"
                       >
-                        <option value="1">1 Member</option>
+                        <option value="1">1 Member (Individual Pass)</option>
                         <option value="2">2 Members</option>
                         <option value="3">3 Members</option>
                         <option value="4">4 Members</option>
-                        <option value="5">5 Members (Max)</option>
+                        <option value="5">5 Members (Maximum per slot)</option>
                       </select>
+                      {formErrors.members && (
+                        <p className="text-[11px] text-red-600 mt-1 font-medium">{formErrors.members}</p>
+                      )}
                     </div>
                   </div>
 
+                  {/* Special Note */}
                   <div>
-                    <label className="block text-xs font-semibold text-[#3F3528] mb-1">Special Note (Optional)</label>
+                    <label className="block text-xs font-bold text-[#3F3528] mb-1.5">
+                      Special Note (Optional)
+                    </label>
                     <textarea
                       name="specialNote"
                       rows={2}
                       value={formData.specialNote}
                       onChange={handleInputChange}
-                      placeholder="Any special assistance or notes..."
-                      className="w-full px-4 py-3 rounded-xl bg-[#FAF7EF] border border-[#B89A4A]/30 text-[#3F3528] placeholder-[#9A8D78] focus:outline-none focus:border-[#8F7430] transition-colors text-sm resize-none"
+                      placeholder="Wheelchair assistance, elder seating, or specific prayers..."
+                      className="w-full px-4 py-3 rounded-xl bg-[#FAF7EF] border border-[#B89A4A]/30 text-sm text-[#3F3528] placeholder-[#9A8D78] focus:outline-none focus:border-[#8F7430] transition-colors resize-none"
                     />
                   </div>
 
-                  <div className="flex items-start gap-2 pt-2">
-                    <input
-                      type="checkbox"
-                      id="agreeRules"
-                      name="agreeRules"
-                      checked={formData.agreeRules}
-                      onChange={handleInputChange}
-                      className="mt-1 accent-[#B89A4A]"
-                    />
-                    <label htmlFor="agreeRules" className="text-xs text-[#776B5B] leading-normal cursor-pointer">
-                      I agree to temple guidelines & rules. I will arrive 20 minutes prior to Aarti.
-                    </label>
+                  {/* STEP 4: Confirm CTA Button */}
+                  <div className="pt-3">
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="w-full py-4 rounded-2xl font-black text-sm sm:text-base bg-gradient-to-r from-[#8F7430] via-[#A8883B] to-[#B89A4A] text-[#FFFDF7] hover:brightness-105 shadow-[0_8px_25px_rgba(143,116,48,0.3)] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {submitting ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-[#FFFDF7] border-t-transparent rounded-full animate-spin" />
+                          <span>Reserving Aarti Pass...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Confirm Aarti Booking</span>
+                          <span>🙏</span>
+                        </>
+                      )}
+                    </button>
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="w-full py-4 rounded-2xl font-bold text-base bg-gradient-to-r from-[#B89A4A] via-[#D8BD72] to-[#C99B45] text-[#3F3528] hover:brightness-105 shadow-[0_4px_20px_rgba(184,154,74,0.2)] transition-all duration-300 mt-4 flex items-center justify-center gap-2"
-                  >
-                    {submitting ? (
-                      <span className="inline-block w-5 h-5 border-2 border-[#3F3528] border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        <span>Confirm Aarti Booking Pass</span>
-                        <span>✨</span>
-                      </>
-                    )}
-                  </button>
                 </form>
-              </>
-            ) : (
-              /* SUCCESS SCREEN */
-              <div className="text-center space-y-6">
-                <div className="w-16 h-16 bg-gradient-to-tr from-[#B89A4A] to-[#D8BD72] rounded-full flex items-center justify-center mx-auto text-[#3F3528] text-3xl font-extrabold shadow-[0_4px_20px_rgba(184,154,74,0.3)] animate-bounce">
-                  ✓
-                </div>
-
-                <div>
-                  <span className="px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-800 border border-emerald-500/30">
-                    Booking Confirmed
-                  </span>
-                  <h3 className="text-2xl font-extrabold text-[#3F3528] mt-2 font-heading">
-                    Aarti Pass Generated!
-                  </h3>
-                  <p className="text-xs text-[#776B5B]">
-                    Confirmation sent via WhatsApp & Email
-                  </p>
-                </div>
-
-                {/* Ticket Pass Preview Card */}
-                <div className="bg-[#FAF7EF] border border-[#B89A4A]/40 rounded-2xl p-6 text-left relative overflow-hidden">
-                  <div className="absolute top-0 right-0 px-4 py-1 bg-[#B89A4A] text-[#FFFDF7] font-extrabold text-[10px] tracking-widest rounded-bl-xl uppercase">
-                    VIP ACCESS PASS
-                  </div>
-
-                  <div className="text-center mb-4">
-                    <span className="text-[11px] text-[#776B5B] uppercase tracking-widest">Booking ID</span>
-                    <div className="text-2xl font-black text-[#8F7430] tracking-wider font-mono">
-                      {successBooking.bookingId}
-                    </div>
-                  </div>
-
-                  {qrCodeUrl && (
-                    <div className="flex justify-center my-3">
-                      <img
-                        src={qrCodeUrl}
-                        alt="Aarti Pass QR Code"
-                        className="w-36 h-36 rounded-xl border-2 border-[#B89A4A] p-1.5 bg-[#FFFDF7] shadow-md"
-                      />
-                    </div>
-                  )}
-
-                  <div className="space-y-2 text-xs border-t border-[#B89A4A]/20 pt-3">
-                    <div className="flex justify-between">
-                      <span className="text-[#776B5B]">Name:</span>
-                      <span className="font-semibold text-[#3F3528]">{successBooking.name}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#776B5B]">Date:</span>
-                      <span className="font-semibold text-[#8F7430]">{successBooking.date}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#776B5B]">Slot:</span>
-                      <span className="font-semibold text-[#8F7430]">
-                        {successBooking.slot} ({successBooking.slot.includes('Morning') ? '09:00 AM' : '08:00 PM'})
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#776B5B]">Members:</span>
-                      <span className="font-semibold text-[#3F3528]">{successBooking.members} Person(s)</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#776B5B]">Status:</span>
-                      <span className="font-bold text-emerald-700">Confirmed</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Download / WhatsApp Action Buttons */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                  <button
-                    onClick={handleDownloadPDF}
-                    className="py-3 px-3 rounded-xl bg-[#B89A4A]/15 border border-[#B89A4A]/40 text-[#8F7430] hover:bg-[#B89A4A]/25 transition-all text-xs font-bold flex items-center justify-center gap-1.5"
-                  >
-                    <span>📄</span> Download PDF Pass
-                  </button>
-
-                  <button
-                    onClick={handleDownloadQR}
-                    className="py-3 px-3 rounded-xl bg-[#FAF7EF] border border-[#B89A4A]/30 text-[#3F3528] hover:bg-[#EEE7D8] transition-all text-xs font-bold flex items-center justify-center gap-1.5"
-                  >
-                    <span>📷</span> Download QR
-                  </button>
-
-                  <button
-                    onClick={handleOpenWhatsApp}
-                    className="py-3 px-3 rounded-xl bg-emerald-600/15 border border-emerald-500/40 text-emerald-800 hover:bg-emerald-600/25 transition-all text-xs font-bold flex items-center justify-center gap-1.5"
-                  >
-                    <span>💬</span> WhatsApp
-                  </button>
-                </div>
-
-                <button
-                  onClick={() => {
-                    setModalOpen(false);
-                    setSuccessBooking(null);
-                  }}
-                  className="text-xs text-[#776B5B] hover:text-[#3F3528] underline pt-2 block mx-auto"
-                >
-                  Close Window
-                </button>
               </div>
             )}
 
           </div>
-        </div>
-      )}
+        )}
 
+      </div>
     </section>
   );
 }

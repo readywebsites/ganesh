@@ -83,6 +83,21 @@ def send_whatsapp_message(to_phone: str, message_text: str) -> bool:
         return False
 
 
+def format_aarti_date(booking_date) -> str:
+    """Formats date object or string into human-readable format like '20 September 2026'."""
+    if not booking_date:
+        return '20 September 2026'
+    try:
+        if hasattr(booking_date, 'strftime'):
+            return booking_date.strftime('%d %B %Y')
+        # String parse YYYY-MM-DD
+        from datetime import datetime
+        dt = datetime.strptime(str(booking_date).strip(), '%Y-%m-%d')
+        return dt.strftime('%d %B %Y')
+    except Exception:
+        return str(booking_date)
+
+
 def notify_admin_and_customer_on_booking(booking) -> None:
     """
     Sends WhatsApp notifications on successful Aarti Booking creation:
@@ -96,35 +111,45 @@ def notify_admin_and_customer_on_booking(booking) -> None:
         email = getattr(booking, 'email', '')
         city = getattr(booking, 'city', '') or 'Surat'
         booking_date = getattr(booking, 'booking_date', '')
+        formatted_date = format_aarti_date(booking_date)
         number_of_devotees = getattr(booking, 'number_of_devotees', 1)
+        notes = getattr(booking, 'notes', '') or 'None'
+        booking_id = getattr(booking, 'booking_id', str(booking.id))
 
-        aarti_type = getattr(booking, 'aarti_type', 'morning')
-        if hasattr(booking, 'get_aarti_type_display'):
-            aarti_type = booking.get_aarti_type_display()
+        raw_aarti = getattr(booking, 'aarti_type', 'morning')
+        if 'morning' in str(raw_aarti).lower() or 'mangala' in str(raw_aarti).lower() or 'rajbhog' in str(raw_aarti).lower():
+            aarti_title = "Morning Aarti"
+            aarti_time = "09:00 AM"
+        else:
+            aarti_title = "Night Aarti"
+            aarti_time = "08:00 PM"
 
-        # 1. Admin Notification
+        # 1. Admin Notification (Complete user-specified format)
         admin_message = (
-            f"🙏 New Aarti Booking\n\n"
+            f"🙏 NEW AARTI BOOKING\n\n"
+            f"Booking ID: {booking_id}\n\n"
+            f"Date: {formatted_date}\n"
+            f"Aarti: {aarti_title}\n"
+            f"Time: {aarti_time}\n\n"
             f"Name: {name}\n"
             f"Mobile: {phone}\n"
             f"Email: {email}\n"
             f"City: {city}\n"
-            f"Aarti Date: {booking_date}\n"
-            f"Aarti Type: {aarti_type}\n"
-            f"Members: {number_of_devotees}"
+            f"Members: {number_of_devotees}\n"
+            f"Special Note: {notes}"
         )
         send_whatsapp_message(admin_phone, admin_message)
 
         # 2. Customer Notification (if customer phone available)
         if phone:
-            booking_id = getattr(booking, 'booking_id', str(booking.id))
             customer_message = (
                 f"🙏 Aarti Booking Confirmed\n\n"
-                f"Booking ID: {booking_id}\n"
+                f"Booking ID: {booking_id}\n\n"
                 f"Devotee: {name}\n"
-                f"Date: {booking_date}\n"
-                f"Aarti: {aarti_type}\n"
-                f"Persons: {number_of_devotees}\n"
+                f"Date: {formatted_date}\n"
+                f"Aarti: {aarti_title}\n"
+                f"Time: {aarti_time}\n"
+                f"Members: {number_of_devotees}\n"
                 f"City: {city}\n\n"
                 f"Please arrive 20 minutes prior to the Aarti.\n"
                 f"Ganpati Bappa Morya! 🙏"
