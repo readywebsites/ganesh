@@ -10,6 +10,8 @@ from .views import (
     InstagramFeedView,
     InstagramStatusView,
     InstagramRefreshTokenView,
+    WhatsAppStatusView,
+    WhatsAppTestAlertView,
 )
 from .whatsapp_webhook import WhatsAppWebhookView
 
@@ -31,6 +33,18 @@ router.register(r'schedule', EventViewSet, basename='schedule')
 
 # Include router URLs in app's urlpatterns
 urlpatterns = [
+    # WhatsApp Status & Healthcheck Endpoint
+    path('whatsapp/status', WhatsAppStatusView.as_view(), name='whatsapp-status-noslash'),
+    path('whatsapp/status/', WhatsAppStatusView.as_view(), name='whatsapp-status'),
+    path('api/whatsapp/status', WhatsAppStatusView.as_view(), name='whatsapp-status-api-noslash'),
+    path('api/whatsapp/status/', WhatsAppStatusView.as_view(), name='whatsapp-status-api'),
+
+    # WhatsApp Test Alert Endpoint
+    path('whatsapp/test', WhatsAppTestAlertView.as_view(), name='whatsapp-test-noslash'),
+    path('whatsapp/test/', WhatsAppTestAlertView.as_view(), name='whatsapp-test'),
+    path('api/whatsapp/test', WhatsAppTestAlertView.as_view(), name='whatsapp-test-api-noslash'),
+    path('api/whatsapp/test/', WhatsAppTestAlertView.as_view(), name='whatsapp-test-api'),
+
     # WhatsApp Cloud API Webhook Endpoint (GET for Meta verification, POST for events)
     path('whatsapp/webhook', WhatsAppWebhookView.as_view(), name='whatsapp-webhook-noslash'),
     path('whatsapp/webhook/', WhatsAppWebhookView.as_view(), name='whatsapp-webhook'),

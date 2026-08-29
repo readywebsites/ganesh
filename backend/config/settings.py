@@ -24,7 +24,9 @@ if _env_file.exists():
             _line = _line.strip()
             if _line and not _line.startswith('#') and '=' in _line:
                 _k, _v = _line.split('=', 1)
-                os.environ.setdefault(_k.strip(), _v.strip())
+                _k = _k.strip()
+                _v = _v.strip().strip('"').strip("'")
+                os.environ[_k] = _v
 
 
 # Quick-start development settings - unsuitable for production
@@ -262,11 +264,16 @@ JAZZMIN_UI_TWEAKS = {
     "actions_sticky_top": True,
 }
 
-# WhatsApp Business / Cloud API Configuration
+# WhatsApp Business & Custom Gateway API Configuration
 WHATSAPP_ENABLED = os.environ.get('WHATSAPP_ENABLED', 'true').lower() in ('true', '1', 'yes')
-WHATSAPP_PHONE_NUMBER = os.environ.get('WHATSAPP_PHONE_NUMBER', '9662279799')
+WHATSAPP_ADMIN_PHONE = os.environ.get('WHATSAPP_ADMIN_PHONE') or os.environ.get('WHATSAPP_PHONE_NUMBER') or '9662279799'
+WHATSAPP_PHONE_NUMBER = WHATSAPP_ADMIN_PHONE
 WHATSAPP_ACCESS_TOKEN = os.environ.get('WHATSAPP_ACCESS_TOKEN', '')
 WHATSAPP_PHONE_NUMBER_ID = os.environ.get('WHATSAPP_PHONE_NUMBER_ID', '')
+WHATSAPP_API_VERSION = os.environ.get('WHATSAPP_API_VERSION', 'v20.0')
+WHATSAPP_API_URL = os.environ.get('WHATSAPP_API_URL', '')
+WHATSAPP_API_KEY = os.environ.get('WHATSAPP_API_KEY', '')
+WHATSAPP_INSTANCE_ID = os.environ.get('WHATSAPP_INSTANCE_ID', '')
 WHATSAPP_VERIFY_TOKEN = os.environ.get('WHATSAPP_VERIFY_TOKEN', 'ganpati_biz499_webhook_token_2026_x9k2p8v')
 WHATSAPP_APP_SECRET = os.environ.get('WHATSAPP_APP_SECRET', '')
 

@@ -22,15 +22,36 @@ function Contact() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setErrorMsg('');
 
+    const name = formData.name.trim();
+    const email = formData.email.trim();
+    const message = formData.message.trim();
+
+    if (name.length < 2) {
+      setErrorMsg('Please enter your full name (at least 2 characters).');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+      setErrorMsg('Please enter a valid email address.');
+      return;
+    }
+
+    if (message.length < 10) {
+      setErrorMsg('Please enter a message of at least 10 characters.');
+      return;
+    }
+
+    setLoading(true);
+
     const payload = {
-      name: formData.name.trim(),
-      email: formData.email.trim(),
+      name,
+      email,
       phone: formData.phone.trim(),
       subject: formData.subject.trim() || 'General Pilgrim Inquiry',
-      message: formData.message.trim(),
+      message,
     };
 
     try {

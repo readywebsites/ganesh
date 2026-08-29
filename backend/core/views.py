@@ -20,10 +20,13 @@ from .serializers import (
     EventSerializer,
 )
 from .whatsapp import (
-    notify_admin_and_customer_on_booking,
-    notify_admin_and_customer_on_membership,
+    notify_admin_on_booking,
     notify_admin_on_donation,
     notify_admin_on_contact,
+    notify_admin_on_membership,
+    get_whatsapp_config_status,
+    send_whatsapp_admin_alert,
+    get_admin_phone,
 )
 from .instagram import (
     fetch_instagram_feed,
@@ -281,8 +284,11 @@ class AartiBookingViewSet(PublicCreateViewSetMixin, viewsets.ModelViewSet):
                 "message": "A database error occurred while creating your booking. Please try again."
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        # Send WhatsApp notifications safely in background / try-except
-        notify_admin_and_customer_on_booking(booking)
+        # Send WhatsApp direct alert safely to Admin (User receives no notification)
+        try:
+            notify_admin_on_booking(booking)
+        except Exception as e:
+            logger.error(f"[WhatsApp] Notification error on aarti booking: {e}", exc_info=True)
 
         headers = self.get_success_headers(serializer.data)
         return Response({
@@ -561,9 +567,9 @@ class MembershipViewSet(PublicCreateViewSetMixin, viewsets.ModelViewSet):
                 "message": "A database error occurred while creating membership. Please try again."
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        # Send WhatsApp notifications safely in background / try-except
+        # Send WhatsApp direct alert safely to Admin (User receives no notification)
         try:
-            notify_admin_and_customer_on_membership(membership)
+            notify_admin_on_membership(membership)
         except Exception as e:
             logger.error(f"[WhatsApp] Notification error on membership: {e}", exc_info=True)
 
@@ -906,5 +912,45 @@ class InstagramRefreshTokenView(APIView):
         result = refresh_long_lived_token()
         http_status = status.HTTP_200_OK if result.get('success') else status.HTTP_400_BAD_REQUEST
         return Response(result, status=http_status)
+
+
+class WhatsAppStatusView(APIView):
+    """
+    Status / Healthcheck endpoint reporting WhatsApp Admin Alert configuration.
+    """
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+
+    def get(self, request, *args, **kwargs):
+        status_info = get_whatsapp_config_status()
+        return Response({
+            "success": True,
+            "status": status_info
+        }, status=status.HTTP_200_OK)
+
+
+class WhatsAppTestAlertView(APIView):
+    """
+    Endpoint to test send a sample WhatsApp alert message to the Admin phone.
+    """
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+
+    def post(self, request, *args, **kwargs):
+        admin_phone = get_admin_phone()
+        test_message = (
+            f"🔔 *TEST WHATSAPP ADMIN ALERT*\n\n"
+            f"This is a test alert from Surat Cha Gaurinandan Ganesh Mahotsav 2026 Portal.\n"
+            f"Your WhatsApp API integration is connected and working successfully! 🎉\n\n"
+            f"Target Admin: +{admin_phone}\n"
+            f"Timestamp: {datetime.now().strftime('%d %B %Y, %I:%M %p')}"
+        )
+        sent = send_whatsapp_admin_alert(test_message)
+        return Response({
+            "success": sent,
+            "message": "Test alert successfully sent to admin WhatsApp." if sent else "Failed to send alert. Please check your .env WhatsApp API credentials.",
+            "adminPhone": f"+{admin_phone}",
+        }, status=status.HTTP_200_OK if sent else status.HTTP_400_BAD_REQUEST)
+
 
 
