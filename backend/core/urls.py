@@ -7,7 +7,13 @@ from .views import (
     MembershipViewSet,
     ContactViewSet,
     EventViewSet,
+    InstagramFeedView,
+    InstagramStatusView,
+    InstagramRefreshTokenView,
+    WhatsAppStatusView,
+    WhatsAppTestAlertView,
 )
+from .whatsapp_webhook import WhatsAppWebhookView
 
 # Initialize DRF DefaultRouter
 router = DefaultRouter()
@@ -27,6 +33,24 @@ router.register(r'schedule', EventViewSet, basename='schedule')
 
 # Include router URLs in app's urlpatterns
 urlpatterns = [
+    # WhatsApp Status & Healthcheck Endpoint
+    path('whatsapp/status', WhatsAppStatusView.as_view(), name='whatsapp-status-noslash'),
+    path('whatsapp/status/', WhatsAppStatusView.as_view(), name='whatsapp-status'),
+    path('api/whatsapp/status', WhatsAppStatusView.as_view(), name='whatsapp-status-api-noslash'),
+    path('api/whatsapp/status/', WhatsAppStatusView.as_view(), name='whatsapp-status-api'),
+
+    # WhatsApp Test Alert Endpoint
+    path('whatsapp/test', WhatsAppTestAlertView.as_view(), name='whatsapp-test-noslash'),
+    path('whatsapp/test/', WhatsAppTestAlertView.as_view(), name='whatsapp-test'),
+    path('api/whatsapp/test', WhatsAppTestAlertView.as_view(), name='whatsapp-test-api-noslash'),
+    path('api/whatsapp/test/', WhatsAppTestAlertView.as_view(), name='whatsapp-test-api'),
+
+    # WhatsApp Cloud API Webhook Endpoint (GET for Meta verification, POST for events)
+    path('whatsapp/webhook', WhatsAppWebhookView.as_view(), name='whatsapp-webhook-noslash'),
+    path('whatsapp/webhook/', WhatsAppWebhookView.as_view(), name='whatsapp-webhook'),
+    path('api/whatsapp/webhook', WhatsAppWebhookView.as_view(), name='whatsapp-webhook-api-noslash'),
+    path('api/whatsapp/webhook/', WhatsAppWebhookView.as_view(), name='whatsapp-webhook-api'),
+
     # Availability aliases
     path('aarti-bookings/availability', AartiBookingViewSet.as_view({'get': 'availability'}), name='aarti-availability-noslash'),
     path('aarti/slots', AartiBookingViewSet.as_view({'get': 'availability'}), name='legacy-aarti-slots'),
@@ -55,6 +79,16 @@ urlpatterns = [
     path('contacts/send/', ContactViewSet.as_view({'post': 'create'}), name='legacy-contact-send-slash'),
     path('contact/send', ContactViewSet.as_view({'post': 'create'}), name='legacy-contact-singular-send'),
     path('contact/send/', ContactViewSet.as_view({'post': 'create'}), name='legacy-contact-singular-send-slash'),
-    
+
+    # Instagram Live Feed endpoints & aliases
+    path('instagram/feed', InstagramFeedView.as_view(), name='instagram-feed-noslash'),
+    path('instagram/feed/', InstagramFeedView.as_view(), name='instagram-feed'),
+    path('instagram', InstagramFeedView.as_view(), name='instagram-root-noslash'),
+    path('instagram/', InstagramFeedView.as_view(), name='instagram-root'),
+    path('instagram/status', InstagramStatusView.as_view(), name='instagram-status-noslash'),
+    path('instagram/status/', InstagramStatusView.as_view(), name='instagram-status'),
+    path('instagram/refresh-token', InstagramRefreshTokenView.as_view(), name='instagram-refresh-token-noslash'),
+    path('instagram/refresh-token/', InstagramRefreshTokenView.as_view(), name='instagram-refresh-token'),
+
     path('', include(router.urls)),
 ]

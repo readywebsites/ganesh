@@ -15,6 +15,11 @@ export default function useLenis() {
       touchMultiplier: 1.8,
     });
 
+    if (typeof window !== 'undefined') {
+      window.__lenis = lenis;
+      window.lenis = lenis;
+    }
+
     lenis.on('scroll', ScrollTrigger.update);
 
     gsap.ticker.add((time) => {
@@ -24,6 +29,10 @@ export default function useLenis() {
     gsap.ticker.lagSmoothing(0);
 
     return () => {
+      if (typeof window !== 'undefined') {
+        if (window.__lenis === lenis) window.__lenis = null;
+        if (window.lenis === lenis) window.lenis = null;
+      }
       lenis.destroy();
     };
   }, []);

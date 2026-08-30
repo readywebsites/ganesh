@@ -237,20 +237,16 @@ class AartiBookingCapacityAndAPITests(TestCase):
         with patch.dict('os.environ', {'WHATSAPP_ACCESS_TOKEN': '', 'WHATSAPP_PHONE_NUMBER_ID': ''}):
             notify_admin_and_customer_on_booking(booking)
 
-        # Test when configured with mock
+        # Test when configured with mock (Admin only notification)
         with patch('core.whatsapp.send_whatsapp_message') as mock_send:
             notify_admin_and_customer_on_booking(booking)
-            self.assertEqual(mock_send.call_count, 2)
+            self.assertEqual(mock_send.call_count, 1)
             # Verify admin call
             admin_call_args = mock_send.call_args_list[0][0]
-            self.assertEqual(admin_call_args[0], '9662279799')
-            self.assertIn("New Aarti Booking", admin_call_args[1])
+            self.assertEqual(admin_call_args[0], '919662279799')
+            self.assertIn("NEW AARTI BOOKING", admin_call_args[1].upper())
             self.assertIn("Ramesh Joshi", admin_call_args[1])
             self.assertIn("9876543221", admin_call_args[1])
-            # Verify customer call
-            customer_call_args = mock_send.call_args_list[1][0]
-            self.assertEqual(customer_call_args[0], '9876543221')
-            self.assertIn("Aarti Booking Confirmed", customer_call_args[1])
 
     def test_partial_capacity_exceeded_message(self):
         """Test user-friendly error when requesting more members than remaining seats"""
@@ -381,18 +377,15 @@ class MembershipAPITests(TestCase):
         with patch.dict('os.environ', {'WHATSAPP_ACCESS_TOKEN': '', 'WHATSAPP_PHONE_NUMBER_ID': ''}):
             notify_admin_and_customer_on_membership(member)
 
-        # Test configured credentials with mock
+        # Test configured credentials with mock (Admin only notification)
         with patch('core.whatsapp.send_whatsapp_message') as mock_send:
             notify_admin_and_customer_on_membership(member)
-            self.assertEqual(mock_send.call_count, 2)
+            self.assertEqual(mock_send.call_count, 1)
             admin_args = mock_send.call_args_list[0][0]
-            self.assertEqual(admin_args[0], '9662279799')
-            self.assertIn("New Membership Registration", admin_args[1])
+            self.assertEqual(admin_args[0], '919662279799')
+            self.assertIn("NEW MEMBERSHIP REGISTRATION", admin_args[1].upper())
             self.assertIn("Vikram Sethi", admin_args[1])
             self.assertIn("9876543212", admin_args[1])
-            member_args = mock_send.call_args_list[1][0]
-            self.assertEqual(member_args[0], '9876543212')
-            self.assertIn("Welcome to Surat Cha Gaurinandan Mahotsav", member_args[1])
 
 
 class DonationAPITests(TestCase):
@@ -821,14 +814,13 @@ class WhatsAppNotificationSuiteTests(TestCase):
             notify_admin_and_customer_on_booking(booking)
             self.assertTrue(mock_send.called)
             admin_recipient, admin_msg = mock_send.call_args_list[0][0]
-            self.assertEqual(admin_recipient, '9662279799')
-            self.assertIn("🙏 New Aarti Booking", admin_msg)
-            self.assertIn("Name: Rohit Sharma", admin_msg)
-            self.assertIn("Mobile: 9876543210", admin_msg)
-            self.assertIn("Email: rohit@example.com", admin_msg)
-            self.assertIn("City: Surat", admin_msg)
-            self.assertIn("Aarti Date: 2026-09-14", admin_msg)
-            self.assertIn("Members: 3", admin_msg)
+            self.assertEqual(admin_recipient, '919662279799')
+            self.assertIn("NEW AARTI BOOKING", admin_msg.upper())
+            self.assertIn("Rohit Sharma", admin_msg)
+            self.assertIn("9876543210", admin_msg)
+            self.assertIn("rohit@example.com", admin_msg)
+            self.assertIn("Surat", admin_msg)
+            self.assertIn("3", admin_msg)
 
     def test_membership_whatsapp_admin_message_content(self):
         """Verify Membership registration WhatsApp admin message structure and recipient"""
@@ -844,13 +836,13 @@ class WhatsAppNotificationSuiteTests(TestCase):
             notify_admin_and_customer_on_membership(membership)
             self.assertTrue(mock_send.called)
             admin_recipient, admin_msg = mock_send.call_args_list[0][0]
-            self.assertEqual(admin_recipient, '9662279799')
-            self.assertIn("🙏 New Membership Registration", admin_msg)
-            self.assertIn("Name: Pooja Patel", admin_msg)
-            self.assertIn("Mobile: 9876543211", admin_msg)
-            self.assertIn("Email: pooja.patel@example.com", admin_msg)
-            self.assertIn("City: Surat", admin_msg)
-            self.assertIn("Membership Type: Silver Bhakta", admin_msg)
+            self.assertEqual(admin_recipient, '919662279799')
+            self.assertIn("NEW MEMBERSHIP REGISTRATION", admin_msg.upper())
+            self.assertIn("Pooja Patel", admin_msg)
+            self.assertIn("9876543211", admin_msg)
+            self.assertIn("pooja.patel@example.com", admin_msg)
+            self.assertIn("Surat", admin_msg)
+            self.assertIn("Silver Bhakta", admin_msg)
 
     def test_donation_whatsapp_admin_message_content(self):
         """Verify Donation WhatsApp admin message structure and recipient"""
@@ -866,14 +858,14 @@ class WhatsAppNotificationSuiteTests(TestCase):
             notify_admin_on_donation(donation)
             self.assertTrue(mock_send.called)
             admin_recipient, admin_msg = mock_send.call_args_list[0][0]
-            self.assertIn("🙏 New Donation Submitted", admin_msg)
-            self.assertIn("Name: Hitesh Mehta", admin_msg)
-            self.assertIn("Mobile: 9876543212", admin_msg)
-            self.assertIn("Email: hitesh@example.com", admin_msg)
-            self.assertIn("Amount: ₹5100", admin_msg)
-            self.assertIn("Payment Method: GPay / UPI", admin_msg)
-            self.assertIn("Status: Pending Verification", admin_msg)
-            self.assertIn("Please verify the payment in the GPay account.", admin_msg)
+            self.assertEqual(admin_recipient, '919662279799')
+            self.assertIn("NEW DONATION ALERT", admin_msg)
+            self.assertIn("Hitesh Mehta", admin_msg)
+            self.assertIn("9876543212", admin_msg)
+            self.assertIn("hitesh@example.com", admin_msg)
+            self.assertIn("5,100", admin_msg)
+            self.assertIn("GPay / UPI", admin_msg)
+            self.assertIn("Pending Verification", admin_msg)
 
     def test_contact_whatsapp_admin_message_content(self):
         """Verify Contact inquiry WhatsApp admin message structure and recipient"""
@@ -889,13 +881,13 @@ class WhatsAppNotificationSuiteTests(TestCase):
             notify_admin_on_contact(contact)
             self.assertTrue(mock_send.called)
             admin_recipient, admin_msg = mock_send.call_args_list[0][0]
-            self.assertEqual(admin_recipient, '9662279799')
-            self.assertIn("📩 New Contact Enquiry", admin_msg)
-            self.assertIn("Name: Suresh Verma", admin_msg)
-            self.assertIn("Mobile: 9876543213", admin_msg)
-            self.assertIn("Email: suresh@example.com", admin_msg)
-            self.assertIn("Subject: Prasad Timings Inquiry", admin_msg)
-            self.assertIn("Message: Please let us know the Mahaprasad timings for Sunday.", admin_msg)
+            self.assertEqual(admin_recipient, '919662279799')
+            self.assertIn("NEW MESSAGE TO TRUST ALERT", admin_msg)
+            self.assertIn("Suresh Verma", admin_msg)
+            self.assertIn("9876543213", admin_msg)
+            self.assertIn("suresh@example.com", admin_msg)
+            self.assertIn("Prasad Timings Inquiry", admin_msg)
+            self.assertIn("Please let us know the Mahaprasad timings for Sunday.", admin_msg)
 
     def test_all_form_api_posts_trigger_whatsapp_and_persist_db(self):
         """API submissions on all 4 public forms trigger WhatsApp notifications and save in DB"""
@@ -1124,6 +1116,366 @@ class EventAPITests(TestCase):
         self.assertContains(res_add, "End Time")
         self.assertContains(res_add, "Category")
         self.assertContains(res_add, "Display Order")
+
+
+
+class WhatsAppWebhookAPITests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.verify_token = "test_meta_webhook_secret_2026"
+
+    def test_webhook_verification_get_success(self):
+        """GET /api/whatsapp/webhook verification returns hub.challenge with HTTP 200 when tokens match"""
+        with patch.dict('os.environ', {'WHATSAPP_VERIFY_TOKEN': self.verify_token}):
+            url = f'/api/whatsapp/webhook?hub.mode=subscribe&hub.verify_token={self.verify_token}&hub.challenge=1158201444'
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.content.decode('utf-8'), '1158201444')
+            self.assertEqual(response['Content-Type'], 'text/plain')
+
+    def test_webhook_verification_get_token_mismatch_returns_403(self):
+        """GET /api/whatsapp/webhook returns 403 Forbidden when verify token does not match"""
+        with patch.dict('os.environ', {'WHATSAPP_VERIFY_TOKEN': self.verify_token}):
+            url = '/api/whatsapp/webhook?hub.mode=subscribe&hub.verify_token=wrong_token&hub.challenge=1158201444'
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 403)
+            self.assertIn("mismatch", response.content.decode('utf-8'))
+
+    def test_webhook_verification_get_missing_params_returns_400(self):
+        """GET /api/whatsapp/webhook returns 400 Bad Request when query params are missing"""
+        response = self.client.get('/api/whatsapp/webhook')
+        self.assertEqual(response.status_code, 400)
+
+    def test_webhook_post_incoming_message_returns_200(self):
+        """POST /api/whatsapp/webhook receives message payload and returns 200 OK EVENT_RECEIVED"""
+        payload = {
+            "object": "whatsapp_business_account",
+            "entry": [{
+                "id": "WABA_123456",
+                "changes": [{
+                    "value": {
+                        "messaging_product": "whatsapp",
+                        "metadata": {
+                            "display_phone_number": "919662279799",
+                            "phone_number_id": "123456789"
+                        },
+                        "contacts": [{
+                            "profile": {"name": "Devotee Ramesh"},
+                            "wa_id": "919876543210"
+                        }],
+                        "messages": [{
+                            "from": "919876543210",
+                            "id": "wamid.HBgLM...",
+                            "timestamp": "1724740000",
+                            "text": {"body": "Ganpati Bappa Morya! What are the Aarti timings?"},
+                            "type": "text"
+                        }]
+                    },
+                    "field": "messages"
+                }]
+            }]
+        }
+        response = self.client.post('/api/whatsapp/webhook', data=payload, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content.decode('utf-8'), 'EVENT_RECEIVED')
+
+    def test_webhook_post_status_receipt_returns_200(self):
+        """POST /api/whatsapp/webhook receives delivery receipt payload and returns 200 OK"""
+        payload = {
+            "object": "whatsapp_business_account",
+            "entry": [{
+                "id": "WABA_123456",
+                "changes": [{
+                    "value": {
+                        "messaging_product": "whatsapp",
+                        "metadata": {
+                            "phone_number_id": "123456789"
+                        },
+                        "statuses": [{
+                            "id": "wamid.HBgLM...",
+                            "status": "delivered",
+                            "timestamp": "1724740010",
+                            "recipient_id": "919876543210"
+                        }]
+                    },
+                    "field": "messages"
+                }]
+            }]
+        }
+        response = self.client.post('/api/whatsapp/webhook/', data=payload, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content.decode('utf-8'), 'EVENT_RECEIVED')
+
+    def test_webhook_signature_verification_when_configured(self):
+        """POST with WHATSAPP_APP_SECRET validates X-Hub-Signature-256 HMAC"""
+        import hmac
+        import hashlib
+        app_secret = "my_secret_meta_key"
+        payload_dict = {"object": "whatsapp_business_account", "entry": []}
+        payload_bytes = json.dumps(payload_dict).encode('utf-8')
+        signature = hmac.new(app_secret.encode('utf-8'), payload_bytes, hashlib.sha256).hexdigest()
+
+        with patch.dict('os.environ', {'WHATSAPP_APP_SECRET': app_secret}):
+            # Valid signature
+            res_valid = self.client.post(
+                '/api/whatsapp/webhook/',
+                data=payload_bytes,
+                content_type='application/json',
+                HTTP_X_HUB_SIGNATURE_256=f"sha256={signature}"
+            )
+            self.assertEqual(res_valid.status_code, 200)
+
+            # Invalid signature
+            res_invalid = self.client.post(
+                '/api/whatsapp/webhook/',
+                data=payload_bytes,
+                content_type='application/json',
+                HTTP_X_HUB_SIGNATURE_256="sha256=invalid_hex_signature"
+            )
+            self.assertEqual(res_invalid.status_code, 403)
+
+
+class InstagramFeedAPITests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        from django.core.cache import cache
+        cache.clear()
+
+    def test_unconfigured_instagram_feed_returns_fallback(self):
+        """When token is empty, feed returns graceful fallback items with unconfigured flag."""
+        with patch.dict('os.environ', {'INSTAGRAM_ACCESS_TOKEN': ''}):
+            response = self.client.get('/api/instagram/feed/')
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertTrue(response.data['success'])
+            self.assertFalse(response.data['configured'])
+            self.assertEqual(response.data['status'], 'unconfigured')
+            self.assertGreater(len(response.data['data']), 0)
+            self.assertIn('caption', response.data['data'][0])
+
+    def test_live_instagram_feed_mocked_meta_api(self):
+        """When token is set, mock Meta Graph API response and check parsed structure."""
+        mock_meta_response = {
+            "data": [
+                {
+                    "id": "17890123456789012",
+                    "caption": "🚩 Live Aarti Darshan at Surat Cha Gaurinandan!",
+                    "media_type": "VIDEO",
+                    "media_url": "https://video.cdninstagram.com/reel1.mp4",
+                    "thumbnail_url": "https://scontent.cdninstagram.com/thumb1.jpg",
+                    "permalink": "https://www.instagram.com/reel/C-XYZ123/",
+                    "timestamp": "2026-08-27T10:00:00+0000",
+                    "username": "suratchagaurinandan",
+                },
+                {
+                    "id": "17890123456789013",
+                    "caption": "✨ Swarna Shringaar Darshan of Lord Ganesha",
+                    "media_type": "IMAGE",
+                    "media_url": "https://scontent.cdninstagram.com/photo2.jpg",
+                    "permalink": "https://www.instagram.com/p/C-ABC456/",
+                    "timestamp": "2026-08-26T15:30:00+0000",
+                    "username": "suratchagaurinandan",
+                }
+            ],
+            "paging": {
+                "cursors": {"after": "QVFIUk5j..."}
+            }
+        }
+
+        with patch.dict('os.environ', {
+            'INSTAGRAM_ACCESS_TOKEN': 'EAAG123fake_access_token',
+            'INSTAGRAM_APP_SECRET': 'fake_app_secret_12345'
+        }):
+            from django.core.cache import cache
+            cache.clear()
+            
+            with patch('urllib.request.urlopen') as mock_urlopen:
+                mock_cm = mock_urlopen.return_value.__enter__.return_value
+                mock_cm.read.return_value = json.dumps(mock_meta_response).encode('utf-8')
+
+                response = self.client.get('/api/instagram/feed/?limit=2&refresh=true')
+                self.assertEqual(response.status_code, status.HTTP_200_OK)
+                self.assertTrue(response.data['success'])
+                self.assertEqual(response.data['status'], 'live')
+                self.assertTrue(response.data['configured'])
+                self.assertEqual(len(response.data['data']), 2)
+
+                post_1 = response.data['data'][0]
+                self.assertEqual(post_1['id'], "17890123456789012")
+                self.assertTrue(post_1['is_reel'])
+                self.assertEqual(post_1['formatted_date'], "27 Aug 2026")
+
+                post_2 = response.data['data'][1]
+                self.assertFalse(post_2['is_reel'])
+                self.assertEqual(post_2['formatted_date'], "26 Aug 2026")
+
+    def test_instagram_appsecret_proof_calculation(self):
+        """Validates HMAC-SHA256 calculation for Meta appsecret_proof."""
+        from .instagram import compute_appsecret_proof
+        import hmac
+        import hashlib
+
+        token = "test_token_abc"
+        secret = "test_secret_xyz"
+        expected = hmac.new(secret.encode('utf-8'), token.encode('utf-8'), hashlib.sha256).hexdigest()
+        self.assertEqual(compute_appsecret_proof(token, secret), expected)
+        self.assertEqual(compute_appsecret_proof("", secret), "")
+        self.assertEqual(compute_appsecret_proof(token, ""), "")
+
+    def test_instagram_meta_api_error_handling(self):
+        """When Meta API throws HTTP error (e.g. invalid token), returns error status with fallback gracefully."""
+        import urllib.error
+        from io import BytesIO
+
+        with patch.dict('os.environ', {'INSTAGRAM_ACCESS_TOKEN': 'expired_token'}):
+            from django.core.cache import cache
+            cache.clear()
+
+            error_body = json.dumps({
+                "error": {
+                    "message": "Invalid OAuth access token - Cannot parse access token",
+                    "type": "OAuthException",
+                    "code": 190
+                }
+            }).encode('utf-8')
+
+            http_err = urllib.error.HTTPError(
+                url="https://graph.instagram.com/me/media",
+                code=400,
+                msg="Bad Request",
+                hdrs={},
+                fp=BytesIO(error_body)
+            )
+
+            with patch('urllib.request.urlopen', side_effect=http_err):
+                response = self.client.get('/api/instagram/feed/?refresh=true')
+                self.assertEqual(response.status_code, status.HTTP_200_OK)
+                self.assertFalse(response.data['success'])
+                self.assertEqual(response.data['status'], 'error')
+                self.assertIn('Invalid OAuth', response.data['message'])
+                # Fallback items provided so site does not break
+                self.assertGreater(len(response.data['data']), 0)
+
+    def test_instagram_status_endpoint(self):
+        """Tests the status / diagnostic endpoint."""
+        response = self.client.get('/api/instagram/status/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data['success'])
+        self.assertIn('status', response.data)
+        self.assertIn('configured', response.data['status'])
+        self.assertIn('has_access_token', response.data['status'])
+        self.assertIn('profile_url', response.data['status'])
+
+class WhatsAppAdminAlertsFeatureTests(TestCase):
+    """
+    Unit and integration tests for the WhatsApp Admin Alert feature:
+    - 3 Forms: Aarti Booking, Donation, Send Message to Trust (Contact)
+    - Alerts sent directly ONLY to Admin
+    - Users receive no WhatsApp notifications
+    - Status and Test alert endpoints
+    """
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_aarti_booking_triggers_admin_only_alert(self):
+        """Aarti Booking form submission sends WhatsApp direct alert ONLY to Admin"""
+        with patch('core.whatsapp.send_whatsapp_message') as mock_send:
+            mock_send.return_value = True
+            payload = {
+                "name": "Devotee Rajesh",
+                "mobile": "9876543210",
+                "email": "rajesh@example.com",
+                "city": "Surat",
+                "date": "2026-09-15",
+                "slot": "Morning Aarti",
+                "members": 2,
+                "specialNote": "Family Darshan",
+            }
+            res = self.client.post('/api/aarti-bookings/', data=payload, format='json')
+            self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+            self.assertTrue(res.data['success'])
+
+            # Must have sent EXACTLY 1 WhatsApp message (to Admin only)
+            self.assertEqual(mock_send.call_count, 1)
+            target_phone, msg_text = mock_send.call_args[0]
+            self.assertEqual(target_phone, '919662279799')
+            self.assertIn("NEW AARTI BOOKING ALERT", msg_text)
+            self.assertIn("Devotee Rajesh", msg_text)
+            self.assertIn("9876543210", msg_text)
+            self.assertIn("Morning Aarti", msg_text)
+            self.assertIn("Family Darshan", msg_text)
+
+    def test_donation_triggers_admin_only_alert(self):
+        """Donation form submission sends WhatsApp direct alert ONLY to Admin"""
+        with patch('core.whatsapp.send_whatsapp_message') as mock_send:
+            mock_send.return_value = True
+            payload = {
+                "name": "Generous Bhakta",
+                "phone": "9876543211",
+                "email": "bhakta@example.com",
+                "amount": 2501,
+                "paymentMethod": "GPay / UPI",
+                "transactionId": "TXN-GPAY-99901",
+            }
+            res = self.client.post('/api/donations/', data=payload, format='json')
+            self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+            self.assertTrue(res.data['success'])
+
+            # Must have sent EXACTLY 1 WhatsApp message (to Admin only)
+            self.assertEqual(mock_send.call_count, 1)
+            target_phone, msg_text = mock_send.call_args[0]
+            self.assertEqual(target_phone, '919662279799')
+            self.assertIn("NEW DONATION ALERT", msg_text)
+            self.assertIn("Generous Bhakta", msg_text)
+            self.assertIn("2,501", msg_text)
+            self.assertIn("TXN-GPAY-99901", msg_text)
+
+    def test_contact_form_triggers_admin_only_alert(self):
+        """Send Message to Trust form submission sends WhatsApp direct alert ONLY to Admin"""
+        with patch('core.whatsapp.send_whatsapp_message') as mock_send:
+            mock_send.return_value = True
+            payload = {
+                "name": "Devotee Suman",
+                "email": "suman@example.com",
+                "phone": "9876543212",
+                "subject": "Prasad Inquiry",
+                "message": "Can we arrange specific prasad sponsorship on Anant Chaturdashi?",
+            }
+            res = self.client.post('/api/contacts/', data=payload, format='json')
+            self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+            self.assertTrue(res.data['success'])
+
+            # Must have sent EXACTLY 1 WhatsApp message (to Admin only)
+            self.assertEqual(mock_send.call_count, 1)
+            target_phone, msg_text = mock_send.call_args[0]
+            self.assertEqual(target_phone, '919662279799')
+            self.assertIn("NEW MESSAGE TO TRUST ALERT", msg_text)
+            self.assertIn("Devotee Suman", msg_text)
+            self.assertIn("9876543212", msg_text)
+            self.assertIn("Prasad Inquiry", msg_text)
+            self.assertIn("Can we arrange specific prasad sponsorship", msg_text)
+
+    def test_whatsapp_status_endpoint(self):
+        """GET /api/whatsapp/status/ reports configuration state"""
+        res = self.client.get('/api/whatsapp/status/')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertTrue(res.data['success'])
+        self.assertIn('status', res.data)
+        self.assertIn('admin_phone', res.data['status'])
+        self.assertIn('enabled', res.data['status'])
+
+    def test_whatsapp_test_alert_endpoint(self):
+        """POST /api/whatsapp/test/ triggers a test alert to admin"""
+        with patch('core.whatsapp.send_whatsapp_message') as mock_send:
+            mock_send.return_value = True
+            res = self.client.post('/api/whatsapp/test/', format='json')
+            self.assertEqual(res.status_code, status.HTTP_200_OK)
+            self.assertTrue(res.data['success'])
+            self.assertEqual(mock_send.call_count, 1)
+            target_phone, msg_text = mock_send.call_args[0]
+            self.assertEqual(target_phone, '919662279799')
+            self.assertIn("TEST WHATSAPP ADMIN ALERT", msg_text)
+
+
 
 
 

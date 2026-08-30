@@ -267,10 +267,21 @@ class Event(models.Model):
         DRAFT = 'draft', _('Draft')
         ARCHIVED = 'archived', _('Archived')
 
+    class CategoryChoices(models.TextChoices):
+        RITUAL = 'Ritual', _('Ritual & Pooja')
+        AARTI = 'Aarti', _('Aarti & Darshan')
+        MAHAPRASAD = 'Mahaprasad', _('Mahaprasad & Bhog')
+        CULTURAL = 'Cultural', _('Cultural & Music')
+        PROCESSION = 'Procession', _('Procession & Visarjan')
+        GENERAL = 'General', _('General')
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_("ID"))
+    date = models.DateField(null=True, blank=True, verbose_name=_("Date"))
     title = models.CharField(max_length=200, verbose_name=_("Event Title"))
     day = models.CharField(
         max_length=100,
+        blank=True,
+        default='',
         verbose_name=_("Date / Day Tag"),
         help_text=_("e.g. Day 01 | Bhadrapada Chaturthi or 2026-09-14")
     )
@@ -305,7 +316,8 @@ class Event(models.Model):
     category = models.CharField(
         max_length=100,
         blank=True,
-        default='Sacred Rituals',
+        choices=CategoryChoices.choices,
+        default=CategoryChoices.RITUAL,
         verbose_name=_("Category"),
         help_text=_("e.g. Sacred Rituals, Maha Aarti, Prasad Offering, Visarjan")
     )
@@ -339,13 +351,33 @@ class Event(models.Model):
         ordering = ['order', 'created_at']
 
     def save(self, *args, **kwargs):
-        if not self.time:
-            if self.start_time and self.end_time:
-                self.time = f"{self.start_time} - {self.end_time}"
-            elif self.start_time:
-                self.time = f"{self.start_time} onwards"
+        # Auto-compute day tag if not given
+        if not self.day and self.date:
+            self.day = self.date.strftime('%d %B %Y')
+        elif not self.day:
+            self.day = f"Event #{self.order}"
+
+        # Auto-compute time from start_time / end_time if not explicitly filled
+        if self.start_time and self.end_time and not self.time:
+            self.time = f"{self.start_time} - {self.end_time}"
+        elif self.start_time and not self.time:
+            self.time = f"{self.start_time} onwards"
+        elif self.time and not self.start_time:
+            if ' - ' in self.time:
+                parts = self.time.split(' - ', 1)
+                self.start_time = parts[0].strip()
+                self.end_time = parts[1].strip()
+            elif ' onwards' in self.time:
+                self.start_time = self.time.replace(' onwards', '').strip()
+
+        # Sync is_active and status
+        if not self.is_active and self.status == self.StatusChoices.ACTIVE:
+            self.status = self.StatusChoices.DRAFT
+        elif self.is_active and self.status == self.StatusChoices.DRAFT:
+            self.status = self.StatusChoices.ACTIVE
+
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"#{self.order} - {self.title} ({self.day})"
-
+        day_tag = self.day or (self.date.strftime('%d %b %Y') if self.date else f"#{self.order}")
+        return f"#{self.order} - {self.title} ({day_tag})"

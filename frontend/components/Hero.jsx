@@ -27,12 +27,7 @@ function Hero() {
 
       <div className="hero-content text-center flex flex-col justify-between items-center w-full max-w-7xl px-6 pt-24 pb-8 md:pt-28 md:pb-10 box-border z-10">
         {/* Top Tagline Badge */}
-        <div className="hero-top">
-          <div className="hero-tagline inline-flex items-center gap-2 px-5 py-2 rounded-full border border-[#B89A4A]/40 bg-[#FAF7EF]/80 text-[#8F7430] tracking-[0.25em] text-[11px] md:text-xs uppercase backdrop-blur-xl shadow-[0_10px_30px_rgba(184,154,74,0.15)]">
-            <span className="inline-block w-2 h-2 rounded-full bg-[#C99B45] animate-ping" />
-            <span>✨ AN ETERNAL CELEBRATION OF THE DIVINE</span>
-          </div>
-        </div>
+        
 
         {/* Main Title & CTA Center Block */}
         <div className="hero-middle my-auto py-4 md:py-6 flex flex-col items-center justify-center">

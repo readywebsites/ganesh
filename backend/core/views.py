@@ -4,6 +4,7 @@ from datetime import datetime, date
 from django.db import transaction, models
 from django.http import Http404
 from rest_framework import viewsets, permissions, filters, status
+from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
@@ -19,10 +20,18 @@ from .serializers import (
     EventSerializer,
 )
 from .whatsapp import (
-    notify_admin_and_customer_on_booking,
-    notify_admin_and_customer_on_membership,
+    notify_admin_on_booking,
     notify_admin_on_donation,
     notify_admin_on_contact,
+    notify_admin_on_membership,
+    get_whatsapp_config_status,
+    send_whatsapp_admin_alert,
+    get_admin_phone,
+)
+from .instagram import (
+    fetch_instagram_feed,
+    get_instagram_status_info,
+    refresh_long_lived_token,
 )
 
 logger = logging.getLogger(__name__)
@@ -275,8 +284,11 @@ class AartiBookingViewSet(PublicCreateViewSetMixin, viewsets.ModelViewSet):
                 "message": "A database error occurred while creating your booking. Please try again."
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        # Send WhatsApp notifications safely in background / try-except
-        notify_admin_and_customer_on_booking(booking)
+        # Send WhatsApp direct alert safely to Admin (User receives no notification)
+        try:
+            notify_admin_on_booking(booking)
+        except Exception as e:
+            logger.error(f"[WhatsApp] Notification error on aarti booking: {e}", exc_info=True)
 
         headers = self.get_success_headers(serializer.data)
         return Response({
@@ -555,9 +567,9 @@ class MembershipViewSet(PublicCreateViewSetMixin, viewsets.ModelViewSet):
                 "message": "A database error occurred while creating membership. Please try again."
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        # Send WhatsApp notifications safely in background / try-except
+        # Send WhatsApp direct alert safely to Admin (User receives no notification)
         try:
-            notify_admin_and_customer_on_membership(membership)
+            notify_admin_on_membership(membership)
         except Exception as e:
             logger.error(f"[WhatsApp] Notification error on membership: {e}", exc_info=True)
 
@@ -845,4 +857,100 @@ class EventViewSet(viewsets.ModelViewSet):
             "success": True,
             "message": "Event deleted successfully."
         }, status=status.HTTP_200_OK)
+
+
+class InstagramFeedView(APIView):
+    """
+    Public API Endpoint to fetch live Instagram posts & reels.
+    Query Parameters:
+      - limit: Number of posts to retrieve (1-50, default 12)
+      - refresh: Force bypass server cache (true/1/yes)
+    """
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+
+    def get(self, request, *args, **kwargs):
+        # Extract limit query param with validation
+        limit_param = request.query_params.get('limit', '12')
+        try:
+            limit = int(limit_param)
+            limit = max(1, min(limit, 50))
+        except (ValueError, TypeError):
+            limit = 12
+
+        # Check if caller requested fresh bypass of cache
+        refresh_param = request.query_params.get('refresh', 'false').lower()
+        refresh = refresh_param in ('true', '1', 'yes')
+
+        result = fetch_instagram_feed(limit=limit, refresh=refresh)
+        return Response(result, status=status.HTTP_200_OK)
+
+
+class InstagramStatusView(APIView):
+    """
+    Status / Healthcheck endpoint reporting Instagram credentials configuration.
+    """
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+
+    def get(self, request, *args, **kwargs):
+        status_info = get_instagram_status_info()
+        return Response({
+            "success": True,
+            "status": status_info
+        }, status=status.HTTP_200_OK)
+
+
+class InstagramRefreshTokenView(APIView):
+    """
+    Admin endpoint to manually trigger a long-lived Instagram access token refresh.
+    """
+    permission_classes = [permissions.IsAdminUser]
+    authentication_classes = [CsrfExemptSessionAuthentication, BasicAuthentication]
+
+    def post(self, request, *args, **kwargs):
+        result = refresh_long_lived_token()
+        http_status = status.HTTP_200_OK if result.get('success') else status.HTTP_400_BAD_REQUEST
+        return Response(result, status=http_status)
+
+
+class WhatsAppStatusView(APIView):
+    """
+    Status / Healthcheck endpoint reporting WhatsApp Admin Alert configuration.
+    """
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+
+    def get(self, request, *args, **kwargs):
+        status_info = get_whatsapp_config_status()
+        return Response({
+            "success": True,
+            "status": status_info
+        }, status=status.HTTP_200_OK)
+
+
+class WhatsAppTestAlertView(APIView):
+    """
+    Endpoint to test send a sample WhatsApp alert message to the Admin phone.
+    """
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+
+    def post(self, request, *args, **kwargs):
+        admin_phone = get_admin_phone()
+        test_message = (
+            f"🔔 *TEST WHATSAPP ADMIN ALERT*\n\n"
+            f"This is a test alert from Surat Cha Gaurinandan Ganesh Mahotsav 2026 Portal.\n"
+            f"Your WhatsApp API integration is connected and working successfully! 🎉\n\n"
+            f"Target Admin: +{admin_phone}\n"
+            f"Timestamp: {datetime.now().strftime('%d %B %Y, %I:%M %p')}"
+        )
+        sent = send_whatsapp_admin_alert(test_message)
+        return Response({
+            "success": sent,
+            "message": "Test alert successfully sent to admin WhatsApp." if sent else "Failed to send alert. Please check your .env WhatsApp API credentials.",
+            "adminPhone": f"+{admin_phone}",
+        }, status=status.HTTP_200_OK if sent else status.HTTP_400_BAD_REQUEST)
+
+
 

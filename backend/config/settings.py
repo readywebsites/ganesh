@@ -16,6 +16,18 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load local .env file if present
+_env_file = BASE_DIR / '.env'
+if _env_file.exists():
+    with open(_env_file, 'r', encoding='utf-8') as _f:
+        for _line in _f:
+            _line = _line.strip()
+            if _line and not _line.startswith('#') and '=' in _line:
+                _k, _v = _line.split('=', 1)
+                _k = _k.strip()
+                _v = _v.strip().strip('"').strip("'")
+                os.environ[_k] = _v
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -26,9 +38,12 @@ SECRET_KEY = 'django-insecure-%kviui@^n!(ydnsma28r28u!_bq-+-rw#(2tuzq6ry^c0#!g-g
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["ganpati.biz499.com",
+ALLOWED_HOSTS = [
+    "ganpati.biz499.com",
     "localhost",
     "127.0.0.1",
+    "testserver",
+    "*",
 ]
 
 
@@ -177,7 +192,7 @@ JAZZMIN_SETTINGS = {
     "site_icon": "images/favicon.ico",
 
     # Global Quick Search Bar
-    "search_model": ["core.Membership", "core.Donation", "core.Gallery", "core.AartiBooking"],
+    "search_model": ["core.Event", "core.Membership", "core.Donation", "core.Gallery", "core.AartiBooking"],
 
     # User Profile Avatar
     "user_avatar": None,
@@ -198,6 +213,7 @@ JAZZMIN_SETTINGS = {
 
     # Custom Sidebar Icons (FontAwesome 5)
     "icons": {
+        "core.Event": "fas fa-calendar-alt",
         "core.Gallery": "fas fa-camera-retro",
         "core.AartiBooking": "fas fa-pray",
         "core.Donation": "fas fa-hand-holding-usd",
@@ -248,8 +264,31 @@ JAZZMIN_UI_TWEAKS = {
     "actions_sticky_top": True,
 }
 
-# WhatsApp Business / Cloud API Configuration
+# WhatsApp Business & Custom Gateway API Configuration
 WHATSAPP_ENABLED = os.environ.get('WHATSAPP_ENABLED', 'true').lower() in ('true', '1', 'yes')
-WHATSAPP_PHONE_NUMBER = os.environ.get('WHATSAPP_PHONE_NUMBER', '9662279799')
+WHATSAPP_ADMIN_PHONE = os.environ.get('WHATSAPP_ADMIN_PHONE') or os.environ.get('WHATSAPP_PHONE_NUMBER') or '9662279799'
+WHATSAPP_PHONE_NUMBER = WHATSAPP_ADMIN_PHONE
 WHATSAPP_ACCESS_TOKEN = os.environ.get('WHATSAPP_ACCESS_TOKEN', '')
 WHATSAPP_PHONE_NUMBER_ID = os.environ.get('WHATSAPP_PHONE_NUMBER_ID', '')
+WHATSAPP_API_VERSION = os.environ.get('WHATSAPP_API_VERSION', 'v20.0')
+WHATSAPP_API_URL = os.environ.get('WHATSAPP_API_URL', '')
+WHATSAPP_API_KEY = os.environ.get('WHATSAPP_API_KEY', '')
+WHATSAPP_INSTANCE_ID = os.environ.get('WHATSAPP_INSTANCE_ID', '')
+WHATSAPP_VERIFY_TOKEN = os.environ.get('WHATSAPP_VERIFY_TOKEN', 'ganpati_biz499_webhook_token_2026_x9k2p8v')
+WHATSAPP_APP_SECRET = os.environ.get('WHATSAPP_APP_SECRET', '')
+
+# Instagram Graph / Basic Display API Configuration
+INSTAGRAM_ACCESS_TOKEN = os.environ.get('INSTAGRAM_ACCESS_TOKEN', '')
+INSTAGRAM_APP_SECRET = os.environ.get('INSTAGRAM_APP_SECRET', '')
+INSTAGRAM_APP_ID = os.environ.get('INSTAGRAM_APP_ID', '')
+INSTAGRAM_USER_ID = os.environ.get('INSTAGRAM_USER_ID', 'me')
+INSTAGRAM_CACHE_TIMEOUT = int(os.environ.get('INSTAGRAM_CACHE_TIMEOUT', '300'))
+
+# In-memory Caching for API responses
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'ganesh_mahotsav_cache',
+    }
+}
+

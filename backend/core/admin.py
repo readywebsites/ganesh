@@ -223,27 +223,32 @@ class EventAdmin(admin.ModelAdmin):
         'timeline_position_badge',
         'order',
         'title',
-        'day',
-        'time_display',
-        'location',
+        'date_display',
+        'timing_display',
         'category',
+        'location',
         'is_active',
+        'status',
         'created_at',
     )
-    list_filter = ('is_active', 'category', 'created_at')
+    list_filter = ('is_active', 'status', 'category', 'created_at')
     search_fields = ('title', 'day', 'description', 'location', 'category')
     ordering = ('order', 'created_at')
     list_editable = ('order', 'is_active')
+    list_display_links = ('title',)
     readonly_fields = ('id', 'created_at', 'updated_at')
     fieldsets = (
-        ('Event Overview', {
-            'fields': ('title', 'day', 'category', 'description')
+        ('Schedule Event Information', {
+            'fields': ('title', 'category', 'description')
         }),
-        ('Timing & Location', {
-            'fields': (('start_time', 'end_time'), 'time', 'location')
+        ('Date & Timings', {
+            'fields': ('date', ('start_time', 'end_time'), 'time', 'day')
         }),
-        ('Timeline & Display Settings', {
-            'fields': (('order', 'is_active'), 'banner_url', 'status')
+        ('Location & Media', {
+            'fields': ('location', 'banner_url')
+        }),
+        ('Display & Visibility', {
+            'fields': (('order', 'is_active'), 'status')
         }),
         ('System Metadata', {
             'classes': ('collapse',),
@@ -264,7 +269,14 @@ class EventAdmin(admin.ModelAdmin):
 
     timeline_position_badge.short_description = "Timeline Side"
 
-    def time_display(self, obj):
+    def date_display(self, obj):
+        if obj.date:
+            return obj.date.strftime('%d %b %Y')
+        return obj.day or "—"
+
+    date_display.short_description = "Date / Day"
+
+    def timing_display(self, obj):
         if obj.time:
             return obj.time
         if obj.start_time and obj.end_time:
@@ -273,5 +285,8 @@ class EventAdmin(admin.ModelAdmin):
             return f"{obj.start_time} onwards"
         return "—"
 
-    time_display.short_description = "Time"
+    timing_display.short_description = "Timing"
+
+    # Backward compatibility alias
+    time_display = timing_display
 

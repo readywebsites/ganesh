@@ -168,7 +168,6 @@ function Navbar() {
                 scrollTo('aarti');
               }}
             >
-              <span>🏵️</span>
               <span>Aarti Booking</span>
               {activeSection === 'aarti' && (
                 <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 rounded-full animate-pulse" />
