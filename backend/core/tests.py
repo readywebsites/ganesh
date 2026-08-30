@@ -1100,6 +1100,32 @@ class EventAPITests(TestCase):
         self.assertEqual(events[4]['title'], "5th Mega Cultural Evening")
         self.assertEqual(events[5]['title'], "6th Annakshetra Grand Feast")
 
+    def test_event_is_registered_in_django_admin_site(self):
+        """Verify Event model is registered in Django admin with correct verbose name"""
+        from django.contrib import admin
+        self.assertIn(Event, admin.site._registry)
+        model_admin = admin.site._registry[Event]
+        self.assertEqual(Event._meta.verbose_name, "Celebration Schedule")
+        self.assertEqual(Event._meta.verbose_name_plural, "Celebration Schedule")
+        self.assertIn('timeline_position_badge', model_admin.list_display)
+        self.assertIn('order', model_admin.list_display)
+        self.assertIn('title', model_admin.list_display)
+
+    def test_admin_can_access_celebration_schedule_changelist_and_add_form(self):
+        """Staff/Admin can access /admin/core/event/ and /admin/core/event/add/"""
+        self.client.force_login(self.admin_user)
+        res_list = self.client.get('/admin/core/event/')
+        self.assertEqual(res_list.status_code, status.HTTP_200_OK)
+        self.assertContains(res_list, "Celebration Schedule")
+
+        res_add = self.client.get('/admin/core/event/add/')
+        self.assertEqual(res_add.status_code, status.HTTP_200_OK)
+        self.assertContains(res_add, "Start Time")
+        self.assertContains(res_add, "End Time")
+        self.assertContains(res_add, "Category")
+        self.assertContains(res_add, "Display Order")
+
+
 
 
 

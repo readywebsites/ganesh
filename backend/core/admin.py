@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from .models import Gallery, AartiBooking, Donation, Membership, Contact
+from .models import Gallery, AartiBooking, Donation, Membership, Contact, Event
 
 
 @admin.register(Gallery)
@@ -215,3 +215,63 @@ class ContactAdmin(admin.ModelAdmin):
         return "No Attachment"
 
     attachment_preview_large.short_description = "Attachment Preview"
+
+
+@admin.register(Event)
+class EventAdmin(admin.ModelAdmin):
+    list_display = (
+        'timeline_position_badge',
+        'order',
+        'title',
+        'day',
+        'time_display',
+        'location',
+        'category',
+        'is_active',
+        'created_at',
+    )
+    list_filter = ('is_active', 'category', 'created_at')
+    search_fields = ('title', 'day', 'description', 'location', 'category')
+    ordering = ('order', 'created_at')
+    list_editable = ('order', 'is_active')
+    readonly_fields = ('id', 'created_at', 'updated_at')
+    fieldsets = (
+        ('Event Overview', {
+            'fields': ('title', 'day', 'category', 'description')
+        }),
+        ('Timing & Location', {
+            'fields': (('start_time', 'end_time'), 'time', 'location')
+        }),
+        ('Timeline & Display Settings', {
+            'fields': (('order', 'is_active'), 'banner_url', 'status')
+        }),
+        ('System Metadata', {
+            'classes': ('collapse',),
+            'fields': ('id', 'created_at', 'updated_at')
+        }),
+    )
+
+    def timeline_position_badge(self, obj):
+        is_even = (obj.order % 2 == 0)
+        side = "RIGHT" if is_even else "LEFT"
+        bg_color = "#2563eb" if is_even else "#d97706"
+        return format_html(
+            '<span style="background-color:{}; color:#fff; padding:3px 9px; border-radius:12px; font-weight:bold; font-size:11px; letter-spacing:0.5px;">#{} • {}</span>',
+            bg_color,
+            obj.order,
+            side
+        )
+
+    timeline_position_badge.short_description = "Timeline Side"
+
+    def time_display(self, obj):
+        if obj.time:
+            return obj.time
+        if obj.start_time and obj.end_time:
+            return f"{obj.start_time} - {obj.end_time}"
+        if obj.start_time:
+            return f"{obj.start_time} onwards"
+        return "—"
+
+    time_display.short_description = "Time"
+

@@ -269,13 +269,61 @@ class Event(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_("ID"))
     title = models.CharField(max_length=200, verbose_name=_("Event Title"))
-    day = models.CharField(max_length=100, verbose_name=_("Day / Date Tag"))
-    description = models.TextField(verbose_name=_("Event Description"))
-    time = models.CharField(max_length=100, blank=True, default='', verbose_name=_("Time"))
-    location = models.CharField(max_length=200, blank=True, default='Main Temple Hall', verbose_name=_("Location"))
-    banner_url = models.CharField(max_length=500, blank=True, default='', verbose_name=_("Banner URL"))
-    order = models.PositiveIntegerField(default=1, verbose_name=_("Display Order"))
-    is_active = models.BooleanField(default=True, verbose_name=_("Is Active"))
+    day = models.CharField(
+        max_length=100,
+        verbose_name=_("Date / Day Tag"),
+        help_text=_("e.g. Day 01 | Bhadrapada Chaturthi or 2026-09-14")
+    )
+    description = models.TextField(verbose_name=_("Description"))
+    start_time = models.CharField(
+        max_length=50,
+        blank=True,
+        default='',
+        verbose_name=_("Start Time"),
+        help_text=_("e.g. 08:30 AM")
+    )
+    end_time = models.CharField(
+        max_length=50,
+        blank=True,
+        default='',
+        verbose_name=_("End Time"),
+        help_text=_("e.g. 11:30 AM")
+    )
+    time = models.CharField(
+        max_length=100,
+        blank=True,
+        default='',
+        verbose_name=_("Time (Display)"),
+        help_text=_("e.g. 08:30 AM - 11:30 AM or 12:30 PM onwards")
+    )
+    location = models.CharField(
+        max_length=200,
+        blank=True,
+        default='Main Temple Hall',
+        verbose_name=_("Location")
+    )
+    category = models.CharField(
+        max_length=100,
+        blank=True,
+        default='Sacred Rituals',
+        verbose_name=_("Category"),
+        help_text=_("e.g. Sacred Rituals, Maha Aarti, Prasad Offering, Visarjan")
+    )
+    order = models.PositiveIntegerField(
+        default=1,
+        verbose_name=_("Display Order"),
+        help_text=_("Determines zig-zag timeline position: 1=Left, 2=Right, 3=Left, 4=Right...")
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name=_("Active / Inactive")
+    )
+    banner_url = models.CharField(
+        max_length=500,
+        blank=True,
+        default='',
+        verbose_name=_("Banner URL")
+    )
     status = models.CharField(
         max_length=20,
         choices=StatusChoices.choices,
@@ -286,9 +334,18 @@ class Event(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name=_("Updated At"))
 
     class Meta:
-        verbose_name = _("Festival Event")
-        verbose_name_plural = _("Festival Events")
+        verbose_name = _("Celebration Schedule")
+        verbose_name_plural = _("Celebration Schedule")
         ordering = ['order', 'created_at']
+
+    def save(self, *args, **kwargs):
+        if not self.time:
+            if self.start_time and self.end_time:
+                self.time = f"{self.start_time} - {self.end_time}"
+            elif self.start_time:
+                self.time = f"{self.start_time} onwards"
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"#{self.order} - {self.title} ({self.day})"
+
